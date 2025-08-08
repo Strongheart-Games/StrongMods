@@ -1,0 +1,12 @@
+<config>
+  <append xpath="/recipes">
+    <!-- Bicycle E-Assist Battery -->
+    <recipe name="mod_hybrid_vehicle_kit_strong" count="1" craft_time="60">
+      <ingredient name="resourceForgedIron" count="10" />
+      <ingredient name="resourceScrapPolymers" count="10" />
+      <ingredient name="resourceMechanicalParts" count="5" />
+      <ingredient name="resourceElectricParts" count="25" />
+      <ingredient name="carBattery" count="5" />
+    </recipe>
+  </append>
+</config>

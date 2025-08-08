@@ -1,0 +1,7 @@
+﻿Key,Source,Type,english
+buff_land_claim_violation_name_strong,buffs,Buff,"Land Claim Violation"
+buff_land_claim_violation_description_strong,buffs,Buff,"You are in a stranger's land claim. You will be [ff0000]TELEPORTED[-] or [ff0000]KILLED[-] if you do not leave."
+buff_land_claim_violation_message_strong,buffs,Buff,"[00ff00]You are in a stranger's land claim. You will be [ff0000]TELEPORTED[-] or [ff0000]KILLED[-] if you do not leave.[-]"
+buff_no_bedroll_name_strong,buffs,Buff,"No Bedroll Placed"
+buff_no_bedroll_description_strong,buffs,Buff,"You have no bedroll placed. You risk [ff0000]DEATH[-] if you wander into a stranger's land claim."
+buff_no_bedroll_message_strong,buffs,Buff,"[00ff00]You have no bedroll placed. You risk [ff0000]DEATH[-] if you wander into a stranger's land claim.[-]"

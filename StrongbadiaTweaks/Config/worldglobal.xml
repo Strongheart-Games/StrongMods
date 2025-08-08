@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_schedule_irl']" name="value">0 4,13,20 * *
+    *
+  </setattribute>
+  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_duration_irl_minutes']" name="value">20
+  </setattribute>
+</config>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!--
+  DynamicLandClaimCount
+    cvar  :  The cvar to use
+    op    :  The operation to perform; supported ops:
+      add       -  add the cvar to the LandClaimCount in serverconfig.xml
+      override  -  ignore serverconfig.xml and use the cvar as the count (if player does not have the cvar set, or it is
+                   set to a negative value, use the LandClaimCount in serverconfig.xml)
+    -->
+  <append xpath="/worldglobal/environment">
+    <property name="dynamic_land_claim_count_cvar" value="$BiomeBadgeLevel" />
+    <property name="dynamic_land_claim_count_op" value="add" />
+  </append>
+</config>

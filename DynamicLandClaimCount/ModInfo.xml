@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="DynamicLandClaimCount" />
+  <Version value="1.1.0" />
+  <DisplayName value="Dynamic GameStats" />
+  <Description value="Set GameStats, which are normally global, on a per-player basis." />
+  <Author value="str0ngb4d" />
+  <Website value="" />
+</ModInfo>

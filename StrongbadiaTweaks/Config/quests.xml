@@ -1,0 +1,10 @@
+<config>
+  <remove xpath="//quests/quest_list/quest[@id='intro_buried_supplies']" />
+  <insertBefore xpath="/quests/quest[@id='quest_whiteRiverCitizen1']/reward">
+    <action type="SetCVar">
+      <property name="cvar" value="IntroComplete" />
+      <property name="value" value="1" />
+      <property name="on_complete" value="true" />
+    </action>
+  </insertBefore>
+</config>

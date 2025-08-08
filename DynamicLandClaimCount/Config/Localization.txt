@@ -1,0 +1,2 @@
+﻿key,english
+dynamic_land_claim_count_message,"Your land claims: {used} / {total}"

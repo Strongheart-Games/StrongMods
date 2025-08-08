@@ -1,0 +1,86 @@
+<config>
+
+  <!-- Schematics that have been read show a green "read" icon -->
+  <insertAfter xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIcon']">
+    <property name="AltItemTypeIconColor" value="0,255,0,200" />
+  </insertAfter>
+
+  <append xpath="/items">
+    <item name="item_loot_container_small_mini_boss_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_small_mini_boss_desc_strong" />
+      <property name="CustomIconTint" value="276182" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardSmallMiniBoss" />
+      </property>
+    </item>
+    <item name="item_loot_container_mini_boss_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_mini_boss_desc_strong" />
+      <property name="CustomIconTint" value="276182" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardMiniBoss" />
+      </property>
+    </item>
+    <item name="item_loot_container_boss_shocker_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_shocker_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossShocker" />
+      </property>
+    </item>
+    <item name="item_loot_container_boss_bull_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_bull_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossBull" />
+      </property>
+    </item>
+    <item name="item_loot_container_boss_veteran_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_veteran_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossVeteran" />
+      </property>
+    </item>
+    <item name="item_loot_container_boss_carrier_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_carrier_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossCarrier" />
+      </property>
+    </item>
+  </append>
+
+  <!-- Everything with an explicit stack size > 1 has it set to 65k. -->
+  <setattribute xpath="/items/item/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
+
+</config>

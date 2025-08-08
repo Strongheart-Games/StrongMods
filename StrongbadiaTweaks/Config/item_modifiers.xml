@@ -1,0 +1,17 @@
+<config>
+  <append xpath="/item_modifiers">
+    <!-- Bicycle E-Assist Battery -->
+    <item_modifier name="mod_hybrid_vehicle_kit_strong" installable_tags="vehicle" modifier_tags="bumper"
+                   type="attachment">
+      <property name="Extends" value="modGeneralMaster" />
+      <property name="DescriptionKey" value="mod_hybrid_vehicle_kit_desc_strong" />
+      <property name="TraderStageTemplate" value="modsTier1" />
+      <property name="CustomIcon" value="carBattery" />
+      <effect_group tiered="false">
+        <passive_effect name="VehicleMotorTorquePer" operation="perc_add" value=".75" />
+        <passive_effect name="VehicleVelocityMaxPer" operation="perc_add" value=".3" />
+        <passive_effect name="VehicleFuelUsePer" operation="perc_subtract" value=".2" />
+      </effect_group>
+    </item_modifier>
+  </append>
+</config>

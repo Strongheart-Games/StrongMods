@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/gameevents">
+    <action_sequence name="action_before_blood_rain_strong">
+      <property name="action_type" value="Game" />
+      <property name="target_type" value="Entity" />
+
+      <action class="AddEntitiesToGroup">
+        <property name="phase" value="0" />
+        <property name="entity_tags" value="player" />
+        <property name="group_name" value="players" />
+        <property name="exclude_target" value="false" />
+        <property name="max_distance" value="10000" />
+      </action>
+
+      <action class="SetWeather">
+        <property name="phase" value="0" />
+        <property name="weather_group" value="bloodMoon" />
+      </action>
+      <action class="AddBuff">
+        <property name="phase" value="10" />
+        <property name="buff" value="buff_blood_rain_strong" />
+        <property name="target_group" value="players" />
+      </action>
+    </action_sequence>
+
+    <action_sequence name="action_after_blood_rain_strong">
+      <property name="action_type" value="Game" />
+      <property name="target_type" value="Entity" />
+
+
+      <action class="AddEntitiesToGroup">
+        <property name="phase" value="0" />
+        <property name="entity_tags" value="player" />
+        <property name="group_name" value="players" />
+        <property name="exclude_target" value="false" />
+        <property name="max_distance" value="10000" />
+      </action>
+
+      <action class="RemoveBuff">
+        <property name="phase" value="10" />
+        <property name="buff" value="buff_blood_rain_strong" />
+        <property name="target_group" value="players" />
+      </action>
+      <action class="SetWeather">
+        <property name="phase" value="10" />
+        <property name="weather_group" value="default" />
+      </action>
+    </action_sequence>
+  </append>
+</config>

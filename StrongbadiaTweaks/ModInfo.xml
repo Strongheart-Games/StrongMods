@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ModInfo>
+  <Name value="StrongbadiaTweaks" />
+  <Version value="9.0.0" />
+  <DisplayName value="Strongbadia Tweaks" />
+  <Description
+    value="Tweaks specific to the mods running on Strongbadia. Major version number is the scenario number." />
+  <Author value="str0ngb4d" />
+  <Website value="" />
+</ModInfo>

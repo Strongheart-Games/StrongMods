@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerRegular']">
+    <property name="loot_item_name_strong" value="item_loot_container_regular_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerNurse']">
+    <property name="loot_item_name_strong" value="item_loot_container_nurse_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerLab']">
+    <property name="loot_item_name_strong" value="item_loot_container_lab_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerUtility']">
+    <property name="loot_item_name_strong" value="item_loot_container_utility_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerSoldier']">
+    <property name="loot_item_name_strong" value="item_loot_container_soldier_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerThug']">
+    <property name="loot_item_name_strong" value="item_loot_container_thug_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerStrong']">
+    <property name="loot_item_name_strong" value="item_loot_container_strong_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerBoss']">
+    <property name="loot_item_name_strong" value="item_loot_container_boss_strong" />
+  </append>
+</config>

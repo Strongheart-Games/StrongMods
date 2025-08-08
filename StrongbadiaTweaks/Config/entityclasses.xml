@@ -1,0 +1,34 @@
+<config>
+  <!-- Edit player entity to increase health and stamina -->
+  <set
+    xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='HealthMax'][@value='100']/@value">
+    200
+  </set>  <!-- default = 100 -->
+  <set
+    xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='StaminaMax'][@value='100']/@value">
+    200
+  </set>  <!-- default = 100 -->
+  <insertAfter xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='StaminaMax']">
+    <triggered_effect trigger="onSelfFirstSpawn" action="AddBuff" target="self" buff="buffEntitySpawnHeal" />
+  </insertAfter>
+
+  <append xpath="/entity_classes/entity_class[@name='smallMiniBossLootContainer']">
+    <property name="loot_item_name_strong" value="item_loot_container_small_mini_boss_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']">
+    <property name="loot_item_name_strong" value="item_loot_container_mini_boss_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='BossLootContainerShocker']">
+    <property name="loot_item_name_strong" value="item_loot_container_boss_shocker_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='BossLootContainerBull']">
+    <property name="loot_item_name_strong" value="item_loot_container_boss_bull_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='BossLootContainerVeteran']">
+    <property name="loot_item_name_strong" value="item_loot_container_boss_veteran_strong" />
+  </append>
+  <append xpath="/entity_classes/entity_class[@name='BossLootContainerCarrier']">
+    <property name="loot_item_name_strong" value="item_loot_container_boss_carrier_strong" />
+  </append>
+
+</config>

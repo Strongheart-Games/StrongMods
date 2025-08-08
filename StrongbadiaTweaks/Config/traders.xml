@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- 24/7 traders: 1 == Joel, 2 == Jen, 6 == Bob, 7 == Hugh, 8 == Rekt -->
+  <removeattribute xpath="/traders/trader_info[@id='1' or @id='2' or @id='6' or @id='7' or @id='8']/@open_time" />
+  <removeattribute xpath="/traders/trader_info[@id='1' or @id='2' or @id='6' or @id='7' or @id='8']/@close_time" />
+</config>

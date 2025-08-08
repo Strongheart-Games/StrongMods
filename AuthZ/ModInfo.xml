@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="AuthZ" />
+  <Version value="0.1.0" />
+  <DisplayName value="AuthZ" />
+  <Description value="Tools for authorizing land claim placement and use." />
+  <Author value="str0ngb4d" />
+  <Website value="" />
+</ModInfo>

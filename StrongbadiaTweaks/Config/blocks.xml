@@ -1,0 +1,9 @@
+<config>
+
+  <!-- Everything with an explicit stack size > 1 has it set to 65k. -->
+  <setattribute xpath="/blocks/block/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
+  <insertAfter xpath="/blocks/block[contains(@name, 'Shapes')]/property[@name='Material']">
+    <property name="Stacknumber" value="65000" />
+  </insertAfter>
+
+</config>

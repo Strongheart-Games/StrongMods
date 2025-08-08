@@ -1,0 +1,14 @@
+<config>
+  <!-- Make space for 15 items plus 3 situational navigation responses (prev, next, nevermind). -->
+  <conditional>
+    <if cond="mod_loaded('AGF-V2-HUDPlus-1Main')">
+      <setattribute xpath="/windows/window[@name='windowResponses']" name="pos">-825,320</setattribute>
+      <setattribute xpath="/windows/window[@name='windowResponses']" name="height">850</setattribute>
+      <setattribute xpath="/windows/window[@name='windowResponses']/sprite[@depth=0]" name="height">812</setattribute>
+      <setattribute xpath="/windows/window[@name='windowResponses']/sprite[@depth=1]" name="height">802</setattribute>
+      <setattribute xpath="/windows/window[@name='windowResponses']/grid[@name='items']" name="height">650
+      </setattribute>
+      <setattribute xpath="/windows/window[@name='windowResponses']/grid[@name='items']" name="rows">18</setattribute>
+    </if>
+  </conditional>
+</config>

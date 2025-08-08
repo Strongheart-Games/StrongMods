@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="AutoCollectLoot" />
+  <Version value="0.1.0" />
+  <DisplayName value="Auto-collect Loot" />
+  <Description value="Send loot bags directly to players rather than dropping them on the ground." />
+  <Author value="str0ngb4d" />
+  <Website value="" />
+</ModInfo>

@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <insertBefore xpath="/quests/quest[1]">
+    <quest id="random_location_test">
+      <property name="icon" value="ui_game_symbol_quest" />
+      <property name="category_key" value="quest" />
+      <property name="name" value="Random Location Test Name" />
+      <property name="subtitle" value="Random Location Test Subtitle" />
+      <property name="description" value="Random Location Test Description" />
+      <property name="offer" value="Random Location Test Offer" />
+      <property name="statement_text" value="Random Location Test Statement" />
+      <property name="response_text" value="Random Location Test Response" />
+      <property name="completion_text" value="Random Location Test Completion" />
+      <property name="difficulty_tier" value="1" />
+      <property name="repeatable" value="true" />
+      <property name="shareable" value="true" />
+      <property name="completiontype" value="TurnIn" />
+      <property name="reward_choices_count" value="0" />
+
+      <objective type="RandomGoto" phase="1">
+        <property name="completion_distance" value="20" />
+        <property name="distance" value="350-600" />
+        <property name="nav_object" value="quest" />
+      </objective>
+
+      <objective type="RallyPoint" phase="2">
+        <property name="start_mode" value="Create" />
+        <property name="nav_object" value="rally" />
+        <property name="rally_marker_type" value="questRallyMarkerClear" />
+      </objective>
+
+      <objective type="ReturnToNPC" phase="3">
+        <property name="nav_object" value="return_to_trader" />
+      </objective>
+      <objective type="InteractWithNPC" phase="3">
+        <property name="nav_object" value="return_to_trader" />
+      </objective>
+
+      <reward type="Exp" value="5" />
+      <reward type="Item" id="casinoCoin" value="10" />
+
+    </quest>
+  </insertBefore>
+  <!--
+  <remove xpath="/quests/quest_list[@id='trader_rekt_quests']/quest[not(contains(@id, 'buried_supplies'))]" />
+  <append xpath="/quests/quest_list[@id='trader_rekt_quests']">
+    <quest id="random_location_test" />
+  </append>
+  -->
+</config>

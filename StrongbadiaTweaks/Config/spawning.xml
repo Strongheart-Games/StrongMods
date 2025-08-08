@@ -1,0 +1,4 @@
+<config>
+  <!-- Spawners reset every day to keep things fresh -->
+  <setattribute xpath="/spawning/entityspawner/day/property[@name='ResetToday']" name="value">true</setattribute>
+</config>

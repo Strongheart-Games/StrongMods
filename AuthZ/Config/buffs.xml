@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/buffs">
+    <buff name="buff_land_claim_violation_strong"
+          icon="ui_game_symbol_challenge_homesteading_place_land_claim"
+          icon_color="255,0,0"
+          icon_blink="true"
+          name_key="buff_land_claim_violation_name_strong"
+          description_key="buff_land_claim_violation_description_strong">
+      <display_value value="duration" />
+      <stack_type value="ignore" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="PinToolbeltMessage"
+                          message_key="buff_land_claim_violation_message_strong" />
+        <triggered_effect trigger="onSelfBuffRemove" action="RemoveToolbeltMessage"
+                          message_key="buff_land_claim_violation_message_strong" />
+      </effect_group>
+    </buff>
+    <buff name="buff_no_bedroll_strong"
+          icon="ui_game_symbol_map_bed"
+          icon_color="255,0,0"
+          name_key="buff_no_bedroll_name_strong"
+          description_key="buff_no_bedroll_description_strong">
+      <stack_type value="ignore" />
+      <update_rate value="120" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="ShowToolbeltMessage"
+                          message_key="buff_no_bedroll_message_strong" />
+        <triggered_effect trigger="onSelfBuffUpdate" action="ShowToolbeltMessage"
+                          message_key="buff_no_bedroll_message_strong" />
+        <triggered_effect trigger="onSelfBuffRemove" action="RemoveToolbeltMessage"
+                          message_key="buff_no_bedroll_message_strong" />
+      </effect_group>
+    </buff>
+  </append>
+</config>
