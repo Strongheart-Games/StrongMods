@@ -8,8 +8,8 @@
     <ProjectGuid>{846F6E7B-77D0-4C3D-96BB-FAD7E0EA7DDE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StrongbadiaTweaks</RootNamespace>
-    <AssemblyName>StrongbadiaTweaks</AssemblyName>
+    <RootNamespace>StrongholdTweaks</RootNamespace>
+    <AssemblyName>StrongholdTweaks</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\zzzzzzzzzz_StrongbadiaTweaks</OutputPath>
+    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\zzzzzzzzzz_StrongholdTweaks</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

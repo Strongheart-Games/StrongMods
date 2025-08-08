@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongUtils", "StrongUtils\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongLab", "StrongLab\StrongLab.csproj", "{A3B69E7C-F3D4-45D5-AFCE-835BB96410CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongbadiaTweaks", "StrongbadiaTweaks\StrongbadiaTweaks.csproj", "{846F6E7B-77D0-4C3D-96BB-FAD7E0EA7DDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongholdTweaks", "StrongholdTweaks\StrongholdTweaks.csproj", "{846F6E7B-77D0-4C3D-96BB-FAD7E0EA7DDE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BountifulQuests", "BountifulQuests\BountifulQuests.csproj", "{AE1B39DA-8714-4D2B-A982-82E0EE96BDB2}"
 EndProject
