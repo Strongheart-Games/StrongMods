@@ -21,7 +21,7 @@ namespace StrongUtils {
         return;
       }
 
-      if (_delayMinutes < 0) {
+      if (_delayMinutes <= 0) {
         Shutdown();
         return;
       }
