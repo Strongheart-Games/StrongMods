@@ -1,10 +1,12 @@
 <config>
-  <!-- Prune any quest entries beyond the 15 this tweak supports. Some quest mods,
-       such as MoreQuests add up to 60. -->
-  <conditional>
-    <if cond="mod_loaded('AGF-V2-HUDPlus-1Main')">
-      <remove
-        xpath="//dialogs/dialog[@id='trader']/statement[starts-with(@id,'currentjobs')]/quest_entry[@listindex >= 15]" />
-    </if>
-  </conditional>
+  <!-- Reset quests is now in the player menu, not the admin menu -->
+  <remove xpath="/dialogs/dialog[@id='trader']/statement[@id='admin']/response_entry[@id='resetquests']" />
+  <insertafter xpath="/dialogs/dialog[@id='trader']/statement[@id='start']/response_entry[@id='specialjobshave']">
+    <response_entry id="resetquests" />
+  </insertafter>
+
+  <!-- Always offer jobs, even if player has already accepted one from this trader -->
+  <remove xpath="dialogs/dialog[@id='trader']/response[@id='jobsnone']" />
+  <remove
+    xpath="dialogs/dialog[@id='trader']/response[starts-with(@id, 'jobshave')]/requirement[@type='QuestStatus']" />
 </config>

@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicLandClaimCount", "Dy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPMFixes", "CPMFixes\CPMFixes.csproj", "{98109D45-BDDB-4B31-8C31-933E1AD3851D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCommandHelper\ChatCommandHelper.csproj", "{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{98109D45-BDDB-4B31-8C31-933E1AD3851D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98109D45-BDDB-4B31-8C31-933E1AD3851D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98109D45-BDDB-4B31-8C31-933E1AD3851D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
