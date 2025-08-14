@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using CSMM_Patrons;
+using CSMM_Patrons.CustomCommands;
 using HarmonyLib;
 
 namespace CPMFixes {
@@ -24,6 +25,22 @@ namespace CPMFixes {
 
       var command = message.Substring(CpmSettings.Instance.CPMPrefix.Length);
       return CpmChatCommands.Contains(command);
+    }
+  }
+
+  [HarmonyPatch(typeof(ShutdownBA), nameof(ShutdownBA.Execute))]
+  public class ShutdownBA_Execute_Patch {
+    private static void Prefix(ConsoleCmdShutdown __instance, List<string> _params, CommandSenderInfo _senderInfo) {
+      if (_params.ContainsCaseInsensitive("resetregions")) {
+        ModEvents.GameShutdown.RegisterHandler(ResetRegions);
+        _params.Remove("resetregions"); // CPM won't recognize the argument, so remove it
+      } else if (_params.ContainsCaseInsensitive("stop")) {
+        ModEvents.GameShutdown.UnregisterHandler(ResetRegions);
+      }
+    }
+
+    private static void ResetRegions(ref ModEvents.SGameShutdownData _data) {
+      SdtdConsole.Instance.ExecuteSync("resetregions", null);
     }
   }
 
