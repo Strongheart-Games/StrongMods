@@ -10,6 +10,7 @@ namespace AuthZ {
     public const string ViolationRemainingSecondsCVarName = "land_claim_violation_remaining_seconds_strong";
     public const int ViolationTimeLimitSeconds = 10;
     public const int MinDistanceForEnemyProtection = 200;
+    public static HashSet<MaterialBlock> RoadMaterials;
 
     public static void HandleViolations(EntityAlive entity) {
       if (!SingletonMonoBehaviour<ConnectionManager>.Instance.IsServer || GameManager.Instance.IsEditMode()) {
@@ -56,7 +57,8 @@ namespace AuthZ {
         return;
       }
 
-      if (IsAnyPlayerInParty(authorizedPlayers, (EntityPlayer)entity)) {
+      if (IsPlayerOnUnprotectableLand((EntityPlayer)entity) ||
+          IsAnyPlayerInParty(authorizedPlayers, (EntityPlayer)entity)) {
         ClearViolations(entity);
         return;
       }
@@ -158,6 +160,18 @@ namespace AuthZ {
       return false;
     }
 
+    public static bool IsPlayerOnUnprotectableLand(EntityPlayer player) {
+      return player.prefab is null && IsRoad(player.blockValueStandingOn.Block);
+    }
+
+    public static bool IsRoad(Block block) {
+      RoadMaterials ??= new HashSet<MaterialBlock> {
+        MaterialBlock.materials["Mconcrete"],
+        MaterialBlock.materials["Mgravel"]
+      };
+      return block.shape.IsTerrain() && RoadMaterials.Contains(block.blockMaterial);
+    }
+
     public static bool IsAnyPlayerInParty(IEnumerable<PersistentPlayerData> players, EntityPlayer targetPlayer) {
       List<int> party = targetPlayer.Party?.GetMemberIdList(null) ?? new List<int> { targetPlayer.entityId };
       return players.Any(p => party.Contains(p.EntityId));
@@ -231,7 +245,8 @@ namespace AuthZ {
               false, out newPosition, player.entityId, _retryCount: 20, _checkLandClaim: true,
               _maxLandClaimType: EnumLandClaimOwner.Ally, _useSquareRadius: true) ||
             newPosition == Vector3.zero) { // Same as above
-          PersistentPlayerData playerData = GameManager.Instance.persistentPlayers.GetPlayerDataFromEntityID(player.entityId);
+          PersistentPlayerData playerData =
+            GameManager.Instance.persistentPlayers.GetPlayerDataFromEntityID(player.entityId);
           if (playerData.HasBedrollPos) {
             Log.Warning(
               $"[AuthZ] Could not find a valid teleport position; respawning {player.PlayerDisplayName} at bedroll");
