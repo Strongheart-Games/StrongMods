@@ -22,49 +22,56 @@
         <label pos="10,-92" depth="2" text="Chat Commands" />
         <grid pos="20,-124" depth="2" cols="2" rows="0" cell_width="110" cell_height="26" repeat_content="false"
               arrangement="horizontal">
-          <label text="- [00ff00]/claims[-]" font_size="22" />
-          <label text="Land claims placed / available" font_size="22" />
+          <label text="- [00ff00]/docs[-]" font_size="22" />
+          <label text="Open the Stronghold: Hades docs in your browser" font_size="22" />
+          <label text="- [00ff00]/map[-]" font_size="22" />
+          <label text="Open the interactive map in your browser" font_size="22" />
           <label text="- [00ff00]/discord[-]" font_size="22" />
           <label text="Join our Discord" font_size="22" />
-          <label text="- [00ff00]/map[-]" font_size="22" />
-          <label text="Open the interactive map (find lost vehicles here)" font_size="22" />
-          <label text="- [00ff00]/mods[-]" font_size="22" />
-          <label text="Open the list of mods" font_size="22" />
-          <label text="- [00ff00]/drone[-]" font_size="22" />
-          <label text="Locate your drone" font_size="22" />
-          <label text="- [00ff00]/dronefix[-]" font_size="22" />
-          <label text="Teleport your drone to you when lost" font_size="22" />
           <label text="- [00ff00]/pzdiscord[-]" font_size="22" />
           <label text="Join the Project Z Discord" font_size="22" />
-          <label text="- [00ff00]/pznexus[-]" font_size="22" />
-          <label text="Open the Project Z page on Nexus Mods" font_size="22" />
+          <label text="- [00ff00]/vote[-]" font_size="22" />
+          <label text="Vote for the server daily and receive shop currency as a thank you" font_size="22" />
+          <label text="- [00ff00]/shop[-]" font_size="22" />
+          <label text="Browse and buy in the online shop" font_size="22" />
+          <label text="- [00ff00]/claim[-]" font_size="22" />
+          <label text="Claim your online shop rewards" font_size="22" />
+          <label text="- [00ff00]/balance[-]" font_size="22" />
+          <label text="Show your online shop balance" font_size="22" />
+          <label text="- [00ff00]/claims[-]" font_size="22" />
+          <label text="Show your land claims placed / available" font_size="22" />
         </grid>
 
-        <label pos="10,-356" depth="2" text="Tips" />
-        <grid pos="20,-390" depth="2" rows="0" cell_width="890" cell_height="26" repeat_content="false"
+        <label pos="10,-382" depth="2" text="Schedule (all times are IRL unless otherwise noted)" />
+        <grid pos="20,-416" depth="2" rows="0" cell_width="890" cell_height="26" repeat_content="false"
               arrangement="vertical">
-          <label text="- We're playing [00ff00]Project Z[-]; try the pz commands above for more on the mod"
+          <label text="- Server restarts: [00ff00]3 AM[-], [00ff00]noon[-], and [00ff00]7 PM[-] Eastern" font_size="22" />
+          <label
+            text="- Blood rains: [ff0000]4 AM[-], [ff0000]1 PM[-], and [ff0000]8 PM[-] Eastern, starting on game day 7"
+            font_size="22" />
+        </grid>
+
+        <label pos="10,-492" depth="2" text="Tips" />
+        <grid pos="20,-526" depth="2" rows="0" cell_width="890" cell_height="26" repeat_content="false"
+              arrangement="vertical">
+          <label text="- [ff0000]Blood rains[-] are our version of horde nights, but scheduled on IRL time, not game time."
                  font_size="22" />
           <label
-            text="- Blood hordes rain down [ff0000]daily at 4 AM, 1 PM, and 8 PM Eastern[-], regardless game day/time"
+            text="- [00ff00]PvP is off[-], however indirect damage, e.g. exploding vehicles, still works. [ff0000]Killing players is a bannable offense.[-]"
             font_size="22" />
-          <label text="- Land claims are [00ff00]immune from player damage[-]" font_size="22" />
+          <label text="- Land claims and bedrolls [00ff00]cannot be placed in quest POIs[-] (those with red skulls)." font_size="22" />
           <label
-            text="- You will be [ff0000]removed from a land claim[-] if you are not partied with the owner or ally"
+            text="- Land claim protection is [00ff00]disabled on public roads[-]; don't place one so that it overlaps a road."
+            font_size="22" />
+          <label text="- Land claims are [00ff00]immune from player damage[-], however testing this is considered griefing and may get you [ff0000]banned[-]." font_size="22" />
+          <label
+            text="- You will be [ff0000]removed from a land claim[-] if you are not partied with the owner or ally."
             font_size="22" />
           <label
-            text="- Zombies can only enter your land claim if [00ff00]you or one of your allies are within 200 m[-]"
+            text="- Zombies can only enter your land claim if [00ff00]you or one of your allies are within 200 m[-]."
             font_size="22" />
-          <label text="- Land claims and bedrolls [00ff00]cannot be placed in quest POIs (T1+)[-]" font_size="22" />
-          <label text="- Boxes labeled [00ff00]sort[-] will auto-sort their contents to other boxes in your claim"
+          <label text="- Boxes labeled [00ff00]sort[-] will auto-sort their contents to other boxes in your claim."
                  font_size="22" />
-          <label text="- The server restarts at [00ff00]3 AM, noon, and 7 PM Eastern[-] every day" font_size="22" />
-          <label
-            text="- Type [00ff00]ggs[-] in the console to see the game settings, e.g. loot abundance and respawn"
-            font_size="22" />
-          <label
-            text="- Craft and use [00ff00]foundation blocks[-] to eliminate terrain gaps on your builds"
-            font_size="22" />
         </grid>
       </panel>
     </window>
