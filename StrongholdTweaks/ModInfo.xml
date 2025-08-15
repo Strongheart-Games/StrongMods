@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ModInfo>
   <Name value="StrongholdTweaks" />
-  <Version value="10.0.0" />
+  <Version value="11.0.0" />
   <DisplayName value="Stronghold Tweaks" />
-  <Description
-    value="Tweaks specific to the mods running on Stronghold. Major version number is the scenario number." />
+  <Description value="Stronghold-specific game tweaks." />
   <Author value="str0ngh34rt" />
   <Website value="" />
 </ModInfo>
