@@ -43,13 +43,22 @@ namespace BloodRain {
     }
 
     public static void Update() {
+      var worldTime = GameManager.Instance?.World?.worldTime;
+      if (worldTime is null) {
+        return;
+      }
+      var currentDay = GameUtils.WorldTimeToDays(worldTime.Value);
       DateTime now = DateTime.Now;
       if (_schedule?.NextWarning is not null && now >= _schedule.NextStartTime - _schedule.NextWarning) {
+        if (currentDay < _minGameDay) {
+          UpdateNextStartTime();
+          return;
+        }
+
         WarnPlayers();
       }
 
       if (_schedule is not null && now >= _schedule.NextStartTime) {
-        var currentDay = GameUtils.WorldTimeToDays(GameManager.Instance.World.worldTime);
         if (currentDay >= _minGameDay) {
           StartBloodRain(_schedule.DurationIrlMinutes);
         }
@@ -71,7 +80,7 @@ namespace BloodRain {
         return;
       }
 
-      DateTime? next = GetNextStartTime(_schedule.CronExpression);
+      DateTime? next = GetNextStartTime(_schedule.CronExpression, _schedule.NextStartTime);
       if (next is null) {
         SetSchedule(null);
         return;
@@ -184,8 +193,12 @@ namespace BloodRain {
       _schedule = schedule;
     }
 
-    public static DateTime? GetNextStartTime(CronExpression cronExpression) {
-      DateTimeOffset? nextOffset = cronExpression.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
+    public static DateTime? GetNextStartTime(CronExpression cronExpression, DateTime? lastStartTime = null) {
+      var fromDateTime = lastStartTime ?? DateTime.Now;
+      DateTime.SpecifyKind(fromDateTime, DateTimeKind.Local);
+      DateTimeOffset from = fromDateTime;
+
+      DateTimeOffset? nextOffset = cronExpression.GetNextOccurrence(from, TimeZoneInfo.Local);
       DateTime? next = nextOffset?.DateTime;
       Log.Out($"[BloodRain] Next blood rain is scheduled for {next}");
       return next;
