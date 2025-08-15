@@ -47,7 +47,7 @@
               arrangement="vertical">
           <label text="- Server restarts: [00ff00]3 AM[-], [00ff00]noon[-], and [00ff00]7 PM[-] Eastern" font_size="22" />
           <label
-            text="- Blood rains: [ff0000]4 AM[-], [ff0000]1 PM[-], and [ff0000]8 PM[-] Eastern, starting on game day 7"
+            text="- Blood rains: [ff0000]4 AM[-], [ff0000]1 PM[-], and [ff0000]8 PM[-] Eastern, lasting [ff0000]20 minutes[-], on or after game day 7"
             font_size="22" />
         </grid>
 
