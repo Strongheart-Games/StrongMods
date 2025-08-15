@@ -3,6 +3,7 @@ using System.Reflection;
 using CSMM_Patrons;
 using CSMM_Patrons.CustomCommands;
 using HarmonyLib;
+using UnityEngine;
 
 namespace CPMFixes {
   [HarmonyPatch(typeof(ChatFilter), nameof(ChatFilter.Exec))]
@@ -40,6 +41,7 @@ namespace CPMFixes {
     }
 
     private static void ResetRegions(ref ModEvents.SGameShutdownData _data) {
+      Log.Out("[CPMFixes] Resetting regions");
       SdtdConsole.Instance.ExecuteSync("resetregions", null);
     }
   }
