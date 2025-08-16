@@ -9,8 +9,7 @@
                    set to a negative value, use the LandClaimCount in serverconfig.xml)
     -->
   <append xpath="/worldglobal/environment">
-    <!-- Disable until we can find a replacement for $BiomeBadgeLevel -->
-    <property name="dynamic_land_claim_count_cvar" value="disable_dynamic_land_claim_count" />
+    <property name="dynamic_land_claim_count_cvar" value="$BiomeBadgeLevel" />
     <property name="dynamic_land_claim_count_op" value="add" />
   </append>
 </config>
