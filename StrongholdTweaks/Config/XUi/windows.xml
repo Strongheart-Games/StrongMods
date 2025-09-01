@@ -42,28 +42,34 @@
           <label text="Show your land claims placed / available" font_size="22" />
         </grid>
 
-        <label pos="10,-382" depth="2" text="Schedule (all times are IRL unless otherwise noted)" />
+        <label pos="10,-382" depth="2" text="Schedule (all times are real world unless otherwise noted)" />
         <grid pos="20,-416" depth="2" rows="0" cell_width="890" cell_height="26" repeat_content="false"
               arrangement="vertical">
-          <label text="- Server restarts: [00ff00]3 AM[-], [00ff00]noon[-], and [00ff00]7 PM[-] Eastern" font_size="22" />
           <label
-            text="- Blood rains: [ff0000]4 AM[-], [ff0000]1 PM[-], and [ff0000]8 PM[-] Eastern, lasting [ff0000]20 minutes[-], on or after game day 7"
+            text="- Server restarts: [00ff00]3 AM[-], [00ff00]noon[-], and [00ff00]7 PM[-] Eastern; [ff0000]WARNING: resets regions, vehicles, drones, and turrets[-]"
+            font_size="22" />
+          <label
+            text="- Blood rains: [ff0000]4 AM[-], [ff0000]1 PM[-], and [ff0000]8 PM[-] Eastern; Blood rains start on [00ff00]game day 7[-] and last [ff0000]20 minutes[-]"
             font_size="22" />
         </grid>
 
         <label pos="10,-492" depth="2" text="Tips" />
         <grid pos="20,-526" depth="2" rows="0" cell_width="890" cell_height="26" repeat_content="false"
               arrangement="vertical">
-          <label text="- [ff0000]Blood rains[-] are our version of horde nights, but scheduled on IRL time, not game time."
-                 font_size="22" />
+          <label
+            text="- [ff0000]Blood rains[-] are our version of horde nights, but scheduled on real world time, not game time."
+            font_size="22" />
           <label
             text="- [00ff00]PvP is off[-], however indirect damage, e.g. exploding vehicles, still works. [ff0000]Killing players is a bannable offense.[-]"
             font_size="22" />
-          <label text="- Land claims and bedrolls [00ff00]cannot be placed in quest POIs[-] (those with red skulls)." font_size="22" />
+          <label text="- Land claims and bedrolls [00ff00]cannot be placed in quest POIs[-] (those with red skulls)."
+                 font_size="22" />
           <label
             text="- Land claim protection is [00ff00]disabled on public roads[-]; don't place one so that it overlaps a road."
             font_size="22" />
-          <label text="- Land claims are [00ff00]immune from player damage[-], however testing this is considered griefing and may get you [ff0000]banned[-]." font_size="22" />
+          <label
+            text="- Land claims are [00ff00]immune from player damage[-], however testing this is considered griefing and may get you [ff0000]banned[-]."
+            font_size="22" />
           <label
             text="- You will be [ff0000]removed from a land claim[-] if you are not partied with the owner or ally."
             font_size="22" />
