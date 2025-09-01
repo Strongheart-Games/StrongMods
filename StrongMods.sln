@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPMFixes", "CPMFixes\CPMFix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCommandHelper\ChatCommandHelper.csproj", "{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectZFixes", "ProjectZFixes\ProjectZFixes.csproj", "{3B97B71A-88B4-48F5-9948-BCB8530987C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,5 +68,9 @@ Global
 		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

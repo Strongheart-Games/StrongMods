@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <csv xpath="/items/item[starts-with(@name, 'armor')][not(starts-with(@name, 'armorPrimitive'))]/property[@name='Tags']/@value" op="add">
+    biomeChallenge
+  </csv>
+</config>
