@@ -5,15 +5,17 @@ using JetBrains.Annotations;
 
 namespace BloodRain {
   public class BloodRainSchedule {
+    public float CountdownIrlMinutes;
     public CronExpression CronExpression;
     public float DurationIrlMinutes;
     public DateTime NextStartTime;
     public TimeSpan? NextWarning;
 
-    public BloodRainSchedule(CronExpression cronExpression, float durationIrlMinutes, DateTime nextStartTime,
-      TimeSpan? nextWarning = null) {
+    public BloodRainSchedule(CronExpression cronExpression, float durationIrlMinutes, float countdownIrlMinutes,
+      DateTime nextStartTime, TimeSpan? nextWarning = null) {
       CronExpression = cronExpression;
       DurationIrlMinutes = durationIrlMinutes;
+      CountdownIrlMinutes = countdownIrlMinutes;
       NextStartTime = nextStartTime;
       NextWarning = nextWarning;
     }
@@ -21,12 +23,13 @@ namespace BloodRain {
 
   public class BloodRain {
     public const float DefaultDurationIrlMinutes = 15f;
-    public const float DefaultWarningIrlMinutes = 15f;
+    public const float DefaultCountdownIrlMinutes = 15f;
+    public const int DefaultMinGameDay = 7;
     public const string BloodRainBuff = "buff_blood_rain_strong";
     public const string BloodRainRemainingSecondsCVar = "blood_rain_remaining_seconds";
 
     [CanBeNull] private static BloodRainSchedule _schedule;
-    private static int _minGameDay = 7;
+    private static int _minGameDay = DefaultMinGameDay;
 
     private static DateTime? _endTime;
 
@@ -47,6 +50,7 @@ namespace BloodRain {
       if (worldTime is null) {
         return;
       }
+
       var currentDay = GameUtils.WorldTimeToDays(worldTime.Value);
       DateTime now = DateTime.Now;
       if (_schedule?.NextWarning is not null && now >= _schedule.NextStartTime - _schedule.NextWarning) {
@@ -87,7 +91,7 @@ namespace BloodRain {
       }
 
       _schedule.NextStartTime = (DateTime)next;
-      _schedule.NextWarning = GetNextWarningTimeSpan((DateTime)next);
+      _schedule.NextWarning = GetNextWarningTimeSpan((DateTime)next, _schedule.CountdownIrlMinutes);
     }
 
     public static void StartBloodRain(float durationIrlMinutes = DefaultDurationIrlMinutes) {
@@ -142,7 +146,8 @@ namespace BloodRain {
       GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
         "[00ff00]The chat command [ff0000]/horde[-] will teleport you to the community horde base.[-]",
         null, EMessageSender.None);
-      _schedule.NextWarning = GetNextWarningTimeSpan(_schedule.NextStartTime, _schedule.NextWarning);
+      _schedule.NextWarning =
+        GetNextWarningTimeSpan(_schedule.NextStartTime, _schedule.CountdownIrlMinutes, _schedule.NextWarning);
     }
 
     public static void OnXMLChanged() {
@@ -154,13 +159,18 @@ namespace BloodRain {
 
       var schedule = "";
       var duration = DefaultDurationIrlMinutes;
+      var countdown = DefaultCountdownIrlMinutes;
+      var minGameDay = DefaultMinGameDay;
       properties.ParseString("blood_rain_schedule_irl", ref schedule);
       properties.ParseFloat("blood_rain_duration_irl_minutes", ref duration);
-      properties.ParseInt("blood_rain_min_game_day", ref _minGameDay);
-      LoadSchedule(schedule, duration);
+      properties.ParseFloat("blood_rain_countdown_irl_minutes", ref countdown);
+      properties.ParseInt("blood_rain_min_game_day", ref minGameDay);
+      LoadSchedule(schedule, duration, countdown);
+      _minGameDay = minGameDay;
     }
 
-    public static void LoadSchedule(string scheduleStr = "", float durationIrlMinutes = DefaultDurationIrlMinutes) {
+    public static void LoadSchedule(string scheduleStr = "", float durationIrlMinutes = DefaultDurationIrlMinutes,
+      float countdownIrlMinutes = DefaultCountdownIrlMinutes) {
       if (scheduleStr.Length <= 0) {
         SetSchedule(null);
         return;
@@ -182,8 +192,9 @@ namespace BloodRain {
         return;
       }
 
-      TimeSpan? nextWarning = GetNextWarningTimeSpan((DateTime)nextStartTime);
-      SetSchedule(new BloodRainSchedule(cronExpression, durationIrlMinutes, (DateTime)nextStartTime, nextWarning));
+      TimeSpan? nextWarning = GetNextWarningTimeSpan((DateTime)nextStartTime, countdownIrlMinutes);
+      SetSchedule(new BloodRainSchedule(cronExpression, durationIrlMinutes, countdownIrlMinutes,
+        (DateTime)nextStartTime, nextWarning));
     }
 
     public static void SetSchedule([CanBeNull] BloodRainSchedule schedule) {
@@ -194,7 +205,7 @@ namespace BloodRain {
     }
 
     public static DateTime? GetNextStartTime(CronExpression cronExpression, DateTime? lastStartTime = null) {
-      var fromDateTime = lastStartTime ?? DateTime.Now;
+      DateTime fromDateTime = lastStartTime ?? DateTime.Now;
       DateTime.SpecifyKind(fromDateTime, DateTimeKind.Local);
       DateTimeOffset from = fromDateTime;
 
@@ -204,14 +215,15 @@ namespace BloodRain {
       return next;
     }
 
-    public static TimeSpan? GetNextWarningTimeSpan(DateTime nextStartTime, TimeSpan? lastWarning = null) {
+    public static TimeSpan? GetNextWarningTimeSpan(DateTime nextStartTime, float countdownIrlMinutes,
+      TimeSpan? lastWarning = null) {
       var remaining = (nextStartTime - DateTime.Now).TotalMinutes;
       if (remaining < 1) {
         // Don't warn at 0 minutes
         return null;
       }
 
-      var max = lastWarning is null ? DefaultWarningIrlMinutes : ((TimeSpan)lastWarning).TotalMinutes - 1;
+      var max = lastWarning is null ? countdownIrlMinutes : ((TimeSpan)lastWarning).TotalMinutes - 1;
       var next = Math.Floor(Math.Min(max, remaining));
       Log.Out($"[BloodRain] Next warning is scheduled for {next} minutes before the blood rain");
       return TimeSpan.FromMinutes(next);

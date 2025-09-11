@@ -6,4 +6,10 @@
   <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_duration_irl_minutes']" name="value">
     20
   </setattribute>
+  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_countdown_irl_minutes']" name="value">
+    15
+  </setattribute>
+  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_min_game_day']" name="value">
+    7
+  </setattribute>
 </config>

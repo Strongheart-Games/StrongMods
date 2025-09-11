@@ -2,17 +2,25 @@
 <config>
   <append xpath="/worldglobal/environment">
     <!--
-                                           Allowed values    Allowed special characters   Comment
-      ┌───────────── minute                0-59              * , - /
-      │ ┌───────────── hour                0-23              * , - /
-      │ │ ┌───────────── day of month      1-31              * , - / L W ?
-      │ │ │ ┌───────────── month           1-12 or JAN-DEC   * , - /
-      │ │ │ │ ┌───────────── day of week   0-6  or SUN-SAT   * , - / # L ?                Both 0 and 7 mean SUN
-      │ │ │ │ │
-      * * * * *
+      blood_rain_schedule_irl takes a cron expression. Times are in the server's configured time zone.
+
+                                             Allowed values    Allowed special characters   Comment
+        ┌───────────── minute                0-59              * , - /
+        │ ┌───────────── hour                0-23              * , - /
+        │ │ ┌───────────── day of month      1-31              * , - / L W ?
+        │ │ │ ┌───────────── month           1-12 or JAN-DEC   * , - /
+        │ │ │ │ ┌───────────── day of week   0-6  or SUN-SAT   * , - / # L ?                Both 0 and 7 mean SUN
+        │ │ │ │ │
+        * * * * *
+
+      Examples:
+        0 20 * * *     Every day @ 8 PM
+        */10 * * * *   Every 10 minutes
+        0 12 * * 0,3   Every Wed and Sun @ noon
     -->
-    <property name="blood_rain_schedule_irl" value="0 8,20 * * *" />  <!-- daily at 8 AM and 8 PM -->
+    <property name="blood_rain_schedule_irl" value="0 8,20 * * *" /> <!-- daily at 8 AM and 8 PM -->
     <property name="blood_rain_duration_irl_minutes" value="15" />
-    <property name="blood_rain_min_game_day" value="7" />
+    <property name="blood_rain_countdown_irl_minutes" value="15" /> <!-- warn players once per minute -->
+    <property name="blood_rain_min_game_day" value="7" /> <!-- skip blood rain if countdown starts on day < 7 -->
   </append>
 </config>
