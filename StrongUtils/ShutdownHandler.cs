@@ -9,6 +9,7 @@ namespace StrongUtils {
     private readonly List<string> _args;
     private readonly CommandSenderInfo _senderInfo;
     private int _delayMinutes = 0;
+    private bool _stop = false;
 
     public ShutdownHandler(ConsoleCmdShutdown command, List<string> args, CommandSenderInfo senderInfo) {
       _command = command;
@@ -26,7 +27,11 @@ namespace StrongUtils {
         return;
       }
 
-      GameManager.Instance.StartCoroutine(ShutdownAfterDelay());
+      if (_stop) {
+        GameManager.Instance.StopCoroutine(ShutdownAfterDelay());
+      } else {
+        GameManager.Instance.StartCoroutine(ShutdownAfterDelay());
+      }
     }
 
     IEnumerator ShutdownAfterDelay() {
@@ -51,7 +56,9 @@ namespace StrongUtils {
         return true;
       }
 
-      if (!int.TryParse(_args[0], out _delayMinutes)) {
+      if ("stop".EqualsCaseInsensitive(_args[0])) {
+        _stop = true;
+      } else if (!int.TryParse(_args[0], out _delayMinutes)) {
         return false;
       }
       return true;
