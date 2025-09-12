@@ -108,6 +108,17 @@ namespace BloodRain {
       }
     }
 
+    public static void SkipBloodRain() {
+      DateTime? originalStartTime = _schedule?.NextStartTime;
+      UpdateNextStartTime();
+      DateTime? newStartTime = _schedule?.NextStartTime;
+      if (newStartTime is not null && originalStartTime is not null) {
+        GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
+          $"[00ff00]Skipping the blood rain scheduled for {originalStartTime:ddd @ h:mm tt} Eastern; the next blood rain will be {newStartTime:ddd @ h:mm tt} Eastern[-]", null,
+          EMessageSender.None);
+      }
+    }
+
     public static void StopBloodRain() {
       _endTime = null;
       UpdateBloodRainBuff();

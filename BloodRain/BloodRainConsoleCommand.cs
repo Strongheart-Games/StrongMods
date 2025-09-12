@@ -8,7 +8,8 @@ namespace BloodRain {
 Usage:
 
   1. bloodrain start [duration_irl_minutes]
-  2. bloodrain stop
+  2. bloodrain skip
+  3. bloodrain stop
 
 ";
 
@@ -47,10 +48,20 @@ Usage:
             SdtdConsole.Instance.Output($"Starting blood rain for {durationIrlMinutes} IRL minutes...");
             BloodRain.StartBloodRain(durationIrlMinutes);
             break;
+          case "skip":
+            if (BloodRain.IsBloodRainTime()) {
+              SdtdConsole.Instance.Output("Stopping blood rain...");
+              BloodRain.StopBloodRain();
+              break;
+            }
+
+            SdtdConsole.Instance.Output("Skipping next blood rain...");
+            BloodRain.SkipBloodRain();
+            break;
           case "stop":
             if (!BloodRain.IsBloodRainTime()) {
               SdtdConsole.Instance.Output("No active blood rain to be stopped");
-              return;
+              break;
             }
 
             SdtdConsole.Instance.Output("Stopping blood rain...");
