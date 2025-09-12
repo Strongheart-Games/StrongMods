@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/gameevents">
+    <action_sequence name="event_hordestone_stronghold">
+      <property name="action_type" value="Game"/>
+      <property name="target_type" value="Block"/>
+      <property name="allow_while_dead" value="false"/>
+      <property name="refund_inactivity" value="false"/>
+
+      <action class="GetNearbyPoint">
+        <property name="phase" value="0" />
+        <property name="min_distance" value="45"/>
+        <property name="max_distance" value="55"/>
+        <property name="safe_spawn" value="true" />
+      </action>
+
+      <action class="PlaySound">
+        <property name="sound" value="twitch_hordestone_start" />
+        <property name="phase" value="1" />
+      </action>
+
+      <action class="Delay">
+        <property name="phase" value="1" />
+        <property name="time" value=".1" />
+      </action>
+
+      <action class="SpawnEntitySpawner">
+        <property name="phase" value="2" />
+        <property name="entity_names" value="zombieArlene" param1="zname" />
+        <property name="spawn_count" value="1" param1="spawncount" />
+        <property name="air_spawn" value="false" param1="airspawn" />
+        <property name="add_to_group" value="zombies" />
+        <property name="safe_spawn" value="true" />
+        <property name="add_buffs" value="twitch_hordestone_zombie" />
+        <property name="min_distance" value="2" />
+        <property name="max_distance" value="4" />
+        <property name="spawn_type" value="NearPosition" />
+        <property name="raycast_offset" value="1" />
+        <property name="spawn_sound" value="zombiemalealert" />
+        <property name="spawner_min" value="5" />
+        <property name="party_addition" value="2" param1="partyaddition" />
+      </action>
+    </action_sequence>
+
+    <action_sequence name="event_hordestone_elite_stronghold" template="event_hordestone_stronghold">
+      <variable name="zname" value="zombieDemolitionElite,zombieFemaleFatElite,zombieFatHawaiianElite,zombieCopElite,zombieWightElite,zombieSoldierElite,zombieSkaterElite,zombieBikerElite,zombieHazmatElite,zombieLumberjackElite,zombieMoeElite,zombieUtilityWorkerElite,zombieMarleneElite,zombieSpiderElite,zombieBoeElite,zombieDarleneElite,zombieJoeElite,zombieSteveElite,zombieYoElite,zombieNurseElite,zombiePartyGirlElite,zombieLabElite,zombieTomClarkElite,zombieJanitorElite,zombieBurntElite,zombieBusinessManElite,zombieInmateElite" />
+      <variable name="alertsound" value="zombieferalalert" />
+    </action_sequence>
+  </append>
+</config>
