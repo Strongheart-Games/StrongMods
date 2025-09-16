@@ -3,8 +3,8 @@
 namespace ChatCommandHelper {
   public class ChatCommandHelper : IModApi {
     public static readonly List<string> AsyncChatCommands = new List<string> {
-      "link", "vote", "balance", "claim", "confirmTransfer", "grantCurrency", "revokeCurrency", "shop", "store", "topCurrency",
-      "transfer", "daily", "streak", "topstreak"
+      "link", "vote", "balance", "claim", "confirmTransfer", "grantCurrency", "revokeCurrency", "shop", "store",
+      "topCurrency", "transfer", "daily", "streak", "topstreak"
     };
 
     public void InitMod(Mod _modInstance) {
@@ -15,7 +15,7 @@ namespace ChatCommandHelper {
       // This should be the very last mod loaded and so the last handler in the chain, therefore, anything not handled
       // but looking like a command should be treated as such and not sent to the "recipient", but logged.
       if (_data.Message.StartsWith("/")) {
-        var whisper = AsyncChatCommands.ContainsCaseInsensitive(_data.Message.Substring(1))
+        var whisper = IsAsyncChatCommand(_data.Message.Substring(1))
           ? $"Processing command: {_data.Message}"
           : $"Unrecognized command: {_data.Message}";
 
@@ -30,6 +30,12 @@ namespace ChatCommandHelper {
       }
 
       return ModEvents.EModEventResult.Continue;
+    }
+
+    private static bool IsAsyncChatCommand(string message) {
+      var iSpace = message.IndexOf(' ');
+      var command = iSpace > 0 ? message.Substring(0, iSpace) : message;
+      return AsyncChatCommands.ContainsCaseInsensitive(command);
     }
   }
 }

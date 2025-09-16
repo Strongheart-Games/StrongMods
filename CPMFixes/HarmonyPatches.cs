@@ -3,7 +3,6 @@ using System.Reflection;
 using CSMM_Patrons;
 using CSMM_Patrons.CustomCommands;
 using HarmonyLib;
-using UnityEngine;
 
 namespace CPMFixes {
   [HarmonyPatch(typeof(ChatFilter), nameof(ChatFilter.Exec))]
@@ -25,6 +24,12 @@ namespace CPMFixes {
       }
 
       var command = message.Substring(CpmSettings.Instance.CPMPrefix.Length);
+
+      var iSpace = command.IndexOf(' ');
+      if (iSpace > 0) {
+        command = command.Substring(0, iSpace);
+      }
+
       return CpmChatCommands.Contains(command);
     }
   }
