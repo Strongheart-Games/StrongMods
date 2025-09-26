@@ -13,13 +13,6 @@ namespace StrongUtils {
     }
   }
 
-  [HarmonyPatch(typeof(GameManager), nameof(GameManager.SaveAndCleanupWorld))]
-  public class GameManager_SaveAndCleanupWorld_Patch {
-    private static void Postfix() {
-      // TODO: Reset regions, drones, vehicles, and turrets, when asked
-    }
-  }
-
   [HarmonyPatch(typeof(QuestEventManager), nameof(QuestEventManager.QuestUnlockPOI))]
   public class QuestEventManager_QuestUnlockPOI_Patch {
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
@@ -56,13 +49,6 @@ namespace StrongUtils {
       if (prefabFromWorldPos is null) {
         Log.Error($"[StrongUtils] Could not find prefabFromWorldPos, skipping: entityID: {entityID} prefabPos: {prefabPos}\n{Environment.StackTrace}");
       }
-    }
-  }
-
-  [HarmonyPatch(typeof(Quest), nameof(Quest.HandleUnlockPOI))]
-  public class Quest_HandleUnlockPOI_Patch {
-    private static void Prefix(Quest __instance, EntityPlayer player) {
-      Log.Out($"[StrongUtils] Quest.HandleUnlockPOI(questClassName: {__instance.QuestClass.Name}, poiName: {__instance.GetPOIName()}, player: {player?.PlayerDisplayName})");
     }
   }
 
