@@ -8,29 +8,30 @@ namespace CPMFixes {
   [HarmonyPatch(typeof(ChatFilter), nameof(ChatFilter.Exec))]
   public class ChatFilterExecPatch {
     public static readonly List<string> CpmChatCommands = new List<string> {
-      "ft", "ftw", "mv", "mvw", "tb", "rt", "get", "listwp", "setwp", "delwp", "ls", "bag", "day7", "hostiles",
-      "bed", "loctrack", "bubble"
+      "ft", "ftw", "mv", "mvw", "tb", "rt", "get", "listwp", "setwp", "delwp", "ls", "bag", "day7", "hostiles", "bed",
+      "loctrack", "bubble"
     };
 
     private static void Postfix(string _message, ref ModEvents.EModEventResult __result) {
-      if (!IsCpmChatCommand(_message)) {
+      var command = "";
+      if (TryGetCommand(_message, ref command) && !CpmChatCommands.ContainsCaseInsensitive(command)) {
         __result = ModEvents.EModEventResult.Continue;
       }
     }
 
-    private static bool IsCpmChatCommand(string message) {
+    private static bool TryGetCommand(string message, ref string command) {
       if (message is null || !message.StartsWith(CpmSettings.Instance.CPMPrefix)) {
         return false;
       }
 
-      var command = message.Substring(CpmSettings.Instance.CPMPrefix.Length);
+      command = message.Substring(CpmSettings.Instance.CPMPrefix.Length);
 
       var iSpace = command.IndexOf(' ');
       if (iSpace > 0) {
         command = command.Substring(0, iSpace);
       }
 
-      return CpmChatCommands.Contains(command);
+      return true;
     }
   }
 
