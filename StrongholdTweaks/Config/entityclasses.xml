@@ -31,4 +31,23 @@
     <property name="loot_item_name_strong" value="item_loot_container_boss_carrier_strong" />
   </append>
 
+  <append xpath="/entity_classes">
+    <entity_class name="animalRabbitGolf" extends="animalRabbit">
+      <property name="AITask-1" value="Look"/>
+      <property name="AITask-2" value=""/> <!-- The first empty AI Task ends the list -->
+      <!--<property name="MatColor" value="charged"/>-->
+      <effect_group name="Base Effects">
+        <passive_effect name="HealthMax" operation="base_set" value="99999"/>
+      </effect_group>
+    </entity_class>
+    <entity_class name="animalChickenGolf" extends="animalChicken">
+      <property name="AITask-1" value="Look"/>
+      <property name="AITask-2" value=""/> <!-- The first empty AI Task ends the list -->
+      <!--<property name="MatColor" value="charged"/>-->
+      <effect_group name="Base Effects">
+        <passive_effect name="HealthMax" operation="base_set" value="99999"/>
+      </effect_group>
+    </entity_class>
+  </append>
+
 </config>
