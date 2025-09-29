@@ -1,10 +1,11 @@
 <config>
 
   <append xpath="/blocks">
-    <block name="block_hordestone_stronghold">
+
+    <block name="block_strongstone">
       <property name="CreativeMode" value="None"/>
       <property name="Class" value="GameEvent"/>
-      <property name="ActivateEvent" value="event_hordestone_stronghold"/>
+      <property name="ActivateEvent" value="event_strongstone"/>
       <property name="CustomIcon" value="twitchHordeStone01"/>
       <property name="CustomIconTint" value="00ff00"/>
       <property name="Material" value="Mstone"/>
@@ -13,24 +14,35 @@
       <property name="MultiBlockDim" value="1,2,1"/>
       <property name="ModelOffset" value="0,0,0"/>
       <property name="DestroyOnEvent" value="false"/>
-      <drop event="Destroy" name="block_hordestone_variant_helper_stronghold" count="1"/>
+      <drop event="Destroy" name="block_strongstone_variant_helper" count="1"/>
       <drop event="Destroy" count="0"/>
     </block>
 
-    <block name="block_hordestone_elite_stronghold">
-      <property name="Extends" value="block_hordestone_stronghold"/>
+    <block name="block_strongstone_elite">
+      <property name="Extends" value="block_strongstone"/>
       <property name="CreativeMode" value="None"/>
-      <property name="ActivateEvent" value="event_hordestone_elite_stronghold"/>
+      <property name="ActivateEvent" value="event_strongstone_elite"/>
     </block>
 
-    <block name="block_hordestone_variant_helper_stronghold">
-      <property name="Extends" value="block_hordestone_stronghold"/>
+    <block name="block_strongstone_variant_helper">
+      <property name="Extends" value="block_strongstone"/>
       <property name="CreativeMode" value="Player"/>
       <property name="ItemTypeIcon" value="all_blocks"/>
       <property name="SelectAlternates" value="true"/>
-      <property name="PlaceAltBlockValue" value="block_hordestone_stronghold,block_hordestone_elite_stronghold"/>
+      <property name="PlaceAltBlockValue" value="block_strongstone,block_strongstone_elite"/>
     </block>
   </append>
+
+  <!-- Leave around stubs for the old hordestones in case someone has one in their inventories -->
+  <block name="block_hordestone_stronghold">
+    <property name="CreativeMode" value="None"/>
+  </block>
+  <block name="block_hordestone_elite_stronghold">
+    <property name="CreativeMode" value="None"/>
+  </block>
+  <block name="block_hordestone_variant_helper_stronghold">
+    <property name="CreativeMode" value="None"/>
+  </block>
 
   <!-- Everything with an explicit stack size > 1 has it set to 65k. -->
   <setattribute xpath="/blocks/block/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
