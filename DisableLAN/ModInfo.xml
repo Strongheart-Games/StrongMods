@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="DisableLAN" />
+  <Version value="1.0.0" />
+  <DisplayName value="DisableLAN" />
+  <Description value="Prevents the LAN announcer from binding to port 11000 and taking up resources." />
+  <Author value="str0ngh34rt" />
+  <Website value="" />
+</ModInfo>
