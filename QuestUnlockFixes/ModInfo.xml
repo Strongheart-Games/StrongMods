@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="QuestUnlockFixes" />
+  <Version value="1.0.0" />
+  <DisplayName value="QuestUnlockFixes" />
+  <Description value="Fix UnlockQuestPOI() that prevents players from fully logging out." />
+  <Author value="str0ngh34rt" />
+  <Website value="" />
+</ModInfo>
