@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectZFixes", "ProjectZFixes\ProjectZFixes.csproj", "{3B97B71A-88B4-48F5-9948-BCB8530987C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisableLAN", "DisableLAN\DisableLAN.csproj", "{0DAD2297-EF81-4F52-83CE-565F6A05ED04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestUnlockFixes", "QuestUnlockFixes\QuestUnlockFixes.csproj", "{5340DFC4-6E05-49D6-A497-B4776A9AD035}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,5 +76,13 @@ Global
 		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B97B71A-88B4-48F5-9948-BCB8530987C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DAD2297-EF81-4F52-83CE-565F6A05ED04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DAD2297-EF81-4F52-83CE-565F6A05ED04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DAD2297-EF81-4F52-83CE-565F6A05ED04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DAD2297-EF81-4F52-83CE-565F6A05ED04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5340DFC4-6E05-49D6-A497-B4776A9AD035}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5340DFC4-6E05-49D6-A497-B4776A9AD035}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5340DFC4-6E05-49D6-A497-B4776A9AD035}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5340DFC4-6E05-49D6-A497-B4776A9AD035}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
