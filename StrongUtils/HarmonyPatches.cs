@@ -1,19 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
 
 namespace StrongUtils {
-  [HarmonyPatch(typeof(ConsoleCmdShutdown), nameof(ConsoleCmdShutdown.Execute))]
-  public class ConsoleCmdShutdown_Execute_Patch {
-    private static bool Prefix(ConsoleCmdShutdown __instance, List<string> _params, CommandSenderInfo _senderInfo) {
-      new ShutdownHandler(__instance, _params, _senderInfo).Execute();
-      return false;
+  [HarmonyPatch(typeof(SdtdConsole), nameof(SdtdConsole.executeCommand))]
+  public class SdtdConsole_executeCommand_Patch {
+    private static void Postfix(ref List<string> __result, string _command, CommandSenderInfo _senderInfo) {
+      if (_senderInfo.NetworkConnection is not TelnetConnection) {
+        return;
+      }
+
+      if (__result.Count == 0 || !__result[__result.Count - 1].StartsWith("*** ERROR:")) {
+        __result.Add($"Done executing command '{_command}'.");
+      }
     }
   }
 
-  [HarmonyPatch(typeof(QuestEventManager), nameof(QuestEventManager.QuestUnlockPOI))]
+  [HarmonyPatch(typeof(ServerStateAuthorizer), nameof(ServerStateAuthorizer.Authorize))]
+  public class ServerStateAuthorizer_Authorize_Patch {
+    private static void Postfix(ref (EAuthorizerSyncResult, GameUtils.KickPlayerData?) __result) {
+      if (DenyAll.IsEnabled()) {
+        __result = (EAuthorizerSyncResult.SyncDeny,
+          new GameUtils.KickPlayerData(DenyAll.GetReason(), _customReason: DenyAll.GetMessage()));
+      }
+    }
+  }
+
+  /*[HarmonyPatch(typeof(QuestEventManager), nameof(QuestEventManager.QuestUnlockPOI))]
   public class QuestEventManager_QuestUnlockPOI_Patch {
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
       CodeMatcher codeMatcher = new(instructions);
@@ -45,12 +58,14 @@ namespace StrongUtils {
     }
 
     private static void Prefix(int entityID, Vector3 prefabPos) {
-      PrefabInstance prefabFromWorldPos = GameManager.Instance.GetDynamicPrefabDecorator().GetPrefabFromWorldPos((int) prefabPos.x, (int) prefabPos.z);
+      PrefabInstance prefabFromWorldPos = GameManager.Instance.GetDynamicPrefabDecorator()
+        .GetPrefabFromWorldPos((int)prefabPos.x, (int)prefabPos.z);
       if (prefabFromWorldPos is null) {
-        Log.Error($"[StrongUtils] Could not find prefabFromWorldPos, skipping: entityID: {entityID} prefabPos: {prefabPos}\n{Environment.StackTrace}");
+        Log.Error(
+          $"[StrongUtils] Could not find prefabFromWorldPos, skipping: entityID: {entityID} prefabPos: {prefabPos}\n{Environment.StackTrace}");
       }
     }
-  }
+  }*/
 
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
