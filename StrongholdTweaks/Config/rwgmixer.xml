@@ -120,4 +120,7 @@
   <set xpath="/rwgmixer/district[@name='downtown']/property[@name='spawn_weight']/@value">0.6</set>
   <set xpath="/rwgmixer/district[@name='industrial']/property[@name='spawn_weight']/@value">0.6</set>
 
+  <!-- More traders -->
+  <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set>
+
 </config>
