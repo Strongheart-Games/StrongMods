@@ -18,7 +18,8 @@
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\zzzzzzzzzz_ProjectZFixes</OutputPath>
+        <OutputPath>bin\Debug\</OutputPath>
+        <!--<OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\zzzzzzzzzz_ProjectZFixes</OutputPath>-->
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
