@@ -79,6 +79,8 @@
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="DenyAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StrongCommands.cs" />
+    <Compile Include="StrongZones.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ModInfo.xml">
