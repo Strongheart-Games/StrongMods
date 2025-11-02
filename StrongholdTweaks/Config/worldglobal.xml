@@ -12,4 +12,11 @@
   <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_min_game_day']" name="value">
     7
   </setattribute>
+  <append xpath="/worldglobal/environment">
+    <property name="strong_zones_protected_zones" value="(-393,3516);(-150,3178)"/>
+    <property name="strong_commands_passphrase" value="Charon guides the worthy."/>
+    <property name="strong_commands_teleport_stronghold" value="teleportplayer {EntityId} -315 40 3376 s"/>
+    <property name="strong_commands_teleport_beginner_horde" value="teleportplayer {EntityId} 847 -1 4024 n"/>
+    <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3348 -1 57 n"/>
+  </append>
 </config>
