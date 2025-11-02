@@ -13,7 +13,7 @@ namespace StrongUtils {
     private static string s_repeat_citizen_message =
       "We get it, you know the passphrase...it’s supposed to be a secret, stop repeating it everywhere!";
     private static string s_not_citizen_message =
-      "Only those who know the passphrase may use the Stronghold teleportation network. Talk to The Ferryman and pray that he finds you worthy.";
+      "Only those who know the passphrase may use the Stronghold teleportation network. Talk to The Ferryman and pray he finds you worthy.";
     private static string s_wrong_passphrase_message =
       "I'm not sure where you heard that passphrase. Perhaps The Ferryman judged you unworthy...or perhaps you misunderstood him. Speak with him again and mind his words.";
 
