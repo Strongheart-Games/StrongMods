@@ -64,6 +64,13 @@ namespace StrongUtils {
     }
   }
 
+  [HarmonyPatch(typeof(GameManager), nameof(GameManager.ChangeBlocks))]
+  public class GameManager_ChangeBlocks_Patch {
+    private static void Postfix(PlatformUserIdentifierAbs persistentPlayerId, List<BlockChangeInfo> _blocksToChange) {
+      StrongAudit.Audit_GameManager_ChangeBlocks(persistentPlayerId, _blocksToChange);
+    }
+  }
+
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
       Harmony harmony = new(_modInstance.Name);
