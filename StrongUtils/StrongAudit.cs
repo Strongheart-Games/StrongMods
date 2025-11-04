@@ -1,19 +1,42 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace StrongUtils {
   public class StrongAudit {
     public static void Audit_GameManager_ChangeBlocks(PlatformUserIdentifierAbs persistentPlayerId,
       List<BlockChangeInfo> _blocksToChange) {
+      if (persistentPlayerId is null) {
+        return;
+      }
+
       HashSetLong chunks = new();
+      var minX = int.MaxValue;
+      var maxX = int.MinValue;
+      var minZ = int.MaxValue;
+      var maxZ = int.MinValue;
       foreach (BlockChangeInfo change in _blocksToChange) {
-        var chunkKey = WorldChunkCache.MakeChunkKey(World.toChunkXZ(change.pos.x), World.toChunkXZ(change.pos.z));
+        var x = change.pos.x;
+        var z = change.pos.z;
+        minX = Math.Min(x, minX);
+        maxX = Math.Max(x, maxX);
+        minZ = Math.Min(z, minZ);
+        maxZ = Math.Max(z, maxZ);
+        var chunkKey = WorldChunkCache.MakeChunkKey(World.toChunkXZ(x), World.toChunkXZ(z));
         chunks.Add(chunkKey);
       }
 
-      PersistentPlayerName playerName =
-        GameManager.Instance.GetPersistentPlayerList()?.GetPlayerData(persistentPlayerId)?.PlayerName;
-      Log.Out(
-        $"[StrongUtils] ChangeBlocks: {playerName} ({persistentPlayerId}) changed {_blocksToChange.Count} blocks in {chunks.Count} chunks");
+      PersistentPlayerData player = GameManager.Instance.GetPersistentPlayerList()?.GetPlayerData(persistentPlayerId);
+      if (player is null) {
+        // We don't expect to get here as this should only happen if persistentPlayerId is null.
+        return;
+      }
+
+      var playerInfo = $"{player.PlayerName?.DisplayName} ({persistentPlayerId})";
+      var changeInfo = $"changed {_blocksToChange.Count} blocks in {chunks.Count} chunks";
+      var locationInfo = _blocksToChange.Count == 1
+        ? $"at {minX}, {minZ}"
+        : $"between {minX}, {minZ} and {maxX}, {maxZ}";
+      Log.Out($"[StrongUtils] ChangeBlocks: {playerInfo} {changeInfo} {locationInfo}");
     }
   }
 }

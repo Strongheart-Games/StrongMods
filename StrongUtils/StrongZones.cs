@@ -2,14 +2,16 @@
 
 namespace StrongUtils {
   public static class StrongZones {
-    private static List<StrongZone> s_strongZones = new();
+    private static readonly Dictionary<long, ChunkProtectionLevel> s_chunkProtectionLevels = new();
 
     public static void SeedChunkProtectionLevels(
       Dictionary<long, ChunkProtectionLevel> chunkProtectionLevels,
       Dictionary<HashSetLong, ChunkProtectionLevel> groupProtectionLevels,
       Dictionary<long, HashSetLong> groupsByChunkKey) {
-      new StrongZoneChunkProtector(chunkProtectionLevels, groupProtectionLevels, groupsByChunkKey)
-        .ProtectStrongZones(s_strongZones);
+      var protector = new StrongZoneChunkProtector(chunkProtectionLevels, groupProtectionLevels, groupsByChunkKey);
+      foreach (KeyValuePair<long, ChunkProtectionLevel> chunk in s_chunkProtectionLevels) {
+        protector.AddProtectionLevel(chunk.Key, chunk.Value);
+      }
     }
 
     public static void OnXMLChanged() {
@@ -21,14 +23,57 @@ namespace StrongUtils {
       var protectedZones = "";
       properties.ParseString("strong_zones_protected_zones", ref protectedZones);
       var zones = protectedZones.Split('|');
-      List<StrongZone> strongZones = new List<StrongZone>();
+      var strongZones = new List<StrongZone>();
       foreach (var zone in zones) {
         var strongZone = StrongZone.Parse(zone);
         if (strongZone != null) {
           strongZones.Add(strongZone);
         }
       }
-      s_strongZones = strongZones;
+
+      InitializeChunkProtectionLevels(strongZones);
+    }
+
+    public static void InitializeChunkProtectionLevels(List<StrongZone> strongZones) {
+      if (strongZones is null) {
+        return;
+      }
+
+      var chunks = 0;
+      foreach (StrongZone strongZone in strongZones) {
+        chunks += InitializeChunkProtectionLevels(strongZone);
+      }
+
+      Log.Out($"[StrongUtils] Protecting {chunks} chunks in {strongZones.Count} StrongZones");
+    }
+
+    public static int InitializeChunkProtectionLevels(StrongZone strongZone) {
+      var x1 = strongZone.Corner.x;
+      var z1 = strongZone.Corner.y;
+      var x2 = strongZone.OppositeCorner.x;
+      var z2 = strongZone.OppositeCorner.y;
+      var west = x1 < x2 ? x1 : x2;
+      var east = x1 > x2 ? x1 : x2;
+      var south = z1 < z2 ? z1 : z2;
+      var north = z1 > z2 ? z1 : z2;
+      return InitializeChunkProtectionLevels(west, east, south, north);
+    }
+
+    public static int InitializeChunkProtectionLevels(int west, int east, int south, int north) {
+      west = World.toChunkXZ(west);
+      east = World.toChunkXZ(east);
+      south = World.toChunkXZ(south);
+      north = World.toChunkXZ(north);
+      var chunks = 0;
+      for (var x = west; x <= east; x++) {
+        for (var y = south; y <= north; y++) {
+          chunks++;
+          var key = WorldChunkCache.MakeChunkKey(x, y);
+          s_chunkProtectionLevels.Add(key, ChunkProtectionLevel.LandClaim);
+        }
+      }
+
+      return chunks;
     }
   }
 
@@ -85,45 +130,6 @@ namespace StrongUtils {
       _sChunkProtectionLevels = chunkProtectionLevels;
       _sGroupProtectionLevels = groupProtectionLevels;
       _sGroupsByChunkKey = groupsByChunkKey;
-    }
-
-    public void ProtectStrongZones(List<StrongZone> strongZones) {
-      if (strongZones is null) {
-        return;
-      }
-      var chunks = 0;
-      foreach (var strongZone in strongZones) {
-        chunks += ProtectStrongZone(strongZone);
-      }
-      Log.Out($"[StrongUtils] Protected {chunks} chunks in {strongZones.Count} StrongZones");
-    }
-
-    public int ProtectStrongZone(StrongZone strongZone) {
-      var x1 = strongZone.Corner.x;
-      var z1 = strongZone.Corner.y;
-      var x2 = strongZone.OppositeCorner.x;
-      var z2 = strongZone.OppositeCorner.y;
-      var west = x1 < x2 ? x1 : x2;
-      var east = x1 > x2 ? x1 : x2;
-      var south = z1 < z2 ? z1 : z2;
-      var north = z1 > z2 ? z1 : z2;
-      return ProtectStrongZone(west, east, south, north);
-    }
-
-    public int ProtectStrongZone(int west, int east, int south, int north) {
-      west = World.toChunkXZ(west);
-      east = World.toChunkXZ(east);
-      south = World.toChunkXZ(south);
-      north = World.toChunkXZ(north);
-      var chunks = 0;
-      for (var x = west; x <= east; x++) {
-        for (var y = south; y <= north; y++) {
-          chunks++;
-          var key = WorldChunkCache.MakeChunkKey(x, y);
-          AddProtectionLevel(key, ChunkProtectionLevel.LandClaim);
-        }
-      }
-      return chunks;
     }
 
     // TODO: figure out how to call this private method instead of replicating it here
