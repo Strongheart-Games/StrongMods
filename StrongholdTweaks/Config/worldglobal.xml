@@ -17,6 +17,6 @@
     <property name="strong_commands_passphrase" value="Charon guides the worthy."/>
     <property name="strong_commands_teleport_stronghold" value="teleportplayer {EntityId} -315 40 3376 s"/>
     <property name="strong_commands_teleport_beginner_horde" value="teleportplayer {EntityId} 847 -1 4024 n"/>
-    <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3348 -1 57 n"/>
+    <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3351 -1 2130 n"/>
   </append>
 </config>
