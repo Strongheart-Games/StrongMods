@@ -7,20 +7,31 @@ namespace DynamicLandClaimCount {
       Override
     }
 
-    public static string CVar = "";
+    public static string[] CVars;
     public static EnumOps Op = EnumOps.Add;
 
     public static int GetLandClaimCount(EntityPlayer player) {
       var count = GameStats.GetInt(EnumGameStats.LandClaimCount);
-      if (player is null || CVar is null || CVar.Length == 0 || player.Buffs is null ||
-          !player.Buffs.HasCustomVar(CVar) || player.GetCVar(CVar) < 0) {
+      if (player is null || CVars is null || CVars.Length == 0 || player.Buffs is null) {
         return count;
       }
 
-      var cvar = (int)player.GetCVar(CVar);
+      foreach (var cvar in CVars) {
+        count = GetLandClaimCount(player, count, cvar);
+      }
+
+      return count;
+    }
+
+    public static int GetLandClaimCount(EntityPlayer player, int count, string cvar) {
+      if (!player.Buffs.HasCustomVar(cvar) || player.GetCVar(cvar) < 0) {
+        return count;
+      }
+
+      var value = (int)player.GetCVar(cvar);
       return Op switch {
-        EnumOps.Add => count + cvar,
-        EnumOps.Override => cvar,
+        EnumOps.Add => count + value,
+        EnumOps.Override => value,
         _ => count
       };
     }
@@ -67,9 +78,9 @@ namespace DynamicLandClaimCount {
       properties.ParseString("dynamic_land_claim_count_cvar", ref cvar);
       properties.ParseEnum("dynamic_land_claim_count_op", ref op);
       // TODO: Wrap in a data object to make the switch-out atomic
-      CVar = cvar;
+      CVars = cvar.Split(',');
       Op = op;
-      Log.Out($"[DynamicLandClaimCount] Configuration loaded: (cvar: {CVar}, op: {Op})");
+      Log.Out($"[DynamicLandClaimCount] Configuration loaded: (cvars: {string.Join(", ", CVars)}, op: {Op})");
     }
   }
 }
