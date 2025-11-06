@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 namespace StrongUtils.Commands {
@@ -18,7 +16,8 @@ Usage:
     private static Coroutine s_shutdownCoroutine;
 
     public override string getDescription() {
-      return "Starts a countdown, announced in global chat every minute until the countdown ends, then shuts down the server.";
+      return
+        "Starts a countdown, announced in global chat every minute until the countdown ends, then shuts down the server.";
     }
 
     public override string getHelp() {
@@ -76,7 +75,7 @@ Usage:
       SdtdConsole.Instance.Output("Cancelling pending shutdown...");
       GameManager.Instance.StopCoroutine(s_shutdownCoroutine);
       s_shutdownCoroutine = null;
-      Announce($"[00ff00]The pending shutdown has been [ff0000]cancelled");
+      Announce("[00ff00]The pending shutdown has been [ff0000]cancelled");
     }
 
     private IEnumerator ShutdownAfterCountdown(int minutes) {

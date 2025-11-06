@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using HarmonyLib;
 
 namespace StrongUtils {
-
   public class GameEventActionSequenceAdditionalData {
-    public bool SingleInstancePerTarget = false;
+    public bool SingleInstancePerTarget;
   }
 
   public static class GameEventActionSequenceExtension {
-    private static readonly ConditionalWeakTable<GameEventActionSequence, GameEventActionSequenceAdditionalData> Data = new();
+    private static readonly ConditionalWeakTable<GameEventActionSequence, GameEventActionSequenceAdditionalData>
+      Data = new();
 
     public static GameEventActionSequenceAdditionalData GetAdditionalData(this GameEventActionSequence entity) {
       return Data.GetOrCreateValue(entity);

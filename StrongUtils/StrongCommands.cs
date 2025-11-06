@@ -7,14 +7,17 @@ namespace StrongUtils {
     private static string s_teleport_beginner_horde = "teleportplayer {EntityId} 0 -1 0 n";
     private static string s_teleport_advanced_horde = "teleportplayer {EntityId} 0 -1 0 n";
 
-    private static string s_stronghold_citizen_cvar = "stronghold_citizen";
+    private static readonly string s_stronghold_citizen_cvar = "stronghold_citizen";
 
-    private static string s_new_citizen_message = "Welcome to Stronghold, citizen!";
-    private static string s_repeat_citizen_message =
+    private static readonly string s_new_citizen_message = "Welcome to Stronghold, citizen!";
+
+    private static readonly string s_repeat_citizen_message =
       "We get it, you know the passphrase...it’s supposed to be a secret, stop repeating it everywhere!";
-    private static string s_not_citizen_message =
+
+    private static readonly string s_not_citizen_message =
       "Only those who know the passphrase may use the Stronghold teleportation network. Talk to The Ferryman and pray he finds you worthy.";
-    private static string s_wrong_passphrase_message =
+
+    private static readonly string s_wrong_passphrase_message =
       "I'm not sure where you heard that passphrase. Perhaps The Ferryman judged you unworthy...or perhaps you misunderstood him. Speak with him again and mind his words.";
 
     public static ModEvents.EModEventResult HandleChatMessage(ref ModEvents.SChatMessageData _data) {
@@ -52,6 +55,7 @@ namespace StrongUtils {
         } else {
           Whisper(player, s_repeat_citizen_message);
         }
+
         ExecuteConsoleCommand(s_teleport_stronghold, player);
       } else {
         Whisper(player, s_wrong_passphrase_message);

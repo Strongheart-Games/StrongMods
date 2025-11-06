@@ -2,7 +2,7 @@
 
 namespace StrongUtils {
   public class DenyAll {
-    private static bool s_enabled = false;
+    private static bool s_enabled;
     private static GameUtils.EKickReason s_reason;
     private static string s_message;
 
