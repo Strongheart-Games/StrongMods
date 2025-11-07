@@ -71,6 +71,13 @@ namespace StrongUtils {
     }
   }
 
+  [HarmonyPatch(typeof(EntityGroups), nameof(EntityGroups.Normalize))]
+  public class EntityGroups_Normalize_Patch {
+    private static void Prefix(string _sEntityGroupName, ref float totalp) {
+      //SpawnScaler.ScaleEntityGroup(_sEntityGroupName, ref totalp);
+    }
+  }
+
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
       Harmony harmony = new(_modInstance.Name);

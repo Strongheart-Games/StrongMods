@@ -79,6 +79,7 @@
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="DenyAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpawnScaler.cs" />
     <Compile Include="StrongAudit.cs" />
     <Compile Include="StrongCommands.cs" />
     <Compile Include="StrongZones.cs" />
