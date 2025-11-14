@@ -5,7 +5,7 @@ namespace StrongUtils {
   public class StrongAudit {
     public static void Audit_GameManager_ChangeBlocks(PlatformUserIdentifierAbs persistentPlayerId,
       List<BlockChangeInfo> _blocksToChange) {
-      if (persistentPlayerId is null) {
+      if (persistentPlayerId is null || _blocksToChange?.Count <= 1) {
         return;
       }
 
@@ -37,6 +37,17 @@ namespace StrongUtils {
         ? $"at {minX}, {minZ}"
         : $"between {minX}, {minZ} and {maxX}, {maxZ}";
       Log.Out($"[StrongUtils] ChangeBlocks: {playerInfo} {changeInfo} {locationInfo}");
+
+      EntityPlayer playerEntity = GameManager.Instance.World.Players.dict[player.EntityId];
+      // IsAdmin checks for permission level 0
+      if (playerEntity is null || playerEntity.IsAdmin) {
+        return;
+      }
+
+      SdtdConsole.Instance.ExecuteSync(
+        $"ban add {persistentPlayerId.CombinedString} 10 years hacking \"{player.PlayerName?.DisplayName}\"", null);
+      GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
+        $"[ff0000]{player.PlayerName?.DisplayName} has been banned for hacking.[-]", null, EMessageSender.None);
     }
   }
 }
