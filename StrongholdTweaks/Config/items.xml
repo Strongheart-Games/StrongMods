@@ -80,7 +80,10 @@
     </item>
   </append>
 
-  <!-- Everything with an explicit stack size > 1 has it set to 65k. -->
+  <!-- All items not explicitly set as unstackable will stack to 65k. -->
   <setattribute xpath="/items/item/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
+  <append xpath="/items//item[not(property[@name='Stacknumber'])]">  <!-- Default: 500 -->
+    <property name="Stacknumber" value="65000" />
+  </append>
 
 </config>
