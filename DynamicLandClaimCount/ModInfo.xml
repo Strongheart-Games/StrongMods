@@ -2,8 +2,8 @@
 <ModInfo>
   <Name value="DynamicLandClaimCount" />
   <Version value="1.1.0" />
-  <DisplayName value="Dynamic GameStats" />
-  <Description value="Set GameStats, which are normally global, on a per-player basis." />
+  <DisplayName value="Dynamic Land Claim Count" />
+  <Description value="Set Land Claim Count, which is normally global, on a per-player basis." />
   <Author value="str0ngh34rt" />
   <Website value="" />
 </ModInfo>
