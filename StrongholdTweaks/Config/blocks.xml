@@ -33,6 +33,17 @@
     </block>
   </append>
 
+  <append xpath="/blocks/block[@name='warpPadBlockSecure']">
+    <dropextendsoff/>
+    <drop event="Destroy" name="warpPadBlockSecure" count="1"/>
+    <drop event="Fall" name="warpPadBlockSecure" count="1" prob=".9" stick_chance=".9"/>
+  </append>
+  <append xpath="/blocks/block[@name='warpPadBlockPortable']">
+    <dropextendsoff/>
+    <drop event="Destroy" name="warpPadBlockPortable" count="1"/>
+    <drop event="Fall" name="warpPadBlockPortable" count="1" prob=".9" stick_chance=".9"/>
+  </append>
+
   <!-- Leave around stubs for the old hordestones in case someone has one in their inventories -->
   <block name="block_hordestone_stronghold">
     <property name="CreativeMode" value="None" />
