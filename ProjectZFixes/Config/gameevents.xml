@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <set xpath="/gameevents/action_sequence[starts-with(@name, 'action_spawn_reward_')]/action[@class='SpawnEntity']/property[@name='air_spawn']/@value">false</set>
+  <set xpath="/gameevents/action_sequence[starts-with(@name, 'action_spawn_reward_')]/action[@class='SpawnEntity']/property[@name='min_distance']/@value">3</set>
+  <set xpath="/gameevents/action_sequence[starts-with(@name, 'action_spawn_reward_')]/action[@class='SpawnEntity']/property[@name='max_distance']/@value">8</set>
+</config>

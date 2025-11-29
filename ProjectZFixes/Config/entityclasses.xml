@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<config>
-  <csv xpath="/entity_classes/entity_class/property[@name='Tags'][starts-with(@value, 'entity,zombie,walker')][not(contains(@value, 'BurntZombie'))][not(contains(@value, 'desert'))][not(contains(@value, 'frostClaw'))][not(contains(@value, 'Mutated'))]/@value" op="add">
-    allbiome
-  </csv>
-</config>
