@@ -1,0 +1,68 @@
+﻿<config>
+  <!-- FOREST, BURNT, DESERT, SNOW -->
+  <csv xpath="/entitygroups/entitygroup[@name='WildGameForestNight']/text()" delim="\n" op="remove">*Boss*</csv>
+  <csv xpath="/entitygroups/entitygroup[@name='EnemyAnimalsForest']/text()" delim="\n" op="remove">*Boss*</csv>
+  <csv xpath="/entitygroups/entitygroup[starts-with(@name, 'EnemyAnimals')]/text()" delim="\n" op="remove">boss*</csv>
+  <append xpath="/entitygroups">
+    <entitygroup name="BossesForestNight">
+      animalBossGrace, .25
+      BossMutantHog, .15
+      none, 100
+    </entitygroup>
+    <entitygroup name="BossesBurntForestNight">
+      bossBurningFlesh, 1
+      bossDevourer, 2
+      bossBiba, .05
+      bossAlex, .05
+      none, 100
+    </entitygroup>
+    <entitygroup name="BossesDesertNight">
+      bossBurningFlesh, 1
+      bossGargul, 1
+      bossBiba, .5
+      bossAlex, .5
+      none, 100
+    </entitygroup>
+    <entitygroup name="BossesSnowNight">
+      bossBearDaddy, 1.5
+      bossBitch, 1.5
+      bossAncientYeti, .5
+      bossBiba, 1.5
+      none, 100
+    </entitygroup>
+  </append>
+
+  <!-- WASTELAND -->
+  <csv xpath="/entitygroups/entitygroup[starts-with(@name, 'ZombiesWasteland')]/text()" delim="\n" op="remove">boss*</csv>
+  <append xpath="/entitygroups">
+    <entitygroup name="BossesWasteland">
+      bossCholera, .09
+      bossBurningFlesh, .09
+      bossBitch, .09
+      bossDevourer, .09
+      bossGargul, .12
+      bossBearDaddy, .09
+      bossBull, .08
+      bossShocker, .08
+      bossVeteran, .08
+      bossBiba, .03
+      bossAlex, .03
+      none, 2
+    </entitygroup>
+    <entitygroup name="BossesWastelandNight">
+      bossCholera, .25
+      bossBurningFlesh, .25
+      bossBitch, .25
+      bossDevourer, .25
+      bossBearDaddy, .25
+      bossGargul, .25
+      bossBull, .12
+      bossShocker, .12
+      bossVeteran, .12
+      bossCarrier, .06
+      bossBiba, .04
+      bossAlex, .04
+      none, 30
+    </entitygroup>
+  </append>
+</config>
