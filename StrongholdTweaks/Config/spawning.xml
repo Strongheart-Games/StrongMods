@@ -1,70 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <config>
-  <!-- StrongSpawns: 5-10x more zombies from biome spawners, except for the biome-specific groups -->
-  <append xpath="/spawning">
-    <biome name="pine_forest">
-      <spawn id="dz01" maxcount="8" respawndelay="2.5" time="Day" entitygroup="ZombiesAll" notags="commercial,industrial,downtown" />
-      <spawn id="nz01" maxcount="10" respawndelay="2.0" time="Night" entitygroup="ZombiesNight" notags="commercial,industrial,downtown" />
-      <spawn id="dz02" maxcount="10" respawndelay="0.25" time="Day" entitygroup="ZombiesAll" tags="commercial,industrial" notags="downtown" />
-      <spawn id="nz02" maxcount="15" respawndelay="0.1" time="Night" entitygroup="ZombiesNight" tags="commercial,industrial" notags="downtown" />
-      <spawn id="dz03" maxcount="11" respawndelay="0.25" time="Day" entitygroup="ZombiesForestDowntown" tags="downtown" />
-      <spawn id="nz03" maxcount="14" respawndelay="0.05" time="Night" entitygroup="ZombiesForestDowntownNight" tags="downtown" />
-      <spawn id="aa01" maxcount="6" respawndelay="1.3" time="Any" entitygroup="WildGameForest" />
-      <spawn id="na01" maxcount="5" respawndelay="1.1" time="Night" entitygroup="WildGameForestNight" />
-      <spawn id="ne01" maxcount="6" respawndelay="2.5" time="Night" entitygroup="EnemyAnimalsForest" />
-    </biome>
-    <biome name="burnt_forest">
-      <spawn id="dz01" maxcount="1" respawndelay="0.9" time="Day" entitygroup="ZombiesBurntForest" />
-      <spawn id="nz04" maxcount="1" respawndelay="1.1" time="Night" entitygroup="ZombiesBurntForestNight" />
-      <spawn id="dz04" maxcount="11" respawndelay="2.0" time="Day" entitygroup="ZombiesAll" notags="commercial,industrial,downtown" />
-      <spawn id="nz01" maxcount="23" respawndelay="1.5" time="Night" entitygroup="ZombiesNight" />
-      <spawn id="dz02" maxcount="15" respawndelay="0.17" time="Day" entitygroup="ZombiesAll" tags="commercial,industrial" notags="downtown" />
-      <spawn id="nz02" maxcount="22" respawndelay="0.08" time="Night" entitygroup="ZombiesNight" tags="commercial,industrial" notags="downtown" />
-      <spawn id="dz03" maxcount="14" respawndelay="0.10" time="Day" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="nz03" maxcount="20" respawndelay="0.07" time="Night" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="aa01" maxcount="9" respawndelay="1.9" time="Any" entitygroup="WildGameForest" />
-      <spawn id="na01" maxcount="4" respawndelay="1.4" time="Night" entitygroup="WildGameForestNight" />
-      <spawn id="ae01" maxcount="3" respawndelay="2.5" time="Any" entitygroup="EnemyAnimalsBurntForestAny" />
-      <spawn id="ne01" maxcount="4" respawndelay="1.9" time="Night" entitygroup="EnemyAnimalsBurntForestNight" />
-    </biome>
-    <biome name="desert">
-      <spawn id="dz01" maxcount="1" respawndelay="0.9" time="Day" entitygroup="ZombiesDesert" notags="commercial,industrial,downtown" />
-      <spawn id="nz04" maxcount="1" respawndelay="1.1" time="Night" entitygroup="ZombiesDesertNight" notags="commercial,industrial,downtown" />
-      <spawn id="dz04" maxcount="11" respawndelay="1.9" time="Day" entitygroup="ZombiesAll" notags="commercial,industrial,downtown" />
-      <spawn id="nz01" maxcount="19" respawndelay="1.6" time="Night" entitygroup="ZombiesNight" notags="commercial,industrial,downtown" />
-      <spawn id="dz02" maxcount="15" respawndelay="0.15" time="Day" entitygroup="ZombiesAll" tags="commercial,industrial" notags="downtown" />
-      <spawn id="nz02" maxcount="17" respawndelay="0.07" time="Night" entitygroup="ZombiesNight" tags="commercial,industrial" notags="downtown" />
-      <spawn id="dz03" maxcount="14" respawndelay="0.15" time="Day" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="nz03" maxcount="24" respawndelay="0.05" time="Night" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="aa01" maxcount="3" respawndelay="1.7" time="Any" entitygroup="WildGameForest" />
-      <spawn id="ae01" maxcount="3" respawndelay="2.8" time="Any" entitygroup="EnemyAnimalsDesert" />
-      <spawn id="ne01" maxcount="4" respawndelay="1.5" time="Night" entitygroup="EnemyAnimalsDesertNight" />
-    </biome>
-    <biome name="snow">
-      <spawn id="dz01" maxcount="1" respawndelay="0.9" time="Day" entitygroup="ZombiesSnow" notags="downtown" />
-      <spawn id="nz04" maxcount="1" respawndelay="1.1" time="Night" entitygroup="ZombiesSnowNight" notags="downtown" />
-      <spawn id="dz04" maxcount="10" respawndelay="1.9" time="Day" entitygroup="ZombiesAll" notags="commercial,industrial,downtown" />
-      <spawn id="nz01" maxcount="19" respawndelay="0.8" time="Night" entitygroup="ZombiesNight" notags="commercial,industrial,downtown" />
-      <spawn id="dz02" maxcount="18" respawndelay="0.06" time="Day" entitygroup="ZombiesAll" tags="commercial,industrial" notags="downtown" />
-      <spawn id="nz02" maxcount="22" respawndelay="0.03" time="Night" entitygroup="ZombiesNight" tags="commercial,industrial" notags="downtown" />
-      <spawn id="dz03" maxcount="18" respawndelay="0.05" time="Day" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="nz03" maxcount="22" respawndelay="0.025" time="Night" entitygroup="ZombiesDowntown" tags="downtown" />
-      <spawn id="aa01" maxcount="3" respawndelay="2.2" time="Any" entitygroup="WildGameForest" />
-      <spawn id="na01" maxcount="3" respawndelay="1.7" time="Night" entitygroup="WildGameStagNight" />
-      <spawn id="ae01" maxcount="3" respawndelay="2.3" time="Any" entitygroup="EnemyAnimalsSnow" />
-      <spawn id="ne01" maxcount="4" respawndelay="1.4" time="Night" entitygroup="EnemyAnimalsSnowNight" />
-    </biome>
-    <biome name="wasteland">
-      <spawn id="dz01" maxcount="1" respawndelay="0.3" time="Day" entitygroup="ZombiesWasteland" notags="commercial,industrial,downtown" />
-      <spawn id="dz04" maxcount="36" respawndelay="0.7" time="Day" entitygroup="ZombiesAllWasteland" notags="commercial,industrial,downtown" />
-      <spawn id="nz01" maxcount="18" respawndelay="0.002" time="Night" entitygroup="ZombiesWastelandNight" notags="commercial,industrial,downtown" />
-      <spawn id="dz02" maxcount="24" respawndelay="0.025" time="Day" entitygroup="ZombiesAllWasteland" tags="commercial,industrial" notags="downtown" />
-      <spawn id="nz02" maxcount="30" respawndelay="0.001" time="Night" entitygroup="ZombiesWastelandNight" tags="commercial,industrial" notags="downtown" />
-      <spawn id="dz03" maxcount="22" respawndelay="0.012" time="Day" entitygroup="ZombiesWastelandDowntown" tags="downtown" />
-      <spawn id="nz03" maxcount="26" respawndelay="0.001" time="Night" entitygroup="ZombiesWastelandDowntown" tags="downtown" />
-      <spawn id="na01" maxcount="5" respawndelay="2.9" time="Night" entitygroup="WildGameStagNight" />
-      <spawn id="ae01" maxcount="6" respawndelay="0.8" time="Any" entitygroup="EnemyAnimalsWasteland" />
-      <spawn id="ne01" maxcount="4" respawndelay="0.5" time="Night" entitygroup="EnemyAnimalsWastelandNight" />
-    </biome>
+  <!--
+     Progressive Biome Difficulty Mod
+     Makes each biome progressively harder through increased spawn counts and faster respawn times
+
+     Pine Forest: ~2x zombies, 20% faster respawn
+     Burnt Forest: ~2.5x zombies, 25% faster respawn
+     Desert: ~3x zombies, 30% faster respawn
+     Snow: ~3.5x zombies, 35% faster respawn
+     Wasteland: ~4x zombies, 40% faster respawn
+     -->
+
+  <!-- PINE FOREST: ~2x zombies, 20% faster respawn -->
+
+  <!-- Day spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz01']/@maxcount">2</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz01']/@respawndelay">2.32</set> <!-- original: 2.9 -->
+
+  <!-- Night spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz01']/@respawndelay">2.48</set> <!-- original: 3.1 -->
+
+  <!-- Day spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz02']/@maxcount">4</set> <!-- original: 2 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz02']/@respawndelay">0.24</set> <!-- original: 0.3 -->
+
+  <!-- Night spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz02']/@maxcount">6</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz02']/@respawndelay">0.12</set> <!-- original: 0.15 -->
+
+  <!-- Day spawns - downtown -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz03']/@maxcount">6</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='dz03']/@respawndelay">0.24</set> <!-- original: 0.3 -->
+
+  <!-- Night spawns - downtown -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz03']/@maxcount">7</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='nz03']/@respawndelay">0.08</set> <!-- original: 0.1 -->
+
+  <!-- Wild game spawns -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='aa01']/@maxcount">2</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='aa01']/@respawndelay">1.2</set> <!-- original: 1.5 -->
+
+  <!-- Night wild game spawns -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='na01']/@maxcount">2</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='na01']/@respawndelay">1.04</set> <!-- original: 1.3 -->
+
+  <!-- Enemy animals -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='ne01']/@maxcount">2</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='ne01']/@respawndelay">2.32</set> <!-- original: 2.9 -->
+
+  <!-- Boss spawns -->
+  <append xpath="/spawning/biome[@name='pine_forest']">
+    <spawn id="boss01" maxcount="1" respawndelay="2.9" time="Night" entitygroup="BossesForestNight" />
+  </append>
+
+
+  <!-- BURNT FOREST: ~2.5x zombies, 25% faster respawn -->
+
+  <!-- Day spawns - burnt forest specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz01']/@maxcount">3</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz01']/@respawndelay">0.68</set> original: 0.9 -->
+
+  <!-- Night spawns - burnt forest specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz04']/@maxcount">3</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz04']/@respawndelay">0.83</set> original: 1.1 -->
+
+  <!-- Day spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz04']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz04']/@respawndelay">2.03</set> <!-- original: 2.7 -->
+
+  <!-- Night spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz01']/@respawndelay">1.73</set> <!-- original: 2.3 -->
+
+  <!-- Day spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz02']/@maxcount">8</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz02']/@respawndelay">0.19</set> <!-- original: 0.25 -->
+
+  <!-- Night spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz02']/@maxcount">10</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz02']/@respawndelay">0.11</set> <!-- original: 0.15 -->
+
+  <!-- Day spawns - downtown -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz03']/@maxcount">8</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='dz03']/@respawndelay">0.11</set> <!-- original: 0.15 -->
+
+  <!-- Night spawns - downtown -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz03']/@maxcount">10</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='nz03']/@respawndelay">0.075</set> <!-- original: 0.1 -->
+
+  <!-- Wild game spawns -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='aa01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='aa01']/@respawndelay">1.58</set> <!-- original: 2.1 -->
+
+  <!-- Night wild game spawns -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='na01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='na01']/@respawndelay">1.2</set> <!-- original: 1.6 -->
+
+  <!-- Enemy animals - any time -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ae01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ae01']/@respawndelay">2.1</set> <!-- original: 2.8 -->
+
+  <!-- Enemy animals - night -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ne01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ne01']/@respawndelay">1.65</set> <!-- original: 2.2 -->
+
+  <!-- Boss spawns -->
+  <append xpath="/spawning/biome[@name='burnt_forest']">
+    <spawn id="boss01" maxcount="1" respawndelay="2.2" time="Night" entitygroup="BossesBurntForestNight" />
+  </append>
+
+
+  <!-- DESERT: ~3x zombies, 30% faster respawn -->
+
+  <!-- Day spawns - desert specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz01']/@maxcount">4</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz01']/@respawndelay">0.63</set> original: 0.9 -->
+
+  <!-- Night spawns - desert specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz04']/@maxcount">4</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz04']/@respawndelay">0.77</set> original: 1.1 -->
+
+  <!-- Day spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz04']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz04']/@respawndelay">1.89</set> <!-- original: 2.7 -->
+
+  <!-- Night spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz01']/@maxcount">6</set> <!-- original: 2 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz01']/@respawndelay">1.75</set> <!-- original: 2.5 -->
+
+  <!-- Day spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz02']/@maxcount">9</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz02']/@respawndelay">0.14</set> <!-- original: 0.2 -->
+
+  <!-- Night spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz02']/@maxcount">10</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz02']/@respawndelay">0.07</set> <!-- original: 0.1 -->
+
+  <!-- Day spawns - downtown -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz03']/@maxcount">10</set> <!-- original: 3 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='dz03']/@respawndelay">0.14</set> <!-- original: 0.2 -->
+
+  <!-- Night spawns - downtown -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz03']/@maxcount">11</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='nz03']/@respawndelay">0.063</set> <!-- original: 0.09 -->
+
+  <!-- Wild game spawns -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='aa01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='aa01']/@respawndelay">1.33</set> <!-- original: 1.9 -->
+
+  <!-- Enemy animals - any time -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='ae01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='ae01']/@respawndelay">2.17</set> <!-- original: 3.1 -->
+
+  <!-- Enemy animals - night -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='ne01']/@maxcount">3</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='desert']/spawn[@id='ne01']/@respawndelay">1.26</set> <!-- original: 1.8 -->
+
+  <!-- Boss spawns -->
+  <append xpath="/spawning/biome[@name='desert']">
+    <spawn id="boss01" maxcount="1" respawndelay="1.8" time="Night" entitygroup="BossesDesertNight" />
+  </append>
+
+
+  <!-- SNOW: ~3.5x zombies, 35% faster respawn -->
+
+  <!-- Day spawns - snow specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz01']/@maxcount">5</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz01']/@respawndelay">0.54</set> original: 0.9 -->
+
+  <!-- Night spawns - snow specific (KEPT AT DEFAULT for quest balance) -->
+  <!-- <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz04']/@maxcount">6</set> original: 1 -->
+  <!-- <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz04']/@respawndelay">0.66</set> original: 1.1 -->
+
+  <!-- Day spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz04']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz04']/@respawndelay">1.69</set> <!-- original: 2.6 -->
+
+  <!-- Night spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz01']/@maxcount">7</set> <!-- original: 2 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz01']/@respawndelay">0.85</set> <!-- original: 1.3 -->
+
+  <!-- Day spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz02']/@maxcount">14</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz02']/@respawndelay">0.059</set> <!-- original: 0.09 -->
+
+  <!-- Night spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz02']/@maxcount">15</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz02']/@respawndelay">0.039</set> <!-- original: 0.06 -->
+
+  <!-- Day spawns - downtown -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz03']/@maxcount">15</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='dz03']/@respawndelay">0.046</set> <!-- original: 0.07 -->
+
+  <!-- Night spawns - downtown -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz03']/@maxcount">15</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='nz03']/@respawndelay">0.026</set> <!-- original: 0.04 -->
+
+  <!-- Wild game spawns -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='aa01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='aa01']/@respawndelay">1.56</set> <!-- original: 2.4 -->
+
+  <!-- Night wild game spawns -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='na01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='na01']/@respawndelay">1.24</set> <!-- original: 1.9 -->
+
+  <!-- Enemy animals - any time -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='ae01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='ae01']/@respawndelay">1.69</set> <!-- original: 2.6 -->
+
+  <!-- Enemy animals - night -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='ne01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='snow']/spawn[@id='ne01']/@respawndelay">1.04</set> <!-- original: 1.6 -->
+
+  <!-- Boss spawns -->
+  <append xpath="/spawning/biome[@name='snow']">
+    <spawn id="boss01" maxcount="1" respawndelay="1.6" time="Night" entitygroup="BossesSnowNight" />
+  </append>
+
+
+  <!-- WASTELAND: ~4x zombies, 40% faster respawn -->
+
+  <!-- Day spawns - wasteland specific -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz01']/@respawndelay">0.18</set> <!-- original: 0.3 -->
+
+  <!-- Day spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz04']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz04']/@respawndelay">0.96</set> <!-- original: 1.6 -->
+
+  <!-- Night spawns - wilderness -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz01']/@maxcount">8</set> <!-- original: 2 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz01']/@respawndelay">0.0018</set> <!-- original: 0.003 -->
+
+  <!-- Day spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz02']/@maxcount">16</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz02']/@respawndelay">0.0198</set> <!-- original: 0.033 -->
+
+  <!-- Night spawns - commercial/industrial -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz02']/@maxcount">17</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz02']/@respawndelay">0.0012</set> <!-- original: 0.002 -->
+
+  <!-- Day spawns - downtown -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz03']/@maxcount">17</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='dz03']/@respawndelay">0.01</set> <!-- original: 0.0167 -->
+
+  <!-- Night spawns - downtown -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz03']/@maxcount">17</set> <!-- original: 4 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='nz03']/@respawndelay">0.0012</set> <!-- original: 0.002 -->
+
+  <!-- Night wild game spawns -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='na01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='na01']/@respawndelay">1.92</set> <!-- original: 3.2 -->
+
+  <!-- Enemy animals - any time -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='ae01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='ae01']/@respawndelay">0.54</set> <!-- original: 0.9 -->
+
+  <!-- Enemy animals - night -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='ne01']/@maxcount">4</set> <!-- original: 1 -->
+  <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='ne01']/@respawndelay">0.36</set> <!-- original: 0.6 -->
+
+  <!-- Boss spawns -->
+  <append xpath="/spawning/biome[@name='wasteland']">
+    <spawn id="boss01" maxcount="1" respawndelay="0.9" time="Any" entitygroup="BossesWasteland" />
+    <spawn id="boss02" maxcount="1" respawndelay="0.6" time="Night" entitygroup="BossesWastelandNight" />
   </append>
 
   <!-- Spawners reset every day to keep things fresh -->
