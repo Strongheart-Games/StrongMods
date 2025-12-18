@@ -13,10 +13,58 @@
     7
   </setattribute>
   <append xpath="/worldglobal/environment">
-    <property name="strong_zones_protected_zones" value="(-393,3516);(-150,3178)|(-950,-430);(-887,-365)"/>
+    <!-- Change together: they must have the same value -->
+    <property name="strongsworn_cvar" value="strongsworn"/>
+    <property name="chat_command_helper_authorized_cvar" value="strongsworn"/>
+
+    <!-- TODO: Patch DynamicProperties so value can be pulled from the body as well. -->
+    <property name="chat_command_helper_privileged_commands" value="
+      bed,
+      stronghold,
+      shop,
+      store,
+      shoplink,
+      storelink,
+      link,
+      claim,
+      buyticket,
+    " />
+    <!-- TODO: Write our own /commands that links to the Survival Guide -->
+    <property name="chat_command_helper_hidden_commands" value="
+      commands,
+    " />
+    <!-- Pulled from /help, with /link and /store (an alias for /shop) added. -->
+    <property name="chat_command_helper_async_commands" value="
+      link,
+      store,
+      buyTicket,
+      help,
+      daily,
+      nextDraw,
+      ping,
+      vote,
+      transfer,
+      claim,
+      viewTickets,
+      grantCurrency,
+      shop,
+      confirmTransfer,
+      balance,
+      revokeCurrency,
+      wipe,
+      triviareset,
+      playerAnswer,
+      topCurrency,
+      triviaboard,
+      playtime,
+      wipecontinue,
+    " />
+
     <property name="strong_commands_passphrase" value="Charon guides the worthy."/>
     <property name="strong_commands_teleport_stronghold" value="teleportplayer {EntityId} -315 40 3376 s"/>
     <property name="strong_commands_teleport_beginner_horde" value="teleportplayer {EntityId} 847 -1 4024 n"/>
     <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3351 -1 2130 n"/>
+
+    <property name="strong_zones_protected_zones" value="(-393,3516);(-150,3178)|(-950,-430);(-887,-365)"/>
   </append>
 </config>

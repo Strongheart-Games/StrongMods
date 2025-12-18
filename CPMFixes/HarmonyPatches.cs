@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
-using CSMM_Patrons;
-using CSMM_Patrons.CustomCommands;
+using PrismaCore;
+using PrismaCore.CustomCommands;
 using HarmonyLib;
 
 namespace CPMFixes {
@@ -20,11 +20,11 @@ namespace CPMFixes {
     }
 
     private static bool TryGetCommand(string message, ref string command) {
-      if (message is null || !message.StartsWith(CpmSettings.Instance.CPMPrefix)) {
+      if (message is null || !message.StartsWith(PrismaCoreSettings.Instance.PrismaCorePrefix)) {
         return false;
       }
 
-      command = message.Substring(CpmSettings.Instance.CPMPrefix.Length);
+      command = message.Substring(PrismaCoreSettings.Instance.PrismaCorePrefix.Length);
 
       var iSpace = command.IndexOf(' ');
       if (iSpace > 0) {
@@ -35,26 +35,9 @@ namespace CPMFixes {
     }
   }
 
-  [HarmonyPatch(typeof(ShutdownBA), nameof(ShutdownBA.Execute))]
-  public class ShutdownBA_Execute_Patch {
-    private static void Prefix(ConsoleCmdShutdown __instance, List<string> _params, CommandSenderInfo _senderInfo) {
-      if (_params.ContainsCaseInsensitive("resetregions")) {
-        ModEvents.GameShutdown.RegisterHandler(ResetRegions);
-        _params.Remove("resetregions"); // CPM won't recognize the argument, so remove it
-      } else if (_params.ContainsCaseInsensitive("stop")) {
-        ModEvents.GameShutdown.UnregisterHandler(ResetRegions);
-      }
-    }
-
-    private static void ResetRegions(ref ModEvents.SGameShutdownData _data) {
-      Log.Out("[CPMFixes] Resetting regions");
-      SdtdConsole.Instance.ExecuteSync("resetregions", null);
-    }
-  }
-
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
-      if (!ModManager.ModLoaded("1CSMM_Patrons")) {
+      if (!ModManager.ModLoaded("PrismaCore")) {
         Log.Out("[CPMFixes] CPM not loaded, aborting patching process.");
         return;
       }

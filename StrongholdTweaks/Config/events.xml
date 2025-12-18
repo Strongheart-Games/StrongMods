@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- Extended holiday events:
+         Christmas starts December 1st
+         Thanksgiving runs all of November
+         Halloween runs all of October -->
+  <setattribute xpath="/events/event[@name='christmas']" name="start_date">12/01</setattribute>
+  <setattribute xpath="/events/event[@name='thanksgiving']" name="start_date">11/01</setattribute>
+  <setattribute xpath="/events/event[@name='thanksgiving']" name="duration">30</setattribute>
+  <removeattribute xpath="/events/event[@name='thanksgiving']/@base_date"/>
+  <removeattribute xpath="/events/event[@name='thanksgiving']/@start_offset"/>
+  <setattribute xpath="/events/event[@name='halloween']" name="start_date">10/01</setattribute>
+  <setattribute xpath="/events/event[@name='halloween']" name="duration">31</setattribute>
+</config>

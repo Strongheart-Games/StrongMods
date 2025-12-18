@@ -33,8 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CSMM_Patrons">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\1CSMM_Patrons\CSMM_Patrons.dll</HintPath>
+    <Reference Include="PrismaCore">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\PrismaCore\PrismaCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">

@@ -1,5 +1,11 @@
 <config>
 
+  <conditional>
+    <if cond="mod_loaded('ChristmasCookbook')">
+      <include filename="items_xmas_cooking.xml" />
+    </if>
+  </conditional>
+
   <!-- Schematics that have been read show a green "read" icon -->
   <insertAfter xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIcon']">
     <property name="AltItemTypeIconColor" value="0,255,0,200" />

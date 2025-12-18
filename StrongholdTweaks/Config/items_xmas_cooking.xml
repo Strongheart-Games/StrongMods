@@ -1,0 +1,129 @@
+﻿<config>
+  <!-- Icon overrides for Midnight's Christmas Recipes mod -->
+  <!-- This mod replaces custom icons with base game icons + tints -->
+  <!-- Load this AFTER the base Christmas recipes mod -->
+
+  <!-- FOOD ITEMS -->
+
+  <!-- Turkey Club Sandwich -->
+  <set xpath="/items/item[@name='xmasturkeyclub']/property[@name='CustomIcon']/@value">foodShamSandwich</set>
+  <append xpath="/items/item[@name='xmasturkeyclub']">
+    <property name="CustomIconTint" value="D4AF37"/>
+  </append>
+
+  <!-- Deviled Eggs -->
+  <set xpath="/items/item[@name='xmasdeviledeggs']/property[@name='CustomIcon']/@value">foodEggBoiled</set>
+  <append xpath="/items/item[@name='xmasdeviledeggs']">
+    <property name="CustomIconTint" value="FFD700"/>
+  </append>
+
+  <!-- Mashed Potatoes -->
+  <set xpath="/items/item[@name='xmasmashed']/property[@name='CustomIcon']/@value">resourceAnimalFat</set>
+  <append xpath="/items/item[@name='xmasmashed']">
+    <property name="CustomIconTint" value="F5DEB3"/>
+  </append>
+
+  <!-- Roast Lamb -->
+  <set xpath="/items/item[@name='xmaslamb']/property[@name='CustomIcon']/@value">foodBoiledMeat</set>
+  <append xpath="/items/item[@name='xmaslamb']">
+    <property name="CustomIconTint" value="8B4513"/>
+  </append>
+
+  <!-- Cranberry Sauce -->
+  <set xpath="/items/item[@name='xmassauce']/property[@name='CustomIcon']/@value">drinkJarRiverWater</set>
+  <append xpath="/items/item[@name='xmassauce']">
+    <property name="CustomIconTint" value="8B0000"/>
+  </append>
+
+  <!-- Pear Pie -->
+  <set xpath="/items/item[@name='xmaspearpie']/property[@name='CustomIcon']/@value">foodBlueberryPie</set>
+  <append xpath="/items/item[@name='xmaspearpie']">
+    <property name="CustomIconTint" value="D2B48C"/>
+  </append>
+
+  <!-- Blueberry Slice -->
+  <set xpath="/items/item[@name='xmasblueberryslice']/property[@name='CustomIcon']/@value">foodPumpkinPie</set>
+  <append xpath="/items/item[@name='xmasblueberryslice']">
+    <property name="CustomIconTint" value="4169E1"/>
+  </append>
+
+  <!-- Blueberry Cheesecake -->
+  <set xpath="/items/item[@name='xmasblueberrycheesecake']/property[@name='CustomIcon']/@value">foodPumpkinCheesecake</set>
+  <append xpath="/items/item[@name='xmasblueberrycheesecake']">
+    <property name="CustomIconTint" value="F0E68C"/>
+  </append>
+
+  <!-- Blueberry Pound Cake -->
+  <set xpath="/items/item[@name='xmasblueberrypoundcake']/property[@name='CustomIcon']/@value">foodPumpkinBread</set>
+  <append xpath="/items/item[@name='xmasblueberrypoundcake']">
+    <property name="CustomIconTint" value="DDA0DD"/>
+  </append>
+
+  <!-- Honey Glazed Ham -->
+  <set xpath="/items/item[@name='xmasham']/property[@name='CustomIcon']/@value">sleeperBoarAnimal</set>
+  <append xpath="/items/item[@name='xmasham']">
+    <property name="CustomIconTint" value="FF69B4"/>
+  </append>
+
+  <!-- Roast Turkey -->
+  <set xpath="/items/item[@name='xmasturkey']/property[@name='CustomIcon']/@value">sleeperChickenAnimal</set>
+  <append xpath="/items/item[@name='xmasturkey']">
+    <property name="CustomIconTint" value="D2691E"/>
+  </append>
+
+  <!-- Christmas Cookies -->
+  <set xpath="/items/item[@name='xmascookies']/property[@name='CustomIcon']/@value">foodCornBread</set>
+  <append xpath="/items/item[@name='xmascookies']">
+    <property name="CustomIconTint" value="CD853F"/>
+  </append>
+
+  <!-- Dinner Rolls -->
+  <set xpath="/items/item[@name='xmasrolls']/property[@name='CustomIcon']/@value">foodCornBread</set>
+  <append xpath="/items/item[@name='xmasrolls']">
+    <property name="CustomIconTint" value="DEB887"/>
+  </append>
+
+  <!-- Stuffing -->
+  <set xpath="/items/item[@name='xmasstuffing']/property[@name='CustomIcon']/@value">foodVegetableStew</set>
+  <append xpath="/items/item[@name='xmasstuffing']">
+    <property name="CustomIconTint" value="B8860B"/>
+  </append>
+
+  <!-- Roasted Vegetables -->
+  <set xpath="/items/item[@name='xmasveggies']/property[@name='CustomIcon']/@value">foodCropYuccaFruit</set>
+  <append xpath="/items/item[@name='xmasveggies']">
+    <property name="CustomIconTint" value="FF8C00"/>
+  </append>
+
+  <!-- Candy Cane -->
+  <set xpath="/items/item[@name='xmascandycane']/property[@name='CustomIcon']/@value">meleeWpnClubT1CandyClub</set>
+  <append xpath="/items/item[@name='xmascandycane']">
+    <property name="CustomIconTint" value="FF1493"/>
+  </append>
+
+  <!-- Christmas Cake -->
+  <set xpath="/items/item[@name='xmascake']/property[@name='CustomIcon']/@value">foodPumpkinBread</set>
+  <append xpath="/items/item[@name='xmascake']">
+    <property name="CustomIconTint" value="DC143C"/>
+  </append>
+
+  <!-- DRINK ITEMS -->
+
+  <!-- Champagne -->
+  <set xpath="/items/item[@name='xmaschampagne']/property[@name='CustomIcon']/@value">decoWineBottle</set>
+  <append xpath="/items/item[@name='xmaschampagne']">
+    <property name="CustomIconTint" value="FFD700"/>
+  </append>
+
+  <!-- Hot Cocoa -->
+  <set xpath="/items/item[@name='xmashotcoco']/property[@name='CustomIcon']/@value">drinkJarBlackStrapCoffee</set>
+  <append xpath="/items/item[@name='xmashotcoco']">
+    <property name="CustomIconTint" value="8B4513"/>
+  </append>
+
+  <!-- Peppermint Tea -->
+  <set xpath="/items/item[@name='xmaspepperminttea']/property[@name='CustomIcon']/@value">drinkJarRedTea</set>
+  <append xpath="/items/item[@name='xmaspepperminttea']">
+    <property name="CustomIconTint" value="FF69B4"/>
+  </append>
+</config>

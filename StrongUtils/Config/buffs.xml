@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/buffs">
+    <buff name="buff_strongsworn"
+          name_key="buff_strongsworn_name"
+          description_key="buff_strongsworn_desc"
+          icon="ui_game_symbol_strength_mastery"
+          icon_color="0,200,0">
+      <stack_type value="ignore" />
+    </buff>
+    <buff name="buff_not_strongsworn"
+          name_key="buff_not_strongsworn_name"
+          description_key="buff_not_strongsworn_desc"
+          icon="ui_game_symbol_strength_mastery"
+          icon_color="200,200,0">
+      <stack_type value="ignore" />
+    </buff>
+    <buff name="buff_strongsworn_zone_violation"
+          name_key="buff_strongsworn_zone_violation_name"
+          description_key="buff_strongsworn_zone_violation_desc"
+          tooltip_key="buff_strongsworn_zone_violation_tooltip"
+          icon="ui_game_symbol_strength_mastery"
+          icon_color="200,0,0">
+      <duration value="10" />
+      <stack_type value="replace" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="sysadmin_security_breach"/>
+      </effect_group>
+    </buff>
+  </append>
+
+  <append xpath="/buffs/buff[@name='buffStatusCheck01']">
+    <effect_group name="StrongSworn">
+      <requirement name="CVarCompare" cvar="strongsworn" operation="Equals" value="1"/>
+      <triggered_effect trigger="onSelfBuffUpdate" action="AddBuff" buff="buff_strongsworn">
+        <requirement name="!HasBuff" buff="buff_strongsworn"/>
+      </triggered_effect>
+      <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="buff_not_strongsworn">
+        <requirement name="HasBuff" buff="buff_not_strongsworn"/>
+      </triggered_effect>
+    </effect_group>
+    <effect_group name="NotStrongSworn">
+      <requirement name="CVarCompare" cvar="strongsworn" operation="NotEquals" value="1"/>
+      <triggered_effect trigger="onSelfBuffUpdate" action="AddBuff" buff="buff_not_strongsworn">
+        <requirement name="!HasBuff" buff="buff_not_strongsworn"/>
+      </triggered_effect>
+      <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="buff_strongsworn">
+        <requirement name="HasBuff" buff="buff_strongsworn"/>
+      </triggered_effect>
+    </effect_group>
+  </append>
+</config>

@@ -59,7 +59,6 @@ namespace StrongUtils {
   [HarmonyPatch(typeof(WorldEnvironment), nameof(WorldEnvironment.OnXMLChanged))]
   public class WorldEnvironment_OnXMLChanged_Patch {
     private static void Postfix() {
-      StrongZones.OnXMLChanged();
       StrongCommands.OnXMLChanged();
     }
   }
@@ -78,10 +77,46 @@ namespace StrongUtils {
     }
   }
 
+  [HarmonyPatch(typeof(World), nameof(World.TickEntity))]
+  public class World_TickEntity_Patch {
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+      CodeMatcher codeMatcher = new(instructions);
+      codeMatcher.MatchStartForward(
+          CodeMatch.LoadsArgument(),
+          CodeMatch.Calls(() => ((Entity)null).OnUpdateEntity())
+        )
+        .ThrowIfInvalid("[StrongUtils] Could not find OnUpdateEntity() call");
+      CodeInstruction loadEntityInstruction = codeMatcher.Instruction;
+      codeMatcher.Insert(
+        loadEntityInstruction,
+        CodeInstruction.Call(() => StrongZones.OnUpdateEntity(null))
+      );
+      //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
+      return codeMatcher.Instructions();
+    }
+  }
+
+  [HarmonyPatch(typeof(Prefab), MethodType.Constructor, new[] {typeof(Prefab), typeof(bool)})]
+  public class Prefab_Constructor_Patch {
+    private static void Postfix(Prefab __instance, Prefab _other, bool sharedData) {
+      StrongZones.CloneStrongZoneExtensions(__instance, _other, sharedData);
+    }
+  }
+
+  [HarmonyPatch(typeof(Prefab), nameof(Prefab.ReadFromProperties))]
+  public class Prefab_ReadFromProperties_Patch {
+    private static void Postfix(Prefab __instance) {
+      StrongZones.InitializeStrongZoneExtensions(__instance);
+    }
+  }
+
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
       Harmony harmony = new(_modInstance.Name);
       harmony.PatchAll(Assembly.GetExecutingAssembly());
+      ModEvents.GameAwake.RegisterHandler(ServerLifecycle.OnGameAwake);
+      ModEvents.GameStartDone.RegisterHandler(ServerLifecycle.OnGameStartDone);
+      ModEvents.GameShutdown.RegisterHandler(ServerLifecycle.OnGameShutdown);
       ModEvents.ChatMessage.RegisterHandler(StrongCommands.HandleChatMessage);
     }
   }

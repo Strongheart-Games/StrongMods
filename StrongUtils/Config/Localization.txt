@@ -1,0 +1,8 @@
+﻿Key,Source,Type,english
+buff_strongsworn_name,buffs,Buff,"StrongSworn"
+buff_strongsworn_desc,buffs,Buff,"You have taken the oath of the Underworld. Charon recognizes your soul, granting you passage through the Stronghold gates and access to the Ferryman’s portal network. Your loyalty is rewarded with safe passage through the realms of the dead."
+buff_not_strongsworn_name,buffs,Buff,"The Unclaimed"
+buff_not_strongsworn_desc,buffs,Buff,"You walk the wasteland without the Ferryman's mark. The Stronghold remains barred to you, and the fast travel portals will not respond to your touch. You are a nomad in the eyes of the gods, surviving only by your own grit."
+buff_strongsworn_zone_violation_name,buffs,Buff,"Stygian Exile"
+buff_strongsworn_zone_violation_desc,buffs,Buff,"You have trespassed into a forbidden sector or abandoned your post. The weight of the Styx pulls at your limbs, draining your stamina and clouding your vision. Return to authorized StrongSworn territory before the underworld claims you entirely."
+buff_strongsworn_zone_violation_tooltip,buffs,Buff,"The Ferryman’s curse weighs heavy. Return to your designated zone to lift the penalty."

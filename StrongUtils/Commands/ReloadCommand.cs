@@ -18,11 +18,20 @@ namespace StrongUtils.Commands {
     }
 
     public override void Execute(List<string> @params, CommandSenderInfo senderInfo) {
-      try {
-        WorldStaticData.ReloadAllXmlsSync();
-      } catch (Exception e) {
-        Log.Error("Error in ReloadCommand.Execute: " + e.Message);
+      var subcommand = @params.Count > 0 ? @params[0].ToLower() : "xml";
+      switch (subcommand) {
+        case "xml":
+          try {
+            WorldStaticData.ReloadAllXmlsSync();
+          } catch (Exception e) {
+            Log.Error("Error in ReloadCommand.Execute: " + e.Message);
+          }
+          break;
+        case "strongzones":
+          StrongZones.UpdatePrefabZones();
+          break;
       }
+
     }
   }
 }
