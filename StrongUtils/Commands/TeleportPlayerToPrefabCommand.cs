@@ -51,7 +51,7 @@ namespace StrongUtils.Commands {
       }
       // TODO: Pick nearest prefab
       PrefabInstance prefab = matchingPrefabs[0];
-      coordinates = $"{prefab.boundingBoxPosition.x} {prefab.boundingBoxPosition.y} {prefab.boundingBoxPosition.z}";
+      coordinates = $"{prefab.boundingBoxPosition.x} -1 {prefab.boundingBoxPosition.z}";
       return true;
     }
 
