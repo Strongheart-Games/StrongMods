@@ -2,33 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using HarmonyLib;
 using UnityEngine;
 
 namespace StrongUtils {
   public class StrongZones {
-    public delegate void StrongZoneCallback(EntityPlayer player, StrongZone zone);
+    public delegate void EnemyStatusCallback(EntityEnemy enemy, StrongZone zone);
+
+    public delegate void PlayerStatusCallback(EntityPlayer player, StrongZone zone);
 
     private const string SConfigFileName = "strong_zones.xml";
     private const string SDefaultConfig = "<config></config>";
 
     private static StrongZones s_zones;
 
-    private readonly List<StrongZone> _prefabZones = new();
+    private static readonly List<PlayerStatusCallback> s_playerEnterCallbacks = new();
+    private static readonly List<PlayerStatusCallback> s_playerLeaveCallbacks = new();
+    private static readonly List<EnemyStatusCallback> s_enemyEnterCallbacks = new();
+    private static readonly List<EnemyStatusCallback> s_enemyLeaveCallbacks = new();
     private readonly List<StrongZone> _customZones = new();
-    private readonly Dictionary<long, List<StrongZone>> _zonesByChunk = new();
-    private readonly Dictionary<long, ChunkProtectionLevel> _protectionLevelByChunk = new();
+    private readonly Dictionary<long, List<StrongZone>> _enemyZonesByChunk = new();
+    private readonly Dictionary<long, List<StrongZone>> _playerZonesByChunk = new();
 
-    private static readonly List<StrongZoneCallback> s_enterCallbacks = new();
-    private static readonly List<StrongZoneCallback> s_leaveCallbacks = new();
+    private readonly List<StrongZone> _prefabZones = new();
+    private readonly Dictionary<long, ChunkProtectionLevel> _protectionLevelByChunk = new();
 
     private StrongZones(List<StrongZone> prefabZones = null, List<StrongZone> customZones = null) {
       _prefabZones = prefabZones ?? _prefabZones;
       _customZones = customZones ?? _customZones;
       InitializeChunkCaches();
-      Log.Out($"[StrongZones] Loaded {prefabZones?.Count ?? 0} prefab zones and {customZones?.Count ?? 0} custom zones");
+      Log.Out(
+        $"[StrongZones] Loaded {prefabZones?.Count ?? 0} prefab zones and {customZones?.Count ?? 0} custom zones");
       Log.Out($"[StrongZones] Prefab zones: \n  {string.Join("\n  ", _prefabZones)}");
       Log.Out($"[StrongZones] Custom zones: \n  {string.Join("\n  ", _customZones)}");
     }
@@ -61,11 +66,19 @@ namespace StrongUtils {
             continue;
           }
 
-          if (!_zonesByChunk.ContainsKey(key)) {
-            _zonesByChunk.Add(key, new List<StrongZone>());
+          if (!_playerZonesByChunk.ContainsKey(key)) {
+            _playerZonesByChunk.Add(key, new List<StrongZone>());
           }
 
-          _zonesByChunk[key].Add(zone);
+          _playerZonesByChunk[key].Add(zone);
+
+          if (zone.NoHostiles) {
+            if (!_enemyZonesByChunk.ContainsKey(key)) {
+              _enemyZonesByChunk.Add(key, new List<StrongZone>());
+            }
+
+            _enemyZonesByChunk[key].Add(zone);
+          }
 
           if (zone.NoReset) {
             _protectionLevelByChunk.Add(key, ChunkProtectionLevel.LandClaim);
@@ -76,17 +89,29 @@ namespace StrongUtils {
 
     public static void Init() {
       StrongSwornOnlyEnforcer.Init();
+      NoHostileEnforcer.Init();
       ConfigManager.Instance.RegisterConfigFile(SConfigFileName, SDefaultConfig, UpdateCustomZones);
-      s_zones = new StrongZones(prefabZones: GeneratePrefabZones(), customZones: GenerateCustomZones());
+      s_zones = new StrongZones(GeneratePrefabZones(), GenerateCustomZones());
     }
 
-    public static void RegisterCallbacks(StrongZoneCallback onEnter, StrongZoneCallback onLeave) {
+    public static void RegisterPlayerCallbacks(PlayerStatusCallback onEnter = null,
+      PlayerStatusCallback onLeave = null) {
       if (onEnter != null) {
-        s_enterCallbacks.Add(onEnter);
+        s_playerEnterCallbacks.Add(onEnter);
       }
 
       if (onLeave != null) {
-        s_leaveCallbacks.Add(onLeave);
+        s_playerLeaveCallbacks.Add(onLeave);
+      }
+    }
+
+    public static void RegisterEnemyCallbacks(EnemyStatusCallback onEnter = null, EnemyStatusCallback onLeave = null) {
+      if (onEnter != null) {
+        s_enemyEnterCallbacks.Add(onEnter);
+      }
+
+      if (onLeave != null) {
+        s_enemyLeaveCallbacks.Add(onLeave);
       }
     }
 
@@ -101,16 +126,22 @@ namespace StrongUtils {
     }
 
     public static void OnUpdateEntity(Entity entity) {
-      if (entity is EntityPlayer player) {
-        OnUpdatePlayer(player);
+      Dictionary<long, List<StrongZone>> zonesByChunk;
+      switch (entity) {
+        case EntityPlayer:
+          zonesByChunk = s_zones._playerZonesByChunk;
+          break;
+        case EntityEnemy:
+          zonesByChunk = s_zones._enemyZonesByChunk;
+          break;
+        default:
+          return;
       }
-    }
 
-    private static void OnUpdatePlayer(EntityPlayer player) {
-      Vector2i chunk = World.toChunkXZ(player.position);
+      Vector2i chunk = World.toChunkXZ(entity.position);
       var key = WorldChunkCache.MakeChunkKey(chunk.x, chunk.y);
-      List<StrongZone> zones = s_zones._zonesByChunk.GetValueSafe(key);
-      UpdateCurrentZones(player, zones?.Where(z => z.Contains(player.position)).ToList());
+      List<StrongZone> zones = zonesByChunk.GetValueSafe(key);
+      UpdateCurrentZones(entity, zones?.Where(z => z.Contains(entity.position)).ToList());
     }
 
     private static void UpdateCurrentZones(Entity entity, List<StrongZone> newZones) {
@@ -121,20 +152,34 @@ namespace StrongUtils {
       if (entered is not null) {
         foreach (StrongZone zone in entered) {
           Log.Out($"[StrongZones] {entity.name} entered {zone.Name}");
-          NotifyPlayerEntered(entity as EntityPlayer, zone);
+          switch (entity) {
+            case EntityPlayer player:
+              NotifyPlayerEntered(player, zone);
+              break;
+            case EntityEnemy enemy:
+              NotifyEnemyEntered(enemy, zone);
+              break;
+          }
         }
       }
 
       if (left is not null) {
         foreach (StrongZone zone in left) {
           Log.Out($"[StrongZones] {entity.name} left {zone.Name}");
-          NotifyPlayerLeft(entity as EntityPlayer, zone);
+          switch (entity) {
+            case EntityPlayer player:
+              NotifyPlayerLeft(player, zone);
+              break;
+            case EntityEnemy enemy:
+              NotifyEnemyLeft(enemy, zone);
+              break;
+          }
         }
       }
     }
 
     internal static void NotifyPlayerEntered(EntityPlayer player, StrongZone zone) {
-      foreach (StrongZoneCallback callback in s_enterCallbacks) {
+      foreach (PlayerStatusCallback callback in s_playerEnterCallbacks) {
         try {
           callback(player, zone);
         } catch (Exception ex) {
@@ -144,9 +189,29 @@ namespace StrongUtils {
     }
 
     internal static void NotifyPlayerLeft(EntityPlayer player, StrongZone zone) {
-      foreach (StrongZoneCallback callback in s_leaveCallbacks) {
+      foreach (PlayerStatusCallback callback in s_playerLeaveCallbacks) {
         try {
           callback(player, zone);
+        } catch (Exception ex) {
+          Log.Error($"[StrongZones] Error in leave callback: {ex}");
+        }
+      }
+    }
+
+    internal static void NotifyEnemyEntered(EntityEnemy enemy, StrongZone zone) {
+      foreach (EnemyStatusCallback callback in s_enemyEnterCallbacks) {
+        try {
+          callback(enemy, zone);
+        } catch (Exception ex) {
+          Log.Error($"[StrongZones] Error in enter callback: {ex}");
+        }
+      }
+    }
+
+    internal static void NotifyEnemyLeft(EntityEnemy enemy, StrongZone zone) {
+      foreach (EnemyStatusCallback callback in s_enemyLeaveCallbacks) {
+        try {
+          callback(enemy, zone);
         } catch (Exception ex) {
           Log.Error($"[StrongZones] Error in leave callback: {ex}");
         }
@@ -212,7 +277,7 @@ namespace StrongUtils {
     }
 
     public static void UpdatePrefabZones() {
-      s_zones = new StrongZones(prefabZones: GeneratePrefabZones());
+      s_zones = new StrongZones(GeneratePrefabZones());
     }
 
     private static List<StrongZone> GeneratePrefabZones(List<PrefabInstance> prefabs = null) {
@@ -227,6 +292,7 @@ namespace StrongUtils {
           zones.Add(zone);
         }
       }
+
       return zones;
     }
 
@@ -235,6 +301,7 @@ namespace StrongUtils {
       if (shouldHaveStrongZone) {
         Log.Out($"[StrongZones] Trying to generate StrongZone for {prefabInstance.name}");
       }
+
       zone = null;
       Prefab prefab = prefabInstance.prefab;
       List<string> tags = prefab.GetStrongZoneTags();
@@ -242,12 +309,14 @@ namespace StrongUtils {
         if (shouldHaveStrongZone) {
           Log.Out($"[StrongZones] Skipping {prefabInstance.name} because it isn't a StrongZone");
         }
+
         return false;
       }
 
       var name = prefabInstance.name;
       var cornerXZ = new Vector2i(prefabInstance.boundingBoxPosition.x, prefabInstance.boundingBoxPosition.z);
-      var oppositeCornerXZ = cornerXZ + new Vector2i(prefabInstance.boundingBoxSize.x, prefabInstance.boundingBoxSize.z);
+      Vector2i oppositeCornerXZ =
+        cornerXZ + new Vector2i(prefabInstance.boundingBoxSize.x, prefabInstance.boundingBoxSize.z);
 
       zone = new StrongZone(name, cornerXZ, oppositeCornerXZ, tags);
       Log.Out($"[StrongZones] Generated StrongZone: {zone}");
@@ -261,6 +330,7 @@ namespace StrongUtils {
         DynamicProperties properties = prefab.properties.Classes["StrongZones"];
         tags = properties.Contains("Tags") ? properties.Values["Tags"].Split(',').ToList() : null;
       }
+
       prefab.SetStrongZoneTags(tags);
     }
 
@@ -269,6 +339,7 @@ namespace StrongUtils {
       if (!sharedData && tags is not null) {
         tags = new List<string>(tags);
       }
+
       into.SetStrongZoneTags(tags);
     }
 
@@ -280,7 +351,6 @@ namespace StrongUtils {
       zones ??= ConfigManager.Instance.ReadConfigFile(SConfigFileName);
       return zones.Elements("zone").Select(StrongZone.FromXml).ToList();
     }
-
   }
 
   public class StrongZone {
@@ -390,17 +460,17 @@ namespace StrongUtils {
     }
 
     public override string ToString() {
-      return $"StrongZone(name={Name}, cornerXZ={CornerXZ}, oppositeCornerXZ={OppositeCornerXZ}, tags={string.Join(",", Tags)})";
+      return
+        $"StrongZone(name={Name}, cornerXZ={CornerXZ}, oppositeCornerXZ={OppositeCornerXZ}, tags={string.Join(",", Tags)})";
     }
   }
 
   public static class StrongSwornOnlyEnforcer {
     public static void Init() {
-      StrongZones.RegisterCallbacks(OnPlayerEntered, null);
+      StrongZones.RegisterPlayerCallbacks(OnPlayerEntered);
     }
 
     private static void OnPlayerEntered(EntityPlayer player, StrongZone zone) {
-      Log.Out($"[StrongSwornEnforcer] Player {player.PlayerDisplayName} entered zone {zone.Name}; tags: {string.Join(",", zone.Tags)}");
       if (!zone.StrongSwornOnly || player.IsStrongSworn()) {
         return;
       }
@@ -408,10 +478,11 @@ namespace StrongUtils {
       player.Buffs.AddBuff("buff_strongsworn_zone_violation");
 
       if (!TryGetRandomSpawnPositionOutsideZone(zone, out Vector3 newPosition)) {
-        Log.Out($"[StrongSwornEnforcer] Could not find random spawn position outside zone {zone.Name}");
+        Log.Out($"[StrongSwornEnforcer] Could not find random spawn position outside {zone.Name}");
         return;
       }
-      Log.Out($"[StrongSwornEnforcer] Teleporting {player.PlayerDisplayName} to {newPosition}");
+
+      Log.Out($"[StrongSwornEnforcer] Teleporting {player.PlayerDisplayName} out of {zone.Name}");
       if (player.isEntityRemote) {
         SingletonMonoBehaviour<ConnectionManager>.Instance.Clients.ForEntityId(player.entityId)
           .SendPackage(NetPackageManager.GetPackage<NetPackageTeleportPlayer>().Setup(newPosition));
@@ -423,7 +494,23 @@ namespace StrongUtils {
     private static bool TryGetRandomSpawnPositionOutsideZone(StrongZone zone, out Vector3 position) {
       var minRange = (int)Math.Ceiling(zone.Radius) + 2;
       var maxRange = minRange + 5;
-      return GameManager.Instance.World.GetRandomSpawnPositionMinMaxToPosition(zone.Center, minRange, maxRange, 1, false, out position);
+      return GameManager.Instance.World.GetRandomSpawnPositionMinMaxToPosition(zone.Center, minRange, maxRange, 1,
+        false, out position);
+    }
+  }
+
+  public static class NoHostileEnforcer {
+    public static void Init() {
+      StrongZones.RegisterEnemyCallbacks(OnEnemyEntered);
+    }
+
+    private static void OnEnemyEntered(EntityEnemy enemy, StrongZone zone) {
+      if (!zone.NoHostiles) {
+        return;
+      }
+
+      Log.Out($"[NoHostileEnforcer] Despawning enemy {enemy.EntityName} found in {zone.Name}");
+      enemy.Despawn();
     }
   }
 
@@ -484,14 +571,12 @@ namespace StrongUtils {
   public static class PrefabExtensions {
     private static readonly ConditionalWeakTable<Prefab, List<string>> s_strongZoneTags = new();
 
-    public static List<string> GetStrongZoneTags(this Prefab prefab)
-    {
+    public static List<string> GetStrongZoneTags(this Prefab prefab) {
       // GetOrCreateValue is thread-safe and ensures we always return a valid list
       return s_strongZoneTags.GetOrCreateValue(prefab);
     }
 
-    public static void SetStrongZoneTags(this Prefab prefab, List<string> newTags)
-    {
+    public static void SetStrongZoneTags(this Prefab prefab, List<string> newTags) {
       s_strongZoneTags.Remove(prefab);
       s_strongZoneTags.Add(prefab, newTags);
     }
