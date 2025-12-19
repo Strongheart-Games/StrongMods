@@ -23,11 +23,11 @@
         <grid pos="20,-170" depth="2" cols="2" rows="0" cell_width="110" cell_height="26" repeat_content="false"
               arrangement="horizontal">
           <label text="- [00ff00]/rules[-]" font_size="22" />
-          <label text="Open the Stronghold: Hades rules in your browser" font_size="22" />
-          <label text="- [00ff00]/handbook[-]" font_size="22" />
-          <label text="Open the Stronghold: Hades handbook in your browser" font_size="22" />
-          <label text="- [00ff00]/ferryman[-]" font_size="22" />
-          <label text="Talk to The Ferryman in Discord" font_size="22" />
+          <label text="Open the rules in your browser" font_size="22" />
+          <label text="- [00ff00]/guide[-]" font_size="22" />
+          <label text="Open the survival guide in your browser" font_size="22" />
+          <label text="- [00ff00]/map[-]" font_size="22" />
+          <label text="Open the interactive map in your browser" font_size="22" />
           <label text="- [00ff00]/discord[-]" font_size="22" />
           <label text="Join our Discord" font_size="22" />
         </grid>
