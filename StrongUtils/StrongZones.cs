@@ -94,6 +94,11 @@ namespace StrongUtils {
       s_zones = new StrongZones(GeneratePrefabZones(), GenerateCustomZones());
     }
 
+    public static List<StrongZone> GetPlayerZonesForChunk(Vector3i pos) {
+      var key = WorldChunkCache.MakeChunkKey(World.toChunkXZ(pos.x), World.toChunkXZ(pos.z));
+      return s_zones._playerZonesByChunk.GetValueSafe(key);
+    }
+
     public static void RegisterPlayerCallbacks(PlayerStatusCallback onEnter = null,
       PlayerStatusCallback onLeave = null) {
       if (onEnter != null) {
@@ -288,50 +293,68 @@ namespace StrongUtils {
       }
 
       foreach (PrefabInstance prefab in prefabs) {
-        if (TryGeneratePrefabZone(prefab, out StrongZone zone)) {
-          zones.Add(zone);
+        if (TryGeneratePrefabZones(prefab, out List<StrongZone> zs)) {
+          zones.AddRange(zs);
         }
       }
 
       return zones;
     }
 
-    private static bool TryGeneratePrefabZone(PrefabInstance prefabInstance, out StrongZone zone) {
-      var shouldHaveStrongZone = prefabInstance.name.ContainsCaseInsensitive("shs3");
-      if (shouldHaveStrongZone) {
-        Log.Out($"[StrongZones] Trying to generate StrongZone for {prefabInstance.name}");
-      }
-
-      zone = null;
+    private static bool TryGeneratePrefabZones(PrefabInstance prefabInstance, out List<StrongZone> zones) {
+      zones = null;
       Prefab prefab = prefabInstance.prefab;
       List<string> tags = prefab.GetStrongZoneTags();
-      if (tags is null || tags.Count == 0) {
-        if (shouldHaveStrongZone) {
-          Log.Out($"[StrongZones] Skipping {prefabInstance.name} because it isn't a StrongZone");
-        }
+      var deadZone = prefab.GetClaimDeadZoneMeters();
 
-        return false;
+      if (tags is null || tags.Count == 0) {
+        if (!prefab.bTraderArea) {
+          return false;
+        }
+        tags = new List<string> { "no_claims" };
+        deadZone = 100;
       }
 
-      var name = prefabInstance.name;
+      var name = prefabInstance.name.Replace('.', '_');
       var cornerXZ = new Vector2i(prefabInstance.boundingBoxPosition.x, prefabInstance.boundingBoxPosition.z);
-      Vector2i oppositeCornerXZ =
-        cornerXZ + new Vector2i(prefabInstance.boundingBoxSize.x, prefabInstance.boundingBoxSize.z);
+      var oppositeCornerXZ = new Vector2i(prefabInstance.boundingBoxSize.x, prefabInstance.boundingBoxSize.z);
+      oppositeCornerXZ += cornerXZ;
 
-      zone = new StrongZone(name, cornerXZ, oppositeCornerXZ, tags);
-      Log.Out($"[StrongZones] Generated StrongZone: {zone}");
+      if (tags.Contains("no_claims")) {
+        tags = tags.Where(t => t != "no_claims").ToList();
+        // Add half the land claim size to ensure the entire claim is outside the dead zone
+        deadZone += GameStats.GetInt(EnumGameStats.LandClaimSize) / 2;
+        var noClaimsName = $"{name}_no_claims";
+        var noClaimsCornerXZ = new Vector2i(-deadZone, -deadZone);
+        noClaimsCornerXZ += cornerXZ;
+        var noClaimsOppositeCornerXZ = new Vector2i(deadZone, deadZone);
+        noClaimsOppositeCornerXZ += oppositeCornerXZ;
+        var noClaimsTags = new List<string> { "no_claims" };
+        var noClaimsZone = new StrongZone(noClaimsName, noClaimsCornerXZ, noClaimsOppositeCornerXZ, noClaimsTags);
+        zones = new List<StrongZone> { noClaimsZone };
+      }
+
+      if (tags.Count == 0) {
+        return true;
+      }
+
+      zones ??= new List<StrongZone>();
+      zones.Add(new StrongZone(name, cornerXZ, oppositeCornerXZ, tags));
       return true;
     }
 
     public static void InitializeStrongZoneExtensions(Prefab prefab) {
       List<string> tags = null;
+      var deadZone = 0;
       if (prefab.properties.Classes.ContainsKey("StrongZones")) {
         Log.Out($"[StrongZones] Prefab {prefab.PrefabName} has StrongZones config");
         DynamicProperties properties = prefab.properties.Classes["StrongZones"];
         tags = properties.Contains("Tags") ? properties.Values["Tags"].Split(',').ToList() : null;
+        properties.ParseInt("ClaimDeadZoneMeters", ref deadZone);
       }
 
       prefab.SetStrongZoneTags(tags);
+      prefab.SetClaimDeadZoneMeters(deadZone);
     }
 
     public static void CloneStrongZoneExtensions(Prefab into, Prefab from, bool sharedData = false) {
@@ -340,7 +363,10 @@ namespace StrongUtils {
         tags = new List<string>(tags);
       }
 
+      var deadZone = from.GetClaimDeadZoneMeters();
+
       into.SetStrongZoneTags(tags);
+      into.SetClaimDeadZoneMeters(deadZone);
     }
 
     private static void UpdateCustomZones(XElement element) {
@@ -375,6 +401,7 @@ namespace StrongUtils {
       Radius = Vector3.Distance(Center, new Vector3(CornerXZ.x, -1, CornerXZ.y));
       NoReset = Tags.Contains("no_reset");
       NoHostiles = Tags.Contains("no_hostiles");
+      NoClaims = Tags.Contains("no_claims");
       StrongSwornOnly = Tags.Contains("strongsworn_only");
     }
 
@@ -384,6 +411,7 @@ namespace StrongUtils {
     public float Radius { get; }
     public bool NoReset { get; }
     public bool NoHostiles { get; }
+    public bool NoClaims { get; }
     public bool StrongSwornOnly { get; }
 
     public bool Contains(Vector3 pos) {
@@ -514,6 +542,30 @@ namespace StrongUtils {
     }
   }
 
+  public static class NoClaimsEnforcer {
+    public static void RejectLandClaims(PlatformUserIdentifierAbs player, List<BlockChangeInfo> changes) {
+      for (var x = 0; x < changes.Count; x++) {
+        BlockChangeInfo change = changes[x];
+        if (change.blockValue.Block is not BlockLandClaim) {
+          continue;
+        }
+
+        BlockValue oldBlock = GameManager.Instance.World.ChunkCache.GetBlock(change.pos);
+        if (oldBlock.Block is BlockLandClaim) {
+          continue;
+        }
+
+        List<StrongZone> zones = StrongZones.GetPlayerZonesForChunk(change.pos);
+        if (zones is null || !zones.Any(z => z.NoClaims && z.Contains(change.pos))) {
+          continue;
+        }
+
+        Log.Out($"[NoClaimsEnforcer] Rejecting attempt to place claim at {change.pos}");
+        changes.RemoveAt(x);
+      }
+    }
+  }
+
   public class StrongZoneChunkProtector {
     private readonly Dictionary<long, ChunkProtectionLevel> _sChunkProtectionLevels;
     private readonly Dictionary<HashSetLong, ChunkProtectionLevel> _sGroupProtectionLevels;
@@ -568,17 +620,39 @@ namespace StrongUtils {
     }
   }
 
+  public class PrefabExtensionData {
+    public int ClaimDeadZoneMeters;
+    public List<string> StrongZoneTags = new();
+  }
+
   public static class PrefabExtensions {
-    private static readonly ConditionalWeakTable<Prefab, List<string>> s_strongZoneTags = new();
+    private static readonly ConditionalWeakTable<Prefab, PrefabExtensionData> s_prefabExtensionData = new();
+
+    public static PrefabExtensionData GetOrCreatePrefabExtensionData(this Prefab prefab) {
+      // GetOrCreateValue is thread-safe and ensures we always return a valid result
+      return s_prefabExtensionData.GetOrCreateValue(prefab);
+    }
+
+    public static PrefabExtensionData GetPrefabExtensionData(this Prefab prefab) {
+      var hasData = s_prefabExtensionData.TryGetValue(prefab, out PrefabExtensionData data);
+      return hasData ? data : null;
+    }
 
     public static List<string> GetStrongZoneTags(this Prefab prefab) {
       // GetOrCreateValue is thread-safe and ensures we always return a valid list
-      return s_strongZoneTags.GetOrCreateValue(prefab);
+      return GetPrefabExtensionData(prefab)?.StrongZoneTags;
     }
 
     public static void SetStrongZoneTags(this Prefab prefab, List<string> newTags) {
-      s_strongZoneTags.Remove(prefab);
-      s_strongZoneTags.Add(prefab, newTags);
+      GetOrCreatePrefabExtensionData(prefab).StrongZoneTags = newTags;
+    }
+
+    public static int GetClaimDeadZoneMeters(this Prefab prefab) {
+      return GetPrefabExtensionData(prefab)?.ClaimDeadZoneMeters ?? 0;
+    }
+
+    public static void SetClaimDeadZoneMeters(this Prefab prefab, int meters) {
+      GetOrCreatePrefabExtensionData(prefab).ClaimDeadZoneMeters = meters;
     }
   }
 }

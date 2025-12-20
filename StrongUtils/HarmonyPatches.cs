@@ -65,6 +65,9 @@ namespace StrongUtils {
 
   [HarmonyPatch(typeof(GameManager), nameof(GameManager.ChangeBlocks))]
   public class GameManager_ChangeBlocks_Patch {
+    private static void Prefix(PlatformUserIdentifierAbs persistentPlayerId, List<BlockChangeInfo> _blocksToChange) {
+      NoClaimsEnforcer.RejectLandClaims(persistentPlayerId, _blocksToChange);
+    }
     private static void Postfix(PlatformUserIdentifierAbs persistentPlayerId, List<BlockChangeInfo> _blocksToChange) {
       StrongAudit.Audit_GameManager_ChangeBlocks(persistentPlayerId, _blocksToChange);
     }
