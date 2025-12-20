@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- TODO: figure out how to space them out
+  <setattribute xpath="/Sounds/SoundDataNode[@name='Supply_Crate_Plane_lp']/AudioSource" name="name">@:Sounds/Prefabs/AudioSource_UI_Item.prefab</setattribute>
+  <setattribute xpath="/Sounds/SoundDataNode[@name='Supply_Crate_Plane_lp']/AudioClip" name="ClipName">@:Sounds/Items/coins_place.wav</setattribute>
+  -->
+</config>
