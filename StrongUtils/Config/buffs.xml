@@ -27,6 +27,28 @@
         <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="sysadmin_security_breach"/>
       </effect_group>
     </buff>
+    <buff name="buff_no_claims"
+          name_key="buff_no_claims_name"
+          description_key="buff_no_claims_desc"
+          icon="ui_game_symbol_twitch_no_placing_land_claim"
+          icon_color="200,200,0">
+      <stack_type value="ignore" />
+      <effect_group>
+        <passive_effect name="DisableItem" operation="base_set" value="1" tags="landclaim" />
+      </effect_group>
+    </buff>
+    <buff name="buff_no_claims_violation"
+          name_key="buff_no_claims_violation_name"
+          description_key="buff_no_claims_violation_desc"
+          tooltip_key="buff_no_claims_violation_tooltip"
+          icon="ui_game_symbol_twitch_no_placing_land_claim"
+          icon_color="200,0,0">
+      <duration value="10" />
+      <stack_type value="replace" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="keystone_build_warning"/>
+      </effect_group>
+    </buff>
   </append>
 
   <append xpath="/buffs/buff[@name='buffStatusCheck01']">

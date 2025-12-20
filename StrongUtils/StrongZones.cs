@@ -90,6 +90,7 @@ namespace StrongUtils {
     public static void Init() {
       StrongSwornOnlyEnforcer.Init();
       NoHostileEnforcer.Init();
+      NoClaimsEnforcer.Init();
       ConfigManager.Instance.RegisterConfigFile(SConfigFileName, SDefaultConfig, UpdateCustomZones);
       s_zones = new StrongZones(GeneratePrefabZones(), GenerateCustomZones());
     }
@@ -311,6 +312,7 @@ namespace StrongUtils {
         if (!prefab.bTraderArea) {
           return false;
         }
+
         tags = new List<string> { "no_claims" };
         deadZone = 100;
       }
@@ -543,7 +545,24 @@ namespace StrongUtils {
   }
 
   public static class NoClaimsEnforcer {
+    public static void Init() {
+      StrongZones.RegisterPlayerCallbacks(OnPlayerEntered, OnPlayerLeft);
+    }
+
+    private static void OnPlayerEntered(EntityPlayer player, StrongZone zone) {
+      if (zone.NoClaims && !player.Buffs.HasBuff("buff_no_claims")) {
+        player.Buffs.AddBuff("buff_no_claims");
+      }
+    }
+
+    private static void OnPlayerLeft(EntityPlayer player, StrongZone zone) {
+      if (zone.NoClaims && !player.GetCurrentZones().Any(z => z.NoClaims) && player.Buffs.HasBuff("buff_no_claims")) {
+        player.Buffs.RemoveBuff("buff_no_claims");
+      }
+    }
+
     public static void RejectLandClaims(PlatformUserIdentifierAbs player, List<BlockChangeInfo> changes) {
+      var addBuff = false;
       for (var x = 0; x < changes.Count; x++) {
         BlockChangeInfo change = changes[x];
         if (change.blockValue.Block is not BlockLandClaim) {
@@ -562,7 +581,20 @@ namespace StrongUtils {
 
         Log.Out($"[NoClaimsEnforcer] Rejecting attempt to place claim at {change.pos}");
         changes.RemoveAt(x);
+        addBuff = true;
       }
+
+      if (!addBuff) {
+        return;
+      }
+
+      PersistentPlayerData playerData = GameManager.Instance.GetPersistentPlayerList()?.GetPlayerData(player);
+      if (playerData is null) {
+        // We don't expect to get here as this should only happen if persistentPlayerId is null.
+        return;
+      }
+      EntityPlayer playerEntity = GameManager.Instance.World.Players.dict[playerData.EntityId];
+      playerEntity?.Buffs.AddBuff("buff_no_claims_violation");
     }
   }
 
