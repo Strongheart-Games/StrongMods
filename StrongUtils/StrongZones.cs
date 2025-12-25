@@ -556,7 +556,11 @@ namespace StrongUtils {
     }
 
     private static void OnPlayerLeft(EntityPlayer player, StrongZone zone) {
-      if (zone.NoClaims && !player.GetCurrentZones().Any(z => z.NoClaims) && player.Buffs.HasBuff("buff_no_claims")) {
+      if (zone.NoClaims && player.Buffs.HasBuff("buff_no_claims")) {
+        List<StrongZone> zones = player.GetCurrentZones();
+        if (zones is not null && zones.Any(z => z.NoClaims)) {
+          return;
+        }
         player.Buffs.RemoveBuff("buff_no_claims");
       }
     }
