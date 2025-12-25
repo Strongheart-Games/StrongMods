@@ -20,6 +20,7 @@
     <!-- TODO: Patch DynamicProperties so value can be pulled from the body as well. -->
     <property name="chat_command_helper_privileged_commands" value="
       bed,
+      sh,
       stronghold,
       shop,
       store,
