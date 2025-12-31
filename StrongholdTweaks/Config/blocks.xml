@@ -1,5 +1,8 @@
 <config>
 
+  <!-- Remove all tree seed drops -->
+  <remove xpath="/blocks/block/drop[starts-with(@name, 'treePlanted')]" />
+
   <!-- Workstations and Campfires allow all rotations -->
   <remove xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']]/property[@name='OnlySimpleRotations']" />
   <setattribute xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']]/property[@name='AllowedRotations']" name="value">All</setattribute>
@@ -7,6 +10,7 @@
     <property name="AllowedRotations" value="All" />
   </append>
 
+  <!-- StrongStones -->
   <append xpath="/blocks">
 
     <block name="block_strongstone">
@@ -50,20 +54,6 @@
     <drop event="Destroy" name="warpPadBlockPortable" count="1"/>
     <drop event="Fall" name="warpPadBlockPortable" count="1" prob=".9" stick_chance=".9"/>
   </append>
-
-  <!-- Leave around stubs for the old hordestones in case someone has one in their inventories -->
-  <block name="block_hordestone_stronghold">
-    <property name="CreativeMode" value="None" />
-  </block>
-  <block name="block_hordestone_elite_stronghold">
-    <property name="CreativeMode" value="None" />
-  </block>
-  <block name="block_hordestone_variant_helper_stronghold">
-    <property name="CreativeMode" value="None" />
-  </block>
-
-  <!-- Remove all tree seed drops -->
-  <remove xpath="/blocks/block/drop[starts-with(@name, 'treePlanted')]" />
 
   <!-- All blocks not explicitly set as unstackable will stack to 65k. -->
   <setattribute xpath="/blocks/block/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
