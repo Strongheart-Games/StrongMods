@@ -1,0 +1,30 @@
+﻿Key,Source,Context,English
+BuffBitchAOE,buffs,Buff,Banshee
+BuffBitchAOEName,buffs,buff,Banshee nearby
+BuffBitchAOETooltip,buffs,buff,The Banshee is on the hunt
+BuffBitchAOEIncDesc,buffs,Buff,"This lady will never find peace. Not only experienced stalkers avoid her, zombies themselves try to stay away from her. And the Banshee is next to you. If you are not ready to meet her, you better run away. If she takes significant damage, Hysteria will begin.\n\nThe mere sight of this creature frightens you. Additional weak expenditure of stress resistance every second while you are near it. Your eyes darkened and everything swam. But you can still RUN!!!"
+BuffReducedProtectionAOEIncDesc,buffs,Buff,"The Banshee always knows where to hit.\nYour physical damage defense is reduced by [FFB800]50%[-]"
+bossBitch,entityclasses,Entity,[FFB800]Mini BOSS[-] BANSHEE
+perkBossBitchName,progression,perk,Banshee
+perkBossBitchDesc,progression,perk,"It's best not to disturb this lady, she's driven only by the desire to cut everyone into pieces. But everyone has their weak points. Find them by killing as many of these creatures as possible.\n\n[DECEA3]Currently killed: {cvar(CountBossBitch:0)}[-]"
+Bitch_LevelUP,UI,Tooltip,Increased passive skill: Banshee
+perkBitchRank1Desc,progression,Skills,Kill the Banshee 2 time
+perkBitchRank1LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]3%[-]"
+perkBitchRank2Desc,progression,Skills,Kill the Banshee 5 time
+perkBitchRank2LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]6%[-]"
+perkBitchRank3Desc,progression,Skills,Kill the Banshee 10 time
+perkBitchRank3LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]9%[-]"
+perkBitchRank4Desc,progression,Skills,Kill the Banshee 15 time
+perkBitchRank4LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]12%[-]"
+perkBitchRank5Desc,progression,Skills,Kill the Banshee 25 time
+perkBitchRank5LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]15%[-]"
+perkBitchRank6Desc,progression,Skills,Kill the Banshee 35 time
+perkBitchRank6LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]18%[-], Damage reduction from the Banshee by [DECEA3]5%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]6%[-]"
+perkBitchRank7Desc,progression,Skills,Kill the Banshee 50 time
+perkBitchRank7LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]21%[-], Damage reduction from the Banshee by [DECEA3]10%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]12%[-]"
+perkBitchRank8Desc,progression,Skills,Kill the Banshee 70 time
+perkBitchRank8LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]24%[-], Damage reduction from the Banshee by [DECEA3]15%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]18%[-]"
+perkBitchRank9Desc,progression,Skills,Kill the Banshee 90 time
+perkBitchRank9LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]27%[-], Damage reduction from the Banshee by [DECEA3]20%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]24%[-]"
+perkBitchRank10Desc,progression,Skills,Kill the Banshee 120 time
+perkBitchRank10LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]30%[-], Damage reduction from the Banshee by [DECEA3]25%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]30%[-]\n\n[FFB800]BONUS ABILITY:[-]\nYou are not afraid of the Banshee. You are not affected by the armor reduction and active radiation of the miniboss."
