@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <setattribute xpath="/items/item/property[@name='ScrapTimeOverride'][@value=10]" name="value">7</setattribute>
+  <setattribute xpath="/items/item/property[@name='ScrapTimeOverride'][@value=15]" name="value">10</setattribute>
+</config>
