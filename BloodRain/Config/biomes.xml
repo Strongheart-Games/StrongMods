@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <insertAfter xpath="/worldgeneration/biomes/biome/weather[@name='bloodMoon']">
+    <weather name="bloodRain" prob="0">
+      <spectrum name="BloodMoon" />
+      <Temperature min="60" max="60" prob="1"/>
+      <CloudThickness min="50" max="50" prob="1"/>
+      <Precipitation min="0" max="0" prob="1"/>
+      <Fog min="7" max="7" prob="1"/>
+      <Wind min="15" max="20" prob="1"/>
+    </weather>
+  </insertAfter>
+</config>

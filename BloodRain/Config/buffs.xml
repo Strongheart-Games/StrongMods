@@ -1,44 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/buffs">
-    <buff name="test_time_format_working">
-      <display_value value=".test_remaining_seconds" />
-      <display_value_format value="time" />
-      <effect_group>
-        <triggered_effect trigger="onSelfBuffStart"
-                          action="ModifyCVar"
-                          cvar=".test_remaining_seconds"
-                          operation="set"
-                          value="10" />
-        <triggered_effect trigger="onSelfBuffUpdate"
-                          action="ModifyCVar"
-                          cvar=".test_remaining_seconds"
-                          operation="subtract"
-                          value="1" />
-        <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="test_time_format_working">
-          <requirement name="CVarCompare" cvar=".test_remaining_seconds" operation="LTE" value="0" />
-        </triggered_effect>
-      </effect_group>
-    </buff>
-    <buff name="test_time_format_broken">
-      <display_value value="test_remaining_seconds" />
-      <display_value_format value="time" />
-      <effect_group>
-        <triggered_effect trigger="onSelfBuffStart"
-                          action="ModifyCVar"
-                          cvar="test_remaining_seconds"
-                          operation="set"
-                          value="10" />
-        <triggered_effect trigger="onSelfBuffUpdate"
-                          action="ModifyCVar"
-                          cvar="test_remaining_seconds"
-                          operation="subtract"
-                          value="1" />
-        <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="test_time_format_broken">
-          <requirement name="CVarCompare" cvar="test_remaining_seconds" operation="LTE" value="0" />
-        </triggered_effect>
-      </effect_group>
-    </buff>
     <buff name="buff_blood_rain_strong" icon="server_feral" icon_color="200,0,0">
       <display_value value=".blood_rain_remaining_seconds" />
       <display_value_format value="time" />
@@ -61,43 +23,9 @@
                           cvar=".blood_rain_remaining_seconds" />
 
         <triggered_effect trigger="onSelfBuffStart"
-                          action="ModifyScreenEffect"
-                          intensity=".9"
-                          fade="2"
-                          effect_name="FadeToBlack">
-          <requirement name="IsDay" />
-        </triggered_effect>
-        <triggered_effect trigger="onSelfBuffStart"
-                          action="ModifyScreenEffect"
-                          intensity=".3"
-                          fade="2"
-                          effect_name="FadeToBlack">
-          <requirement name="IsNight" />
-        </triggered_effect>
-        <triggered_effect trigger="onSelfBuffStart"
                           action="PlaySound"
                           sound="twitch_bloodmoon_today"
                           play_in_head="true" />
-
-        <triggered_effect trigger="onSelfBuffUpdate"
-                          action="ModifyScreenEffect"
-                          intensity=".9"
-                          fade="2"
-                          effect_name="FadeToBlack">
-          <requirement name="IsDay" />
-        </triggered_effect>
-        <triggered_effect trigger="onSelfBuffUpdate"
-                          action="ModifyScreenEffect"
-                          intensity=".3"
-                          fade="2"
-                          effect_name="FadeToBlack">
-          <requirement name="IsNight" />
-        </triggered_effect>
-
-        <triggered_effect trigger="onSelfBuffRemove"
-                          action="ModifyScreenEffect"
-                          intensity="0" fade="2"
-                          effect_name="FadeToBlack" />
         <triggered_effect trigger="onSelfBuffRemove"
                           action="PlaySound"
                           sound="twitch_bad_buff_ended"

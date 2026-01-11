@@ -105,6 +105,7 @@ namespace BloodRain {
       if (_endTime is null || _endTime < newEndTime) {
         _endTime = newEndTime;
         UpdateBloodRainBuff();
+        SetBloodRainWeather(durationIrlMinutes);
       }
     }
 
@@ -122,6 +123,15 @@ namespace BloodRain {
     public static void StopBloodRain() {
       _endTime = null;
       UpdateBloodRainBuff();
+      SetDefaultWeather();
+    }
+
+    private static void SetBloodRainWeather(float durationIrlMinutes) {
+      WeatherManager.Instance.ForceWeather("bloodRain", durationIrlMinutes * 60);
+    }
+
+    private static void SetDefaultWeather(float durationIrlMinutes = 1) {
+      WeatherManager.Instance.ForceWeather("default", durationIrlMinutes * 60);
     }
 
     private static void UpdateBloodRainBuff() {
