@@ -2,7 +2,7 @@
 <config>
   <append xpath="/worldglobal/environment">
     <!--
-      blood_rain_schedule_irl takes a cron expression. Times are in the server's configured time zone.
+      blood_rain_schedule_irl takes a cron expression. Times are in the operating system's configured time zone.
 
                                              Allowed values    Allowed special characters   Comment
         ┌───────────── minute                0-59              * , - /
@@ -15,12 +15,12 @@
 
       Examples:
         0 20 * * *     Every day @ 8 PM
-        */10 * * * *   Every 10 minutes
+        */10 * * * *   Every 10 minutes (!!)
         0 12 * * 0,3   Every Wed and Sun @ noon
     -->
     <property name="blood_rain_schedule_irl" value="0 8,20 * * *" /> <!-- daily at 8 AM and 8 PM -->
-    <property name="blood_rain_duration_irl_minutes" value="15" />
-    <property name="blood_rain_countdown_irl_minutes" value="15" /> <!-- warn players once per minute -->
+    <property name="blood_rain_duration_irl_minutes" value="15" /> <!-- blood rain lasts for 15 minutes -->
+    <property name="blood_rain_countdown_irl_minutes" value="15" /> <!-- warning broadcast every minute for 15 minutes prior to the start of the blood rain -->
     <property name="blood_rain_min_game_day" value="7" /> <!-- skip blood rain if countdown starts on day < 7 -->
   </append>
 </config>
