@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/buffs">
-    <buff name="buff_blood_rain_strong" icon="server_feral" icon_color="200,0,0">
+    <buff name="buff_blood_rain"
+          name_key="buff_blood_rain_name"
+          description_key="buff_blood_rain_desc"
+          icon="server_feral"
+          icon_color="200,0,0">
       <display_value value=".blood_rain_remaining_seconds" />
       <display_value_format value="time" />
       <update_rate value=".5" />

@@ -1,0 +1,4 @@
+﻿Key,Source,Type,english
+buff_blood_rain_name,buffs,Buff,"Blood Mark"
+buff_blood_rain_desc,buffs,Buff,"[ff0000]The sky has chosen you.[-]\n\nA dark, crawling sigil burns beneath your skin as the Blood Rain falls. You now carry the [ff0000]Blood Mark[-] — a living brand placed upon your soul by the storm itself.\n\nDuring the Blood Rain, the world knows where you are.\n\nThe dead can feel your heartbeat through stone and steel. They do not wander. They do not hesitate. They hunt.\n\nTheir howls sharpen. Their footsteps grow faster. Their bodies move at nightmare speed — driven by an unseen command that whispers your name through the rain.\n\nThere is no blessing in the Mark.\nNo strength. No protection. No escape.\n\nOnly pursuit.\nOnly teeth.\nOnly the long, screaming proof that the Blood Rain has seen you… and decided you still belong to the living.\n\nFor now."
+

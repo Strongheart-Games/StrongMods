@@ -25,7 +25,7 @@ namespace BloodRain {
     public const float DefaultDurationIrlMinutes = 15f;
     public const float DefaultCountdownIrlMinutes = 15f;
     public const int DefaultMinGameDay = 7;
-    public const string BloodRainBuff = "buff_blood_rain_strong";
+    public const string BloodRainBuff = "buff_blood_rain";
     public const string BloodRainRemainingSecondsCVar = "blood_rain_remaining_seconds";
 
     [CanBeNull] private static BloodRainSchedule _schedule;
