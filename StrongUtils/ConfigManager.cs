@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace StrongUtils {
@@ -39,8 +40,8 @@ namespace StrongUtils {
 
     public void RegisterConfigFile(
       string filename,
-      string defaultContents,
-      Action<XElement> updateMethod) {
+      string defaultContents = "<config></config>",
+      Action<XElement> updateMethod = null) {
       if (string.IsNullOrWhiteSpace(filename)) {
         throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
       }
@@ -53,15 +54,12 @@ namespace StrongUtils {
         throw new ArgumentNullException(nameof(defaultContents));
       }
 
-      if (updateMethod == null) {
-        throw new ArgumentNullException(nameof(updateMethod));
-      }
-
       var fullPath = Path.Combine(_configDirectory, filename);
       var normalizedFilename = NormalizeFilename(filename);
 
       if (_registeredFiles.ContainsKey(normalizedFilename)) {
-        throw new InvalidOperationException($"Config file '{filename}' is already registered.");
+        Log.Warning($"[ConfigManager] Ignoring request to re-register config file '{filename}'.");
+        return;
       }
 
       _registeredFiles[normalizedFilename] = new ConfigFileInfo {
@@ -78,7 +76,9 @@ namespace StrongUtils {
         File.WriteAllText(fullPath, defaultContents);
       }
 
-      SetupFileWatcher(normalizedFilename, fullPath, updateMethod);
+      if (updateMethod is not null) {
+        SetupFileWatcher(normalizedFilename, fullPath, updateMethod);
+      }
     }
 
     public XElement ReadConfigFile(string filename) {
@@ -90,7 +90,7 @@ namespace StrongUtils {
       return XElement.Load(fullPath);
     }
 
-    public void UpdateConfigFile(string filename, XElement newContents) {
+    public void WriteConfigFile(string filename, XElement newContents) {
       if (string.IsNullOrWhiteSpace(filename)) {
         throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
       }
@@ -109,17 +109,61 @@ namespace StrongUtils {
         throw new InvalidOperationException($"Config file '{filename}' is not registered.");
       }
 
-      if (_fileWatchers.TryGetValue(normalizedFilename, out FileSystemWatcher watcher)) {
-        watcher.EnableRaisingEvents = false;
+      newContents.Save(configInfo.FullPath);
+    }
+
+    public void AppendConfig(string filename, XElement elementToAppend) {
+      if (string.IsNullOrWhiteSpace(filename)) {
+        throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
       }
 
-      try {
-        newContents.Save(configInfo.FullPath);
-      } finally {
-        if (_fileWatchers.TryGetValue(normalizedFilename, out watcher)) {
-          watcher.EnableRaisingEvents = true;
-        }
+      if (Path.IsPathRooted(filename)) {
+        throw new ArgumentException("Filename must be relative, not an absolute path.", nameof(filename));
       }
+
+      if (elementToAppend == null) {
+        throw new ArgumentNullException(nameof(elementToAppend));
+      }
+
+      var normalizedFilename = NormalizeFilename(filename);
+
+      if (!_registeredFiles.TryGetValue(normalizedFilename, out ConfigFileInfo configInfo)) {
+        throw new InvalidOperationException($"Config file '{filename}' is not registered.");
+      }
+
+      var root = XElement.Load(configInfo.FullPath);
+      root.Add(elementToAppend);
+      root.Save(configInfo.FullPath);
+    }
+
+    public void RemoveConfig(string filename, XElement elementToRemove) {
+      if (string.IsNullOrWhiteSpace(filename)) {
+        throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
+      }
+
+      if (Path.IsPathRooted(filename)) {
+        throw new ArgumentException("Filename must be relative, not an absolute path.", nameof(filename));
+      }
+
+      if (elementToRemove == null) {
+        throw new ArgumentNullException(nameof(elementToRemove));
+      }
+
+      var normalizedFilename = NormalizeFilename(filename);
+
+      if (!_registeredFiles.TryGetValue(normalizedFilename, out ConfigFileInfo configInfo)) {
+        throw new InvalidOperationException($"Config file '{filename}' is not registered.");
+      }
+
+      var root = XElement.Load(configInfo.FullPath);
+      XElement matchingElement = root.Elements().FirstOrDefault(e => XNode.DeepEquals(e, elementToRemove));
+
+      if (matchingElement == null) {
+        return;
+      }
+
+      matchingElement.Remove();
+      root.Save(configInfo.FullPath);
     }
 
     public void Dispose() {
