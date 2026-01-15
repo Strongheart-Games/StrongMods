@@ -48,7 +48,7 @@ namespace AutoCollectLoot {
 
     public static string GetLootItemName(EntityAlive entity) {
       DictionarySave<int, EntityClass> classes = EntityClass.list;
-      EntityClass dropped = classes[classes[entity.entityClass].lootDropEntityClass];
+      EntityClass dropped = classes[classes[entity.entityClass].LootDropPick(entity.rand)];
       if (dropped is null) {
         Log.Warning($"[AutoCollectLoot] No loot item found for {entity.EntityName}");
         return null;

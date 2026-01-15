@@ -4,8 +4,8 @@ using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace DynamicFeralSense {
-  [HarmonyPatch(typeof(PlayerStealth), nameof(PlayerStealth.Tick))]
-  public class PlayerStealth_Tick_Patch {
+  [HarmonyPatch(typeof(PlayerStealth), nameof(PlayerStealth.TickServer))]
+  public class PlayerStealth_TickServer_Patch {
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,
       ILGenerator generator) {
       CodeMatcher codeMatcher = new(instructions, generator);
@@ -20,7 +20,7 @@ namespace DynamicFeralSense {
           CodeInstruction.LoadField(typeof(PlayerStealth), nameof(PlayerStealth.player)),
           CodeInstruction.Call(() => DynamicFeralSense.CalcNoiseMultiplier(null))
         );
-      //Log.Out($"[DynamicFeralSense] PlayerStealth.Tick instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
+      //Log.Out($"[DynamicFeralSense] PlayerStealth.TickServer instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
       return codeMatcher.Instructions();
     }
   }
