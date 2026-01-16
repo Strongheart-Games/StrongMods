@@ -12,6 +12,9 @@
   <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_min_game_day']" name="value">
     7
   </setattribute>
+  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_second_warning_message']" name="value">
+    [00ff00]The chat command [ff0000]/horde[-] will teleport you to the community horde base.[-]
+  </setattribute>
   <append xpath="/worldglobal/environment">
     <!-- Change together: they must have the same value -->
     <property name="strongsworn_cvar" value="strongsworn"/>

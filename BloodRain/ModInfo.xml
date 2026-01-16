@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModInfo>
   <Name value="BloodRain" />
-  <Version value="0.1.0" />
+  <Version value="1.0.0" />
   <DisplayName value="Blood Rain" />
   <Description value="Blood moons now trigger based on IRL time, configured for the convenience of the players." />
   <Author value="str0ngh34rt" />

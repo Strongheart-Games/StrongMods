@@ -22,5 +22,6 @@
     <property name="blood_rain_duration_irl_minutes" value="15" /> <!-- blood rain lasts for 15 minutes -->
     <property name="blood_rain_countdown_irl_minutes" value="15" /> <!-- warning broadcast every minute for 15 minutes prior to the start of the blood rain -->
     <property name="blood_rain_min_game_day" value="7" /> <!-- skip blood rain if countdown starts on day < 7 -->
+    <property name="blood_rain_second_warning_message" value="" /> <!-- sent to general after each message saying how many minutes until blood rain -->
   </append>
 </config>

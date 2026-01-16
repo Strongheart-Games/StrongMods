@@ -30,6 +30,7 @@ namespace BloodRain {
 
     [CanBeNull] private static BloodRainSchedule _schedule;
     private static int _minGameDay = DefaultMinGameDay;
+    private static string _secondWarningMessage;
 
     private static DateTime? _endTime;
 
@@ -114,8 +115,9 @@ namespace BloodRain {
       UpdateNextStartTime();
       DateTime? newStartTime = _schedule?.NextStartTime;
       if (newStartTime is not null && originalStartTime is not null) {
+        var tz = TimeZoneInfo.Local.DisplayName;
         GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
-          $"[00ff00]Skipping the blood rain scheduled for {originalStartTime:ddd @ h:mm tt} Eastern; the next blood rain will be {newStartTime:ddd @ h:mm tt} Eastern[-]", null,
+          $"[00ff00]Skipping the blood rain scheduled for {originalStartTime:ddd @ h:mm tt} {tz}; the next blood rain will be {newStartTime:ddd @ h:mm tt} {tz}[-]", null,
           EMessageSender.None);
       }
     }
@@ -164,9 +166,9 @@ namespace BloodRain {
       GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
         $"[ff0000]The blood rain will start in {((TimeSpan)_schedule.NextWarning).TotalMinutes} minute(s).[-]",
         null, EMessageSender.None);
-      GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
-        "[00ff00]The chat command [ff0000]/horde[-] will teleport you to the community horde base.[-]",
-        null, EMessageSender.None);
+      if (_secondWarningMessage is not null && _secondWarningMessage.Length > 0) {
+        GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1, _secondWarningMessage, null, EMessageSender.None);
+      }
       _schedule.NextWarning =
         GetNextWarningTimeSpan(_schedule.NextStartTime, _schedule.CountdownIrlMinutes, _schedule.NextWarning);
     }
@@ -182,12 +184,15 @@ namespace BloodRain {
       var duration = DefaultDurationIrlMinutes;
       var countdown = DefaultCountdownIrlMinutes;
       var minGameDay = DefaultMinGameDay;
+      var secondWarningMessage = "";
       properties.ParseString("blood_rain_schedule_irl", ref schedule);
       properties.ParseFloat("blood_rain_duration_irl_minutes", ref duration);
       properties.ParseFloat("blood_rain_countdown_irl_minutes", ref countdown);
       properties.ParseInt("blood_rain_min_game_day", ref minGameDay);
+      properties.ParseString("blood_rain_second_warning_message", ref secondWarningMessage);
       LoadSchedule(schedule, duration, countdown);
       _minGameDay = minGameDay;
+      _secondWarningMessage = secondWarningMessage;
     }
 
     public static void LoadSchedule(string scheduleStr = "", float durationIrlMinutes = DefaultDurationIrlMinutes,
