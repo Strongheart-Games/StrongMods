@@ -120,23 +120,15 @@
   <set xpath="/rwgmixer/district[@name='downtown']/property[@name='spawn_weight']/@value">0.6</set>
   <set xpath="/rwgmixer/district[@name='industrial']/property[@name='spawn_weight']/@value">0.6</set>
 
-  <!-- More traders, total 40, weighted based on biome sizes: snow 50%, forest/wasteland 15%, others 10% -->
-  <!-- <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set> -->
-  <set xpath="/rwgmixer/prefab_spawn_adjust[@partial_name='trader_rekt']/@max_count">6</set>
-  <!-- Jen's default max (4) is sufficient -->
-  <!-- Bob's default max (4) is sufficient -->
-  <set xpath="/rwgmixer/prefab_spawn_adjust[@partial_name='trader_hugh']/@max_count">20</set>
-  <set xpath="/rwgmixer/prefab_spawn_adjust[@partial_name='trader_joel']/@max_count">6</set>
-
+  <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set>
   <append xpath="/rwgmixer">
-    <prefab_spawn_adjust partial_name="shs3_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="shs3_horde_base_beginner" biomeTags="forest" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="shs3_horde_base_advanced" biomeTags="desert" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="shs3_portal_spoke_pineforest" biomeTags="forest" bias="20" min_count="4" max_count="6" />
-    <prefab_spawn_adjust partial_name="shs3_portal_spoke_burntforest" biomeTags="burntforest" bias="20" min_count="3" max_count="4" />
-    <prefab_spawn_adjust partial_name="shs3_portal_spoke_desert" biomeTags="desert" bias="20" min_count="3" max_count="4" />
-    <prefab_spawn_adjust partial_name="shs3_portal_spoke_snow" biomeTags="snow" bias="20" min_count="15" max_count="20" />
-    <prefab_spawn_adjust partial_name="shs3_portal_spoke_wasteland" biomeTags="wasteland" bias="20" min_count="4" max_count="6" />
+    <prefab_spawn_adjust partial_name="hades_s4_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="hades_s4_horde_base_community" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_pineforest" biomeTags="forest" bias="20" min_count="4" max_count="6" />
+    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_burntforest" biomeTags="burntforest" bias="20" min_count="6" max_count="8" />
+    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_desert" biomeTags="desert" bias="20" min_count="6" max_count="8" />
+    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_snow" biomeTags="snow" bias="20" min_count="6" max_count="8" />
+    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_wasteland" biomeTags="wasteland" bias="20" min_count="8" max_count="10" />
   </append>
 
 </config>

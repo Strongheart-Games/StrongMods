@@ -1,4 +1,7 @@
 <config>
+  <!-- Remove the recipe for apiaries and related tools until they're fixed. -->
+  <!--<remove xpath="/recipes/recipe[contains(@name, 'Apiary')]" />-->
+
   <append xpath="/recipes">
     <!-- Bicycle E-Assist Battery -->
     <recipe name="mod_hybrid_vehicle_kit_strong" count="1" craft_time="60">
