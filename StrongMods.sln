@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestUnlockFixes", "QuestUn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicFeralSense", "DynamicFeralSense\DynamicFeralSense.csproj", "{21319922-DC60-422A-B2CB-64D96496F224}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RWGTools", "RWGTools\RWGTools.csproj", "{EC278EEB-1E29-4789-A029-8C619F3DB5DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,5 +92,9 @@ Global
 		{21319922-DC60-422A-B2CB-64D96496F224}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21319922-DC60-422A-B2CB-64D96496F224}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21319922-DC60-422A-B2CB-64D96496F224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

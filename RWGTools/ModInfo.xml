@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="RWGTools" />
+  <Version value="1.0.0" />
+  <DisplayName value="RWG Tools" />
+  <Description value="Tools to facilitate random world generation." />
+  <Author value="str0ngh34rt" />
+  <Website value="" />
+</ModInfo>
