@@ -7,9 +7,10 @@
   </conditional>
 
   <!-- Schematics that have been read show a green "read" icon -->
-  <insertAfter xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIcon']">
+  <setattribute xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIconColor']" name="value">0,255,0,200</setattribute>
+  <append xpath="/items/item[@name='schematicMaster' and not(property[@name='AltItemTypeIconColor'])]">
     <property name="AltItemTypeIconColor" value="0,255,0,200" />
-  </insertAfter>
+  </append>
 
   <append xpath="/items">
     <item name="item_loot_container_small_mini_boss_strong">
