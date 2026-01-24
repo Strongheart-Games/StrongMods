@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
+  <setattribute xpath="/windows/window[@name='serverjoinrulesdialog']/panel[@name='content']/sprite[@name='backgroundMain']" name="globalopacitymod">0.95</setattribute>
+
   <append xpath="/windows">
     <window name="serverinfowindow" anchor="CenterTop" pos="-300,-300" width="600" height="350" cursor_area="true">
       <panel name="header" pos="0,0" height="43" depth="1" disableautobackground="true">
