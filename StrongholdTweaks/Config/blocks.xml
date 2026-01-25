@@ -12,7 +12,6 @@
 
   <!-- StrongStones -->
   <append xpath="/blocks">
-
     <block name="block_strongstone">
       <property name="CreativeMode" value="None" />
       <property name="Class" value="GameEvent" />
@@ -44,6 +43,309 @@
     </block>
   </append>
 
+  <!-- StrongCrops: auto-replanting, indestructible, with fast growth times -->
+  <append xpath="/blocks">
+    <!-- Strong Mushroom -->
+    <block name="plantedStrongMushroom1">
+      <property name="Extends" value="plantedMushroom1" />
+      <property name="CustomIcon" value="plantedMushroom1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongMushroom2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedMushroom1" count="0" />
+    </block>
+    <block name="plantedStrongMushroom2">
+      <property name="Extends" value="plantedMushroom2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongMushroom3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedMushroom1" count="0" />
+    </block>
+    <block name="plantedStrongMushroom3Harvest">
+      <property name="Extends" value="plantedMushroom3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongMushroom1"/>
+    </block>
+
+    <!-- Strong Aloe -->
+    <block name="plantedStrongAloe1">
+      <property name="Extends" value="plantedAloe1" />
+      <property name="CustomIcon" value="plantedAloe1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongAloe2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedAloe1" count="0" />
+    </block>
+    <block name="plantedStrongAloe2">
+      <property name="Extends" value="plantedAloe2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongAloe3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedAloe1" count="0" />
+    </block>
+    <block name="plantedStrongAloe3Harvest">
+      <property name="Extends" value="plantedAloe3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongAloe1"/>
+    </block>
+
+    <!-- Strong Yucca -->
+    <block name="plantedStrongYucca1">
+      <property name="Extends" value="plantedYucca1" />
+      <property name="CustomIcon" value="plantedYucca1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongYucca2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedYucca1" count="0" />
+    </block>
+    <block name="plantedStrongYucca2">
+      <property name="Extends" value="plantedYucca2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongYucca3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedYucca1" count="0" />
+    </block>
+    <block name="plantedStrongYucca3Harvest">
+      <property name="Extends" value="plantedYucca3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongYucca1"/>
+    </block>
+
+    <!-- Strong Potato -->
+    <block name="plantedStrongPotato1">
+      <property name="Extends" value="plantedPotato1" />
+      <property name="CustomIcon" value="plantedPotato1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongPotato2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedPotato1" count="0" />
+    </block>
+    <block name="plantedStrongPotato2">
+      <property name="Extends" value="plantedPotato2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongPotato3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedPotato1" count="0" />
+    </block>
+    <block name="plantedStrongPotato3Harvest">
+      <property name="Extends" value="plantedPotato3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongPotato1"/>
+    </block>
+
+    <!-- Strong Corn -->
+    <block name="plantedStrongCorn1">
+      <property name="Extends" value="plantedCorn1" />
+      <property name="CustomIcon" value="plantedCorn1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCorn2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCorn1" count="0" />
+    </block>
+    <block name="plantedStrongCorn2">
+      <property name="Extends" value="plantedCorn2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCorn3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCorn1" count="0" />
+    </block>
+    <block name="plantedStrongCorn3Harvest">
+      <property name="Extends" value="plantedCorn3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongCorn1"/>
+    </block>
+
+    <!-- Strong Goldenrod -->
+    <block name="plantedStrongGoldenrod1">
+      <property name="Extends" value="plantedGoldenrod1" />
+      <property name="CustomIcon" value="plantedGoldenrod1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongGoldenrod2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedGoldenrod1" count="0" />
+    </block>
+    <block name="plantedStrongGoldenrod2">
+      <property name="Extends" value="plantedGoldenrod2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongGoldenrod3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedGoldenrod1" count="0" />
+    </block>
+    <block name="plantedStrongGoldenrod3Harvest">
+      <property name="Extends" value="plantedGoldenrod3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongGoldenrod1"/>
+    </block>
+
+    <!-- Strong Cotton -->
+    <block name="plantedStrongCotton1">
+      <property name="Extends" value="plantedCotton1" />
+      <property name="CustomIcon" value="plantedCotton1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCotton2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCotton1" count="0" />
+    </block>
+    <block name="plantedStrongCotton2">
+      <property name="Extends" value="plantedCotton2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCotton3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCotton1" count="0" />
+    </block>
+    <block name="plantedStrongCotton3Harvest">
+      <property name="Extends" value="plantedCotton3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongCotton1"/>
+    </block>
+
+    <!-- Strong Chrysanthemum -->
+    <block name="plantedStrongChrysanthemum1">
+      <property name="Extends" value="plantedChrysanthemum1" />
+      <property name="CustomIcon" value="plantedChrysanthemum1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongChrysanthemum2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedChrysanthemum1" count="0" />
+    </block>
+    <block name="plantedStrongChrysanthemum2">
+      <property name="Extends" value="plantedChrysanthemum2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongChrysanthemum3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedChrysanthemum1" count="0" />
+    </block>
+    <block name="plantedStrongChrysanthemum3Harvest">
+      <property name="Extends" value="plantedChrysanthemum3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongChrysanthemum1"/>
+    </block>
+
+    <!-- Strong Coffee -->
+    <block name="plantedStrongCoffee1">
+      <property name="Extends" value="plantedCoffee1" />
+      <property name="CustomIcon" value="plantedCoffee1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCoffee2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCoffee1" count="0" />
+    </block>
+    <block name="plantedStrongCoffee2">
+      <property name="Extends" value="plantedCoffee2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongCoffee3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedCoffee1" count="0" />
+    </block>
+    <block name="plantedStrongCoffee3Harvest">
+      <property name="Extends" value="plantedCoffee3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongCoffee1"/>
+    </block>
+
+    <!-- Strong Blueberry -->
+    <block name="plantedStrongBlueberry1">
+      <property name="Extends" value="plantedBlueberry1" />
+      <property name="CustomIcon" value="plantedBlueberry1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongBlueberry2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedBlueberry1" count="0" />
+    </block>
+    <block name="plantedStrongBlueberry2">
+      <property name="Extends" value="plantedBlueberry2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongBlueberry3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedBlueberry1" count="0" />
+    </block>
+    <block name="plantedStrongBlueberry3Harvest">
+      <property name="Extends" value="plantedBlueberry3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongBlueberry1"/>
+    </block>
+
+    <!-- Strong Hop -->
+    <block name="plantedStrongHop1">
+      <property name="Extends" value="plantedHop1" />
+      <property name="CustomIcon" value="plantedHop1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongHop2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedHop1" count="0" />
+    </block>
+    <block name="plantedStrongHop2">
+      <property name="Extends" value="plantedHop2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongHop3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedHop1" count="0" />
+    </block>
+    <block name="plantedStrongHop3Harvest">
+      <property name="Extends" value="plantedHop3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongHop1"/>
+    </block>
+
+    <!-- Strong Snowberry -->
+    <block name="plantedStrongSnowberry1">
+      <property name="Extends" value="plantedSnowberry1" />
+      <property name="CustomIcon" value="plantedSnowberry1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongSnowberry2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedSnowberry1" count="0" />
+    </block>
+    <block name="plantedStrongSnowberry2">
+      <property name="Extends" value="plantedSnowberry2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongSnowberry3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedSnowberry1" count="0" />
+    </block>
+    <block name="plantedStrongSnowberry3Harvest">
+      <property name="Extends" value="plantedSnowberry3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongSnowberry1"/>
+    </block>
+
+    <!-- Strong Pumpkin -->
+    <block name="plantedStrongPumpkin1">
+      <property name="Extends" value="plantedPumpkin1" />
+      <property name="CustomIcon" value="plantedPumpkin1"/>
+      <property name="PlantGrowing.Next" value="plantedStrongPumpkin2" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedPumpkin1" count="0" />
+    </block>
+    <block name="plantedStrongPumpkin2">
+      <property name="Extends" value="plantedPumpkin2" />
+      <property name="CreativeMode" value="None"/>
+      <property name="PlantGrowing.Next" value="plantedStrongPumpkin3Harvest" />
+      <property name="PlantGrowing.GrowthRate" value="32" />
+      <property name="Material" value="Mbedrock" />
+      <drop event="Destroy" name="plantedPumpkin1" count="0" />
+    </block>
+    <block name="plantedStrongPumpkin3Harvest">
+      <property name="Extends" value="plantedPumpkin3HarvestPlayer" />
+      <property name="CreativeMode" value="None"/>
+      <property name="DowngradeBlock" value="plantedStrongPumpkin1"/>
+    </block>
+  </append>
+
+  <!-- Warp pads are returned when destroyed -->
   <append xpath="/blocks/block[@name='warpPadBlockSecure']">
     <dropextendsoff/>
     <drop event="Destroy" name="warpPadBlockSecure" count="1"/>
