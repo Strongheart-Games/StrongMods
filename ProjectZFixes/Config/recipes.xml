@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/recipes/recipe[starts-with(@name, 'modRareArmorARResist')]">
+    <ingredient name="modArmorInsulatedLinerT3" count="1" />
+  </append>
+</config>

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- Defender Z mods include insulation since they take up the thermal "slot" -->
+  <append xpath="/item_modifiers/item_modifier[starts-with(@name, 'modRareArmorARResist')]">
+    <effect_group tiered="false">
+      <passive_effect name="HypothermalResist" operation="base_add" value="5" />
+      <passive_effect name="HyperthermalResist" operation="base_add" value="5" />
+    </effect_group>
+  </append>
+</config>
