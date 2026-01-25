@@ -45,7 +45,7 @@
 
   <!-- StrongCrops: auto-replanting, indestructible, with fast growth times -->
   <append xpath="/blocks">
-    <!-- Strong Mushroom -->
+    <!-- Mushroom -->
     <block name="plantedStrongMushroom1">
       <property name="Extends" value="plantedMushroom1" />
       <property name="CustomIcon" value="plantedMushroom1"/>
@@ -65,10 +65,11 @@
     <block name="plantedStrongMushroom3Harvest">
       <property name="Extends" value="plantedMushroom3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongMushroom3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongMushroom1"/>
     </block>
 
-    <!-- Strong Aloe -->
+    <!-- Aloe -->
     <block name="plantedStrongAloe1">
       <property name="Extends" value="plantedAloe1" />
       <property name="CustomIcon" value="plantedAloe1"/>
@@ -88,10 +89,11 @@
     <block name="plantedStrongAloe3Harvest">
       <property name="Extends" value="plantedAloe3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongAloe3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongAloe1"/>
     </block>
 
-    <!-- Strong Yucca -->
+    <!-- Yucca -->
     <block name="plantedStrongYucca1">
       <property name="Extends" value="plantedYucca1" />
       <property name="CustomIcon" value="plantedYucca1"/>
@@ -111,10 +113,11 @@
     <block name="plantedStrongYucca3Harvest">
       <property name="Extends" value="plantedYucca3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongYucca3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongYucca1"/>
     </block>
 
-    <!-- Strong Potato -->
+    <!-- Potato -->
     <block name="plantedStrongPotato1">
       <property name="Extends" value="plantedPotato1" />
       <property name="CustomIcon" value="plantedPotato1"/>
@@ -134,10 +137,11 @@
     <block name="plantedStrongPotato3Harvest">
       <property name="Extends" value="plantedPotato3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongPotato3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongPotato1"/>
     </block>
 
-    <!-- Strong Corn -->
+    <!-- Corn -->
     <block name="plantedStrongCorn1">
       <property name="Extends" value="plantedCorn1" />
       <property name="CustomIcon" value="plantedCorn1"/>
@@ -157,10 +161,11 @@
     <block name="plantedStrongCorn3Harvest">
       <property name="Extends" value="plantedCorn3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongCorn3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCorn1"/>
     </block>
 
-    <!-- Strong Goldenrod -->
+    <!-- Goldenrod -->
     <block name="plantedStrongGoldenrod1">
       <property name="Extends" value="plantedGoldenrod1" />
       <property name="CustomIcon" value="plantedGoldenrod1"/>
@@ -180,10 +185,11 @@
     <block name="plantedStrongGoldenrod3Harvest">
       <property name="Extends" value="plantedGoldenrod3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongGoldenrod3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongGoldenrod1"/>
     </block>
 
-    <!-- Strong Cotton -->
+    <!-- Cotton -->
     <block name="plantedStrongCotton1">
       <property name="Extends" value="plantedCotton1" />
       <property name="CustomIcon" value="plantedCotton1"/>
@@ -203,10 +209,11 @@
     <block name="plantedStrongCotton3Harvest">
       <property name="Extends" value="plantedCotton3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongCotton3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCotton1"/>
     </block>
 
-    <!-- Strong Chrysanthemum -->
+    <!-- Chrysanthemum -->
     <block name="plantedStrongChrysanthemum1">
       <property name="Extends" value="plantedChrysanthemum1" />
       <property name="CustomIcon" value="plantedChrysanthemum1"/>
@@ -226,10 +233,11 @@
     <block name="plantedStrongChrysanthemum3Harvest">
       <property name="Extends" value="plantedChrysanthemum3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongChrysanthemum3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongChrysanthemum1"/>
     </block>
 
-    <!-- Strong Coffee -->
+    <!-- Coffee -->
     <block name="plantedStrongCoffee1">
       <property name="Extends" value="plantedCoffee1" />
       <property name="CustomIcon" value="plantedCoffee1"/>
@@ -249,10 +257,11 @@
     <block name="plantedStrongCoffee3Harvest">
       <property name="Extends" value="plantedCoffee3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongCoffee3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCoffee1"/>
     </block>
 
-    <!-- Strong Blueberry -->
+    <!-- Blueberry -->
     <block name="plantedStrongBlueberry1">
       <property name="Extends" value="plantedBlueberry1" />
       <property name="CustomIcon" value="plantedBlueberry1"/>
@@ -272,10 +281,11 @@
     <block name="plantedStrongBlueberry3Harvest">
       <property name="Extends" value="plantedBlueberry3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongBlueberry3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongBlueberry1"/>
     </block>
 
-    <!-- Strong Hop -->
+    <!-- Hop -->
     <block name="plantedStrongHop1">
       <property name="Extends" value="plantedHop1" />
       <property name="CustomIcon" value="plantedHop1"/>
@@ -295,33 +305,11 @@
     <block name="plantedStrongHop3Harvest">
       <property name="Extends" value="plantedHop3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongHop3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongHop1"/>
     </block>
 
-    <!-- Strong Snowberry -->
-    <block name="plantedStrongSnowberry1">
-      <property name="Extends" value="plantedSnowberry1" />
-      <property name="CustomIcon" value="plantedSnowberry1"/>
-      <property name="PlantGrowing.Next" value="plantedStrongSnowberry2" />
-      <property name="PlantGrowing.GrowthRate" value="32" />
-      <property name="Material" value="Mbedrock" />
-      <drop event="Destroy" name="plantedSnowberry1" count="0" />
-    </block>
-    <block name="plantedStrongSnowberry2">
-      <property name="Extends" value="plantedSnowberry2" />
-      <property name="CreativeMode" value="None"/>
-      <property name="PlantGrowing.Next" value="plantedStrongSnowberry3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="32" />
-      <property name="Material" value="Mbedrock" />
-      <drop event="Destroy" name="plantedSnowberry1" count="0" />
-    </block>
-    <block name="plantedStrongSnowberry3Harvest">
-      <property name="Extends" value="plantedSnowberry3HarvestPlayer" />
-      <property name="CreativeMode" value="None"/>
-      <property name="DowngradeBlock" value="plantedStrongSnowberry1"/>
-    </block>
-
-    <!-- Strong Pumpkin -->
+    <!-- Pumpkin -->
     <block name="plantedStrongPumpkin1">
       <property name="Extends" value="plantedPumpkin1" />
       <property name="CustomIcon" value="plantedPumpkin1"/>
@@ -341,6 +329,7 @@
     <block name="plantedStrongPumpkin3Harvest">
       <property name="Extends" value="plantedPumpkin3HarvestPlayer" />
       <property name="CreativeMode" value="None"/>
+      <property name="DescriptionKey" value="plantedStrongPumpkin3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongPumpkin1"/>
     </block>
   </append>
