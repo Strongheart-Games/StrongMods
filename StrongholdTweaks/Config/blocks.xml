@@ -67,6 +67,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongMushroom3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongMushroom1"/>
+      <drop event="Harvest" name="foodCropMushrooms" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropMushrooms" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropMushrooms" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Aloe -->
@@ -91,6 +94,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongAloe3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongAloe1"/>
+      <drop event="Harvest" name="resourceCropAloeLeaf" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropAloeLeaf" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropAloeLeaf" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Yucca -->
@@ -115,6 +121,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongYucca3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongYucca1"/>
+      <drop event="Harvest" name="foodCropYuccaFruit" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropYuccaFruit" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropYuccaFruit" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Potato -->
@@ -139,6 +148,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongPotato3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongPotato1"/>
+      <drop event="Harvest" name="foodCropPotato" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropPotato" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropPotato" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Corn -->
@@ -163,6 +175,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongCorn3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCorn1"/>
+      <drop event="Harvest" name="foodCropCorn" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropCorn" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropCorn" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Goldenrod -->
@@ -187,6 +202,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongGoldenrod3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongGoldenrod1"/>
+      <drop event="Harvest" name="resourceCropGoldenrodPlant" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropGoldenrodPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropGoldenrodPlant" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Cotton -->
@@ -211,6 +229,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongCotton3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCotton1"/>
+      <drop event="Harvest" name="resourceCropCottonPlant" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropCottonPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropCottonPlant" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Chrysanthemum -->
@@ -235,6 +256,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongChrysanthemum3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongChrysanthemum1"/>
+      <drop event="Harvest" name="resourceCropChrysanthemumPlant" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropChrysanthemumPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropChrysanthemumPlant" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Coffee -->
@@ -259,6 +283,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongCoffee3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongCoffee1"/>
+      <drop event="Harvest" name="resourceCropCoffeeBeans" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropCoffeeBeans" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropCoffeeBeans" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Blueberry -->
@@ -283,6 +310,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongBlueberry3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongBlueberry1"/>
+      <drop event="Harvest" name="foodCropBlueberries" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropBlueberries" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropBlueberries" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Hop -->
@@ -307,6 +337,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongHop3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongHop1"/>
+      <drop event="Harvest" name="resourceCropHopsFlower" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="resourceCropHopsFlower" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="resourceCropHopsFlower" count="1" tag="farmerBonusHarvest"/>
     </block>
 
     <!-- Pumpkin -->
@@ -331,6 +364,9 @@
       <property name="CreativeMode" value="None"/>
       <property name="DescriptionKey" value="plantedStrongPumpkin3Harvest"/>
       <property name="DowngradeBlock" value="plantedStrongPumpkin1"/>
+      <drop event="Harvest" name="foodCropPumpkin" count="2" tag="cropHarvest"/>
+      <drop event="Harvest" name="foodCropPumpkin" prob="0.5" count="1" tag="bonusCropHarvest"/>
+      <drop event="Harvest" name="foodCropPumpkin" count="1" tag="farmerBonusHarvest"/>
     </block>
   </append>
 
