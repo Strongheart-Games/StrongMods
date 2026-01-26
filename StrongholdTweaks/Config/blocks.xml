@@ -71,6 +71,7 @@
       <drop event="Harvest" name="foodCropMushrooms" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropMushrooms" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropMushrooms" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Aloe -->
@@ -99,6 +100,7 @@
       <drop event="Harvest" name="resourceCropAloeLeaf" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropAloeLeaf" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropAloeLeaf" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Yucca -->
@@ -127,6 +129,7 @@
       <drop event="Harvest" name="foodCropYuccaFruit" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropYuccaFruit" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropYuccaFruit" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Potato -->
@@ -155,6 +158,7 @@
       <drop event="Harvest" name="foodCropPotato" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropPotato" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropPotato" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Corn -->
@@ -183,6 +187,7 @@
       <drop event="Harvest" name="foodCropCorn" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropCorn" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropCorn" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Goldenrod -->
@@ -211,6 +216,7 @@
       <drop event="Harvest" name="resourceCropGoldenrodPlant" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropGoldenrodPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropGoldenrodPlant" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Cotton -->
@@ -239,6 +245,7 @@
       <drop event="Harvest" name="resourceCropCottonPlant" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropCottonPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropCottonPlant" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Chrysanthemum -->
@@ -267,6 +274,7 @@
       <drop event="Harvest" name="resourceCropChrysanthemumPlant" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropChrysanthemumPlant" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropChrysanthemumPlant" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Coffee -->
@@ -295,6 +303,7 @@
       <drop event="Harvest" name="resourceCropCoffeeBeans" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropCoffeeBeans" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropCoffeeBeans" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Blueberry -->
@@ -323,6 +332,7 @@
       <drop event="Harvest" name="foodCropBlueberries" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropBlueberries" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropBlueberries" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Hop -->
@@ -351,6 +361,7 @@
       <drop event="Harvest" name="resourceCropHopsFlower" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="resourceCropHopsFlower" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="resourceCropHopsFlower" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
 
     <!-- Pumpkin -->
@@ -379,6 +390,7 @@
       <drop event="Harvest" name="foodCropPumpkin" count="1" tag="cropHarvest"/>
       <drop event="Harvest" name="foodCropPumpkin" prob="0.5" count="1" tag="bonusCropHarvest"/>
       <drop event="Harvest" name="foodCropPumpkin" count="1" tag="farmerBonusHarvest"/>
+      <drop event="Destroy" count="0"/>
     </block>
   </append>
 
