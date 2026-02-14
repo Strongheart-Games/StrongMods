@@ -13,6 +13,30 @@
   </append>
 
   <append xpath="/items">
+    <item name="item_loot_container_charged_elite_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_charged_elite_desc_strong" />
+      <property name="CustomIconTint" value="276182" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardChargedElite" />
+      </property>
+    </item>
+    <item name="item_loot_container_infernal_elite_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_infernal_elite_desc_strong" />
+      <property name="CustomIconTint" value="276182" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardInfernalElite" />
+      </property>
+    </item>
     <item name="item_loot_container_small_mini_boss_strong">
       <property name="Extends" value="item_loot_container_base_strong" />
       <property name="CreativeMode" value="Player" />
@@ -49,6 +73,18 @@
         <property name="LootList" value="rewardBossShocker" />
       </property>
     </item>
+    <item name="item_loot_container_boss_mutant_hog_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_mutant_hog_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossMutantHog" />
+      </property>
+    </item>
     <item name="item_loot_container_boss_bull_strong">
       <property name="Extends" value="item_loot_container_base_strong" />
       <property name="CreativeMode" value="Player" />
@@ -71,6 +107,18 @@
         <property name="Delay" value="0" />
         <property name="Sound_start" value="close_garbage" />
         <property name="LootList" value="rewardBossVeteran" />
+      </property>
+    </item>
+    <item name="item_loot_container_boss_ancient_yeti_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_boss_ancient_yeti_desc_strong" />
+      <property name="CustomIconTint" value="793B3E" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="rewardBossAncientYeti" />
       </property>
     </item>
     <item name="item_loot_container_boss_carrier_strong">
