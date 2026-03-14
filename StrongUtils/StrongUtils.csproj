@@ -78,6 +78,7 @@
     <Compile Include="Commands\GracefulShutdownCommand.cs" />
     <Compile Include="Commands\OnGameStartDoneCommand.cs" />
     <Compile Include="Commands\ReloadCommand.cs" />
+    <Compile Include="Commands\ResetPoisCommand.cs" />
     <Compile Include="Commands\TeleportPlayerToPrefabCommand.cs" />
     <Compile Include="ConfigManager.cs" />
     <Compile Include="FastTravel.cs" />
