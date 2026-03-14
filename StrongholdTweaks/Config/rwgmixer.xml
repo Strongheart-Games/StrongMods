@@ -122,13 +122,8 @@
 
   <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set>
   <append xpath="/rwgmixer">
-    <prefab_spawn_adjust partial_name="hades_s4_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="hades_s4_horde_base_community" biomeTags="forest" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_pineforest" biomeTags="forest" bias="20" min_count="4" max_count="6" />
-    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_burntforest" biomeTags="burntforest" bias="20" min_count="6" max_count="8" />
-    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_desert" biomeTags="desert" bias="20" min_count="6" max_count="8" />
-    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_snow" biomeTags="snow" bias="20" min_count="6" max_count="8" />
-    <prefab_spawn_adjust partial_name="hades_s4_portal_spoke_wasteland" biomeTags="wasteland" bias="20" min_count="8" max_count="10" />
+    <prefab_spawn_adjust partial_name="hades_s5_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="hades_s5_horde_base_community" biomeTags="forest" bias="20" min_count="1" max_count="1" />
   </append>
 
 </config>

@@ -46,8 +46,7 @@ namespace StrongUtils {
 
       SdtdConsole.Instance.ExecuteSync(
         $"ban add {persistentPlayerId.CombinedString} 10 years hacking \"{player.PlayerName?.DisplayName}\"", null);
-      GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
-        $"[ff0000]{player.PlayerName?.DisplayName} has been banned for hacking.[-]", null, EMessageSender.None);
+      Chat.Global($"[ff0000]{player.PlayerName?.DisplayName} has been banned for hacking.[-]");
     }
   }
 }

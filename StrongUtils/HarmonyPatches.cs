@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using WorldGenerationEngineFinal;
 
 namespace StrongUtils {
   [HarmonyPatch(typeof(SdtdConsole), nameof(SdtdConsole.executeCommand))]
@@ -92,10 +93,17 @@ namespace StrongUtils {
       CodeInstruction loadEntityInstruction = codeMatcher.Instruction;
       codeMatcher.Insert(
         loadEntityInstruction,
-        CodeInstruction.Call(() => StrongZones.OnUpdateEntity(null))
+        CodeInstruction.Call(() => OnEntityUpdate(null))
       );
       //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
       return codeMatcher.Instructions();
+    }
+
+    private static void OnEntityUpdate(Entity entity) {
+      StrongZones.OnUpdateEntity(entity);
+      if (entity is EntityPlayer player) {
+        FastTravel.ProcessFastTravelDonations(player);
+      }
     }
   }
 

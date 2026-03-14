@@ -18,6 +18,7 @@ namespace StrongUtils {
         return ModEvents.EModEventResult.Continue;
       }
 
+      /* Disable the strongsworn command -- now handled in ServerTools
       var message = _data.Message.Trim();
       var firstSpace = message.IndexOf(' ');
       var command = firstSpace > 0 ? message.Substring(0, firstSpace) : message;
@@ -27,6 +28,7 @@ namespace StrongUtils {
           HandleStrongswornCommand(player, args);
           return ModEvents.EModEventResult.StopHandlersAndVanilla;
       }
+      */
 
       return ModEvents.EModEventResult.Continue;
     }
@@ -34,21 +36,14 @@ namespace StrongUtils {
     private static void HandleStrongswornCommand(EntityPlayer player, string args) {
       if (args.Trim('"', '“', '”').Equals(s_passphrase)) {
         if (player.IsStrongSworn()) {
-          Whisper(player, s_repeat_citizen_message);
+          Chat.Whisper(player, s_repeat_citizen_message);
         } else {
-          Whisper(player, s_new_citizen_message);
+          Chat.Whisper(player, s_new_citizen_message);
           player.SetStrongSworn(true);
         }
       } else {
-        Whisper(player, s_wrong_passphrase_message);
+        Chat.Whisper(player, s_wrong_passphrase_message);
       }
-    }
-
-    private static void Whisper(EntityPlayer player, string message) {
-      NetPackageChat package = NetPackageManager.GetPackage<NetPackageChat>().Setup(EChatType.Whisper, -1, message,
-        new List<int> { player.entityId }, EMessageSender.None,
-        GeneratedTextManager.BbCodeSupportMode.Supported);
-      package.ProcessPackage(GameManager.Instance.World, GameManager.Instance);
     }
 
     public static void OnXMLChanged() {

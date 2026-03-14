@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/buffs">
+    <buff name="buff_read_hades_rules" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="readhadesrules" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_read_hades_survival_guide" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="readhadessurvivalguide" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_read_faq" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="readfaq" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_read_project_z_docs" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="readprojectzdocs" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_use_interactive_map" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="useinteractivemap" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_join_stronghold_discord" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="joinstrongholddiscord" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_read_stronghold_discord_rules" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="readstrongholddiscordrules" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_find_the_ferryman" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="findtheferryman" count="1"/>
+      </effect_group>
+    </buff>
+
+    <buff name="buff_take_strongsworn_oath" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="takestrongswornoath" count="1"/>
+      </effect_group>
+    </buff>
+  </append>
+</config>

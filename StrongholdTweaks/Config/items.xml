@@ -13,6 +13,25 @@
   </append>
 
   <append xpath="/items">
+    <item name="item_opal_of_ophelia">
+      <property name="Extends" value="casinoCoin" />
+      <property name="CustomIcon" value="foodEgg"/>
+      <property name="CustomIconTint" value="85,30,255"/>
+      <property name="DescriptionKey" value="item_opal_of_ophelia_desc"/>
+      <property name="CreativeMode" value="Dev"/>
+      <property name="EconomicValue" value="0"/>
+      <property class="Action0">
+        <property name="Class" value="Eat"/>
+        <property name="Delay" value="0"/>
+        <property name="UseAnimation" value="false"/>
+      </property>
+      <effect_group tiered="false">
+        <triggered_effect trigger="onSelfPrimaryActionEnd" action="ModifyCVar" cvar="pending_fast_travel_donations" operation="add" value="1"/>
+      </effect_group>
+    </item>
+  </append>
+
+  <append xpath="/items">
     <item name="item_loot_container_charged_elite_strong">
       <property name="Extends" value="item_loot_container_base_strong" />
       <property name="CreativeMode" value="Player" />

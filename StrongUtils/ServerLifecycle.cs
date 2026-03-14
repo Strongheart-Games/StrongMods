@@ -4,15 +4,20 @@ namespace StrongUtils {
   public class ServerLifecycle {
 
     public static void OnGameAwake(ref ModEvents.SGameAwakeData data) {
-      ConfigManager.Init(Path.Combine(GameIO.GetSaveGameDir(), "StrongMods"));
+      var configDirectory = Path.Combine(GameIO.GetSaveGameDir(), "StrongMods");
+      ConfigManager.Init(configDirectory);
       Log.Out("[StrongUtils] Initialized ConfigManager");
       ServerLifecycleCommands.Init();
       Log.Out("[StrongUtils] Initialized ServerLifecycleCommands");
+      KeyValueStore.KeyValueStore.Init(configDirectory);
+      Log.Out("[StrongUtils] Initialized KeyValueStore");
     }
 
     public static void OnGameStartDone(ref ModEvents.SGameStartDoneData data) {
       StrongZones.Init();
       Log.Out("[StrongUtils] Initialized StrongZones");
+      FastTravel.Init();
+      Log.Out("[StrongUtils] Initialized FastTravel");
       ServerLifecycleCommands.OnGameStartDone();
       Log.Out("[StrongUtils] Done running OnGameStartDone commands");
     }

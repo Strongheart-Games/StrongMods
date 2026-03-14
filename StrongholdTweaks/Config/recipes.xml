@@ -11,5 +11,9 @@
       <ingredient name="resourceElectricParts" count="25" />
       <ingredient name="carBattery" count="5" />
     </recipe>
+
+    <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
+      <ingredient name="resourceResourceSet" count="1" />
+    </recipe>
   </append>
 </config>
