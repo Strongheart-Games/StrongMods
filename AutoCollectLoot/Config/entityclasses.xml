@@ -24,4 +24,7 @@
   <append xpath="/entity_classes/entity_class[@name='EntityLootContainerBoss']">
     <property name="loot_item_name_strong" value="item_loot_container_boss_strong" />
   </append>
+  <append xpath="/entity_classes/entity_class[@name='EntityLootContainerPlague']">
+    <property name="loot_item_name_strong" value="item_loot_container_plague_strong" />
+  </append>
 </config>

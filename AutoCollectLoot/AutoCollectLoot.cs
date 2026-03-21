@@ -6,7 +6,7 @@ namespace AutoCollectLoot {
   public class AutoCollectLoot {
     public const string LootItemNameProperty = "loot_item_name_strong";
     public static bool Enabled = true;
-    public static bool EnabledOutsideBloodMoon = false;
+    public static bool EnabledOutsideBloodMoon = true;
 
 
     // Returns true iff loot was successfully collected (not dropped)
@@ -55,7 +55,12 @@ namespace AutoCollectLoot {
       }
 
       var lootItemName = dropped.Properties.GetString(LootItemNameProperty);
-      Log.Out($"[AutoCollectLoot] Found loot item {lootItemName} for {entity.EntityName}");
+      if (lootItemName is null || lootItemName.Length == 0) {
+        Log.Warning($"[AutoCollectLoot] No loot item found for {dropped.entityClassName}");
+      } else {
+        Log.Out($"[AutoCollectLoot] Found loot item {lootItemName} for {dropped.entityClassName}");
+      }
+
       return lootItemName;
     }
 

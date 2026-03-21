@@ -104,5 +104,18 @@
         <property name="LootList" value="zPackBoss" />
       </property>
     </item>
+    <item name="item_loot_container_plague_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="CustomIconTint" value="D34B08" />
+      <property name="DescriptionKey" value="item_loot_container_plague_desc_strong" />
+      <property name="Mesh" value="@:Entities/LootContainers/zpackGoldPrefab.prefab" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="zPackPlague" />
+      </property>
+    </item>
   </append>
 </config>
