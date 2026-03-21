@@ -6,7 +6,7 @@ namespace AutoCollectLoot {
   public class AutoCollectLoot {
     public const string LootItemNameProperty = "loot_item_name_strong";
     public static bool Enabled = true;
-    public static bool EnabledOutsideBloodMoon = true;
+    public static bool EnabledOutsideBloodMoon = false;
 
 
     // Returns true iff loot was successfully collected (not dropped)
