@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- This replaces rather than adds to the air drop loot table. Reported to author, remove until fixed -->
+  <remove xpath="/lootcontainers/lootcontainer[@name='airDrop']/item[@group='petanimals']" />
+</config>
