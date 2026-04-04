@@ -2,4 +2,9 @@
 <config>
   <!-- This replaces rather than adds to the air drop loot table. Reported to author, remove until fixed -->
   <remove xpath="/lootcontainers/lootcontainer[@name='airDrop']/item[@group='petanimals']" />
+
+  <append xpath="/lootcontainers/lootgroup[@name='groupZpackBoss']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="med" force_prob="true" />
+  </append>
+
 </config>
