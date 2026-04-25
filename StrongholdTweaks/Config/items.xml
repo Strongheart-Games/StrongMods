@@ -12,6 +12,15 @@
     <property name="AltItemTypeIconColor" value="0,255,0,200" />
   </append>
 
+  <!-- Master Tool compatibility with Project Z
+       with patch: 11, 17
+       without patch: 18, 28
+       impact driver: 17, 13
+       salvagingSkill   :  Buffs harvest based on the Perfection Salvaging skill
+       ImprovedParsing  :  Allows salvaging mods to be put in the tool
+  <csv xpath="/items/item[@name='meleeMasterTool']/property[@name='Tags']/@value" delim="," op="add">salvagingSkill,ImprovedParsing</csv>
+       -->
+
   <append xpath="/items">
     <item name="item_opal_of_ophelia">
       <property name="Extends" value="casinoCoin" />

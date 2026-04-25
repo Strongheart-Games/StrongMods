@@ -1,6 +1,7 @@
 Key,Source,Type,english
 mod_hybrid_vehicle_kit_strong,item_modifiers,Mod,"Hybrid Vehicle Kit"
 mod_hybrid_vehicle_kit_desc_strong,item_modifiers,Mod,"Adds torque and power to any vehicle by adding a hybrid battery and motor. Provides modest fuel savings for gas-powered vehicles."
+lblCategoryStrongCrops,UI,Tooltip,"StrongCrops"
 plantedStrongMushroom1,blocks,Block,"[ffda03]Strong[-] Mushrooms (Spores)"
 plantedStrongMushroom2,blocks,Block,"[ffda03]Strong[-] Mushrooms (Growing)"
 plantedStrongMushroom3Harvest,blocks,Block,"[ffda03]Strong[-] Mushrooms"

@@ -6,5 +6,34 @@
   <append xpath="/lootcontainers/lootgroup[@name='groupZpackBoss']">
     <item name="item_opal_of_ophelia" count="1" loot_prob_template="med" force_prob="true" />
   </append>
-
+  <append xpath="/lootcontainers/lootgroup[@name='groupChargedElite']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="medHigh" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupInfernalElite']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="high" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupSmallMiniBoss']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="high" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupMiniBoss']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupBossMutantHog']">
+    <item name="item_opal_of_ophelia" count="1" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupBossShocker']">
+    <item name="item_opal_of_ophelia" count="1,3" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupBossBull']">
+    <item name="item_opal_of_ophelia" count="1,3" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupBossVeteran']">
+    <item name="item_opal_of_ophelia" count="1,3" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupAncientYeti']">
+    <item name="item_opal_of_ophelia" count="1,3" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
+  <append xpath="/lootcontainers/lootgroup[@name='groupBossCarrier']">
+    <item name="item_opal_of_ophelia" count="3,10" loot_prob_template="guaranteed" force_prob="true" />
+  </append>
 </config>

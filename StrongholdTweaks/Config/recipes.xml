@@ -15,5 +15,55 @@
     <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
       <ingredient name="resourceResourceSet" count="1" />
     </recipe>
+
+    <recipe name="plantedStrongMushroom1" count="1" craft_time="900" craft_are="farmerStation">
+      <ingredient name="plantedMushroom1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongAloe1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedAloe1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongYucca1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedYucca1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongPotato1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedPotato1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongCorn1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedCorn1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongGoldenrod1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedGoldenrod1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongCotton1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedCotton1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongChrysanthemum1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedChrysanthemum1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongCoffee1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedCoffee1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongBlueberry1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedBlueberry1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongHop1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedHop1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+    <recipe name="plantedStrongPumpkin1" count="1" craft_time="900" craft_area="farmerStation">
+      <ingredient name="plantedPumpkin1Sel2" count="1" />
+      <ingredient name="resourceDookie" count="10" />
+    </recipe>
+
   </append>
 </config>
