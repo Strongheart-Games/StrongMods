@@ -16,7 +16,7 @@
       <ingredient name="resourceResourceSet" count="1" />
     </recipe>
 
-    <recipe name="plantedStrongMushroom1" count="1" craft_time="900" craft_are="farmerStation">
+    <recipe name="plantedStrongMushroom1" count="1" craft_time="900" craft_area="farmerStation">
       <ingredient name="plantedMushroom1Sel2" count="1" />
       <ingredient name="resourceDookie" count="10" />
     </recipe>
