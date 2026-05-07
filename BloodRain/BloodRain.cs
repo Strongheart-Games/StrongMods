@@ -164,13 +164,27 @@ namespace BloodRain {
       }
 
       GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1,
-        $"[ff0000]The blood rain will start in {((TimeSpan)_schedule.NextWarning).TotalMinutes} minute(s).[-]",
+        $"[ff0000]The blood rain will start in {FormatTimeSpan((TimeSpan)_schedule.NextWarning)}.[-]",
         null, EMessageSender.None);
       if (_secondWarningMessage is not null && _secondWarningMessage.Length > 0) {
         GameManager.Instance.ChatMessageServer(null, EChatType.Global, -1, _secondWarningMessage, null, EMessageSender.None);
       }
       _schedule.NextWarning =
         GetNextWarningTimeSpan(_schedule.NextStartTime, _schedule.CountdownIrlMinutes, _schedule.NextWarning);
+    }
+
+    private static string FormatTimeSpan(TimeSpan timeSpan)
+    {
+      var hours = (int)timeSpan.TotalMinutes / 60;
+      var minutes = (int)timeSpan.TotalMinutes % 60;
+
+      var hourPart = hours > 0 ? $"{hours} {(hours == 1 ? "hour" : "hours")}" : null;
+      var minutePart = minutes > 0 ? $"{minutes} {(minutes == 1 ? "minute" : "minutes")}" : null;
+
+      if (hourPart != null && minutePart != null)
+        return $"{hourPart} {minutePart}";
+
+      return hourPart ?? minutePart ?? "0 minutes";
     }
 
     public static void OnXMLChanged() {
