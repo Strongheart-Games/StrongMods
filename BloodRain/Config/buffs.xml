@@ -36,5 +36,12 @@
                           play_in_head="true" />
       </effect_group>
     </buff>
+
+    <buff name="buff_blood_rain_survived" hidden="true">
+      <duration value="1" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="bloodRainsSurvived" count="1"/>
+      </effect_group>
+    </buff>
   </append>
 </config>

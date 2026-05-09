@@ -108,6 +108,8 @@ namespace BloodRain {
         UpdateBloodRainBuff();
         SetBloodRainWeather(durationIrlMinutes);
       }
+
+      BloodRainChallenge.OnBloodRainStart();
     }
 
     public static void SkipBloodRain() {
@@ -126,6 +128,7 @@ namespace BloodRain {
       _endTime = null;
       UpdateBloodRainBuff();
       SetDefaultWeather();
+      BloodRainChallenge.OnBloodRainEnd();
     }
 
     private static void SetBloodRainWeather(float durationIrlMinutes) {
@@ -267,6 +270,15 @@ namespace BloodRain {
       var next = Math.Floor(Math.Min(max, remaining));
       Log.Out($"[BloodRain] Next warning is scheduled for {next} minutes before the blood rain");
       return TimeSpan.FromMinutes(next);
+    }
+
+    public static void OnGameAwake(ref ModEvents.SGameAwakeData data) {
+      var bloodMoonFrequency = GamePrefs.GetInt(EnumGamePrefs.BloodMoonFrequency);
+      if (bloodMoonFrequency == 0) {
+        return;
+      }
+      GamePrefs.Set(EnumGamePrefs.BloodMoonFrequency, 0);
+      Log.Warning($"[BloodRain] Forcing BloodMoonFrequency to 0; was set to {bloodMoonFrequency} in the config file.");
     }
   }
 }

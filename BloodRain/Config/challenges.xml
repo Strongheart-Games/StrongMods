@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <remove xpath="/challenges/challenge[@name='bloodmoonSurvive1']/objective" />
+  <append xpath="/challenges/challenge[@name='bloodmoonSurvive1']">
+    <objective type="ChallengeStatAwarded" challenge_stat="bloodRainsSurvived" count="1"
+               stat_text_key="challengeStatBloodRainsSurvived" />
+  </append>
+  <remove xpath="/challenges/challenge[@name='bloodmoonSurvive5']/objective" />
+  <append xpath="/challenges/challenge[@name='bloodmoonSurvive5']">
+    <objective type="ChallengeStatAwarded" challenge_stat="bloodRainsSurvived" count="5"
+               stat_text_key="challengeStatBloodRainsSurvived" />
+  </append>
+  <remove xpath="/challenges/challenge[@name='bloodmoonSurvive10']/objective" />
+  <append xpath="/challenges/challenge[@name='bloodmoonSurvive10']">
+    <objective type="ChallengeStatAwarded" challenge_stat="bloodRainsSurvived" count="10"
+               stat_text_key="challengeStatBloodRainsSurvived" />
+  </append>
+</config>
