@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicFeralSense", "Dynami
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RWGTools", "RWGTools\RWGTools.csproj", "{EC278EEB-1E29-4789-A029-8C619F3DB5DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,5 +98,9 @@ Global
 		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC278EEB-1E29-4789-A029-8C619F3DB5DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
