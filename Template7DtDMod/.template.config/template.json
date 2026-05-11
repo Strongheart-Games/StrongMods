@@ -1,0 +1,12 @@
+﻿{
+  "author": "str0ngh34rt",
+  "name": "7DtD Mod",
+  "description": "A project for building a 7 Days to Die mod.",
+  "identity": "str0ngh34rt.7DtDMod.1.0",
+  "shortName": "7dtdmod",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Template7DtDMod"
+}
