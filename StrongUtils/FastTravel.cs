@@ -37,7 +37,8 @@ namespace StrongUtils {
         var oldTotal = kvstore.Get(TotalDonationsKey, 0);
         var newTotal = oldTotal + pending;
         if (kvstore.TestAndSet(TotalDonationsKey, oldTotal, newTotal)) {
-          player.SetCVar(PendingDonationsCVar, 0);
+          // Don't just set to 0 in case the value was changed in the meantime
+          player.SetCVar(PendingDonationsCVar, player.GetCVar(PendingDonationsCVar) - pending);
           Chat.Global($"{player.PlayerDisplayName} donated {pending} fast travel supplies (total: {newTotal}).");
           Chat.Global(GetDonationsStatus());
           return;

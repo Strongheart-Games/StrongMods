@@ -45,8 +45,8 @@ namespace StrongUtils {
       }
 
       SdtdConsole.Instance.ExecuteSync(
-        $"ban add {persistentPlayerId.CombinedString} 10 years hacking \"{player.PlayerName?.DisplayName}\"", null);
-      Chat.Global($"[ff0000]{player.PlayerName?.DisplayName} has been banned for hacking.[-]");
+        $"ban add {persistentPlayerId.CombinedString} 10 years \"bulk editing blocks\" \"{player.PlayerName?.DisplayName}\"", null);
+      Chat.Global($"[ff0000]{player.PlayerName?.DisplayName} has been banned for bulk editing blocks.[-]");
     }
   }
 }

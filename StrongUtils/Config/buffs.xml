@@ -27,6 +27,57 @@
         <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="sysadmin_security_breach"/>
       </effect_group>
     </buff>
+    <buff name="buff_no_hostiles_zone_violation">
+      <stack_type value="ignore" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="ModifyCVar" cvar="$SniperDamage" operation="set" value="200"/>
+        <triggered_effect trigger="onSelfBuffStart" action="AddBuff" buff="buff_no_hostiles_zone_violation_shoot"/>
+      </effect_group>
+    </buff>
+    <buff name="buff_no_hostiles_zone_violation_shoot">
+      <update_rate value="0.5"/>
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AddBuff" buff="buff_no_hostiles_zone_violation_shock"/>
+        <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="sharpshooter_fire"/>
+        <triggered_effect trigger="onSelfBuffUpdate" action="AddBuff" buff="buff_no_hostiles_zone_violation_damage"/>
+        <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="buff_no_hostiles_zone_violation_shoot"/>
+      </effect_group>
+    </buff>
+    <buff name="buff_no_hostiles_zone_violation_damage">
+      <update_rate value="0.1"/>
+      <effect_group>
+        <!--<triggered_effect trigger="onSelfBuffStart" action="Ragdoll" duration="10"/>-->
+        <triggered_effect trigger="onSelfBuffStart" action="ModifyStats" stat="Health" operation="subtract" value="@$SniperDamage"/>
+        <triggered_effect trigger="onSelfBuffUpdate" action="ModifyCVar" cvar="$SniperDamage" operation="multiply" value="2"/>
+        <triggered_effect trigger="onSelfBuffUpdate" action="AddBuff" buff="buff_no_hostiles_zone_violation_shoot"/>
+        <triggered_effect trigger="onSelfBuffUpdate" action="RemoveBuff" buff="buff_no_hostiles_zone_violation_damage"/>
+      </effect_group>
+    </buff>
+    <buff name="buff_no_hostiles_zone_violation_shock">
+      <stack_type value="duration"/>
+      <duration value="5"/>
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffStart" action="AttachParticleEffectToEntity" particle="p_electric_shock" parent_transform="Spine1" local_offset="0,-.2,0"/>
+        <triggered_effect trigger="onSelfEnteredGame" action="AttachParticleEffectToEntity" particle="p_electric_shock" parent_transform="Spine1" local_offset="0,-.2,0"/>
+
+        <triggered_effect trigger="onSelfDied" action="RemoveParticleEffectFromEntity" particle="p_electric_shock"/>
+        <triggered_effect trigger="onSelfBuffRemove" action="RemoveParticleEffectFromEntity" particle="p_electric_shock"/>
+
+        <triggered_effect trigger="onSelfBuffFinish" action="RemoveParticleEffectFromEntity" particle="p_electric_shock"/>
+        <triggered_effect trigger="onSelfBuffRemove" action="RemoveParticleEffectFromEntity" particle="p_electric_shock"/>
+        <triggered_effect trigger="onSelfBuffRemove" action="RemoveCVar" cvar="ETrapHit"/>
+        <triggered_effect trigger="onSelfLeaveGame" action="RemoveParticleEffectFromEntity" particle="p_electric_shock"/>
+
+        <triggered_effect trigger="onSelfBuffStart" action="PlaySound" sound="electric_fence_impact"/>
+        <triggered_effect trigger="onSelfBuffRemove" action="FadeOutSound" sound="electric_fence_impact"/>
+        <triggered_effect trigger="onSelfLeaveGame" action="StopSound" sound="electric_fence_impact"/>
+
+        <passive_effect name="RunSpeed" operation="perc_subtract" value="1,1" duration="0,5"/>
+        <passive_effect name="WalkSpeed" operation="perc_subtract" value="1,1" duration="0,5"/>
+        <passive_effect name="CrouchSpeed" operation="perc_subtract" value="1,1" duration="0,5"/>
+        <passive_effect name="JumpStrength" operation="perc_subtract" value="1,1" duration="0,5"/>
+      </effect_group>
+    </buff>
     <buff name="buff_no_claims"
           name_key="buff_no_claims_name"
           description_key="buff_no_claims_desc"

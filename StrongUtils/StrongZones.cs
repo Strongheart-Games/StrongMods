@@ -282,6 +282,21 @@ namespace StrongUtils {
       }
     }
 
+    public static List<StrongZone> FindZonesForPosition(int x, int z, Chunk chunk = null, string tag = null) {
+      List<StrongZone> matches = null;
+      var chunkKey = chunk?.Key ?? WorldChunkCache.MakeChunkKey(World.toChunkXZ(x), World.toChunkXZ(z));
+      List<StrongZone> zones = s_zones._enemyZonesByChunk.GetValueSafe(chunkKey);
+      if (zones is not null) {
+        foreach (StrongZone zone in zones) {
+          if (zone.Contains(new Vector3(x, -1, z)) && (tag is null || zone.Tags.Contains(tag))) {
+            matches ??= new List<StrongZone>();
+            matches.Add(zone);
+          }
+        }
+      }
+      return matches;
+    }
+
     public static void UpdatePrefabZones() {
       s_zones = new StrongZones(GeneratePrefabZones());
     }
@@ -539,8 +554,8 @@ namespace StrongUtils {
         return;
       }
 
-      Log.Out($"[NoHostileEnforcer] Despawning enemy {enemy.EntityName} found in {zone.Name}");
-      enemy.Despawn();
+      Log.Out($"[NoHostileEnforcer] Targeting hostile {enemy.EntityName} found in {zone.Name}");
+      enemy.Buffs.AddBuff("buff_no_hostiles_zone_violation");
     }
   }
 

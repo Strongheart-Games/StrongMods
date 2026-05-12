@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using WorldGenerationEngineFinal;
+using UnityEngine;
 
 namespace StrongUtils {
   [HarmonyPatch(typeof(SdtdConsole), nameof(SdtdConsole.executeCommand))]
@@ -69,8 +69,24 @@ namespace StrongUtils {
     private static void Prefix(PlatformUserIdentifierAbs persistentPlayerId, List<BlockChangeInfo> _blocksToChange) {
       NoClaimsEnforcer.RejectLandClaims(persistentPlayerId, _blocksToChange);
     }
+
     private static void Postfix(PlatformUserIdentifierAbs persistentPlayerId, List<BlockChangeInfo> _blocksToChange) {
       StrongAudit.Audit_GameManager_ChangeBlocks(persistentPlayerId, _blocksToChange);
+    }
+  }
+
+  [HarmonyPatch(typeof(NetPackageDamageEntity), nameof(NetPackageDamageEntity.ProcessPackage))]
+  public class NetPackageDamageEntity_ProcessPackage_Patch {
+    private static void Prefix(NetPackageDamageEntity __instance) {
+      PlayerDamage.ValidateDamageEntityPackage(__instance);
+    }
+  }
+
+  [HarmonyPatch(typeof(EntityPlayer), nameof(EntityPlayer.DamageEntity))]
+  public class EntityPlayer_DamageEntity_Patch {
+    private static void Prefix(EntityPlayer __instance, DamageSource _damageSource, int _strength, bool _criticalHit,
+      float _impulseScale) {
+      PlayerDamage.RecordDamage(__instance, _damageSource, _strength, _criticalHit, _impulseScale);
     }
   }
 
@@ -107,7 +123,7 @@ namespace StrongUtils {
     }
   }
 
-  [HarmonyPatch(typeof(Prefab), MethodType.Constructor, new[] {typeof(Prefab), typeof(bool)})]
+  [HarmonyPatch(typeof(Prefab), MethodType.Constructor, typeof(Prefab), typeof(bool))]
   public class Prefab_Constructor_Patch {
     private static void Postfix(Prefab __instance, Prefab _other, bool sharedData) {
       StrongZones.CloneStrongZoneExtensions(__instance, _other, sharedData);
@@ -121,6 +137,19 @@ namespace StrongUtils {
     }
   }
 
+  [HarmonyPatch(typeof(Chunk), nameof(Chunk.CanMobsSpawnAtPos))]
+  public class Chunk_CanMobsSpawnAtPos_Patch {
+    private static bool Prefix(ref Chunk __instance, int _x, int _z, ref bool __result) {
+      var worldX = __instance.GetBlockWorldPosX(_x);
+      var worldZ = __instance.GetBlockWorldPosZ(_z);
+      if (StrongZones.FindZonesForPosition(worldX, worldZ, __instance, "no_hostiles") is not null) {
+        __result = false;
+        return false;
+      }
+      return true;
+    }
+  }
+
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
       Harmony harmony = new(_modInstance.Name);
@@ -129,6 +158,8 @@ namespace StrongUtils {
       ModEvents.GameStartDone.RegisterHandler(ServerLifecycle.OnGameStartDone);
       ModEvents.GameShutdown.RegisterHandler(ServerLifecycle.OnGameShutdown);
       ModEvents.ChatMessage.RegisterHandler(StrongCommands.HandleChatMessage);
+      ModEvents.PlayerDisconnected.RegisterHandler(PlayerDamage.HandlePlayerDisconnected);
+      ModEvents.EntityKilled.RegisterHandler(PlayerDamage.HandleEntityKilled);
     }
   }
 }
