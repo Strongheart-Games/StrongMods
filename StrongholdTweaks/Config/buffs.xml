@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/buffs">
+    <!-- buffs to ward challenge stats -->
     <buff name="buff_read_hades_rules" hidden="true">
       <duration value="1" />
       <effect_group>
