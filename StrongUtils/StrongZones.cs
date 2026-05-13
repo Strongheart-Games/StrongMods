@@ -321,7 +321,8 @@ namespace StrongUtils {
       zones = null;
       Prefab prefab = prefabInstance.prefab;
       List<string> tags = prefab.GetStrongZoneTags();
-      var deadZone = prefab.GetClaimDeadZoneMeters();
+      var claimDeadZoneMeters = prefab.GetClaimDeadZoneMeters();
+      var hostileDeadZoneMeters = prefab.GetHostileDeadZoneMeters();
 
       if (tags is null || tags.Count == 0) {
         if (!prefab.bTraderArea) {
@@ -329,7 +330,7 @@ namespace StrongUtils {
         }
 
         tags = new List<string> { "no_claims" };
-        deadZone = 100;
+        claimDeadZoneMeters = 100;
       }
 
       var name = prefabInstance.name.Replace('.', '_');
@@ -340,15 +341,28 @@ namespace StrongUtils {
       if (tags.Contains("no_claims")) {
         tags = tags.Where(t => t != "no_claims").ToList();
         // Add half the land claim size to ensure the entire claim is outside the dead zone
-        deadZone += GameStats.GetInt(EnumGameStats.LandClaimSize) / 2;
+        claimDeadZoneMeters += GameStats.GetInt(EnumGameStats.LandClaimSize) / 2;
         var noClaimsName = $"{name}_no_claims";
-        var noClaimsCornerXZ = new Vector2i(-deadZone, -deadZone);
+        var noClaimsCornerXZ = new Vector2i(-claimDeadZoneMeters, -claimDeadZoneMeters);
         noClaimsCornerXZ += cornerXZ;
-        var noClaimsOppositeCornerXZ = new Vector2i(deadZone, deadZone);
+        var noClaimsOppositeCornerXZ = new Vector2i(claimDeadZoneMeters, claimDeadZoneMeters);
         noClaimsOppositeCornerXZ += oppositeCornerXZ;
         var noClaimsTags = new List<string> { "no_claims" };
         var noClaimsZone = new StrongZone(noClaimsName, noClaimsCornerXZ, noClaimsOppositeCornerXZ, noClaimsTags);
         zones = new List<StrongZone> { noClaimsZone };
+      }
+
+      if (tags.Contains("no_hostiles")) {
+        tags = tags.Where(t => t != "no_hostiles").ToList();
+        var noHostilesName = $"{name}_no_hostiles";
+        var noHostilesCornerXZ = new Vector2i(-hostileDeadZoneMeters, -hostileDeadZoneMeters);
+        noHostilesCornerXZ += cornerXZ;
+        var noHostilesOppositeCornerXZ = new Vector2i(hostileDeadZoneMeters, hostileDeadZoneMeters);
+        noHostilesOppositeCornerXZ += oppositeCornerXZ;
+        var noHostilesTags = new List<string> { "no_hostiles" };
+        var noHostilesZone = new StrongZone(noHostilesName, noHostilesCornerXZ, noHostilesOppositeCornerXZ, noHostilesTags);
+        zones ??= new List<StrongZone>();
+        zones.Add(noHostilesZone);
       }
 
       if (tags.Count == 0) {
@@ -362,16 +376,19 @@ namespace StrongUtils {
 
     public static void InitializeStrongZoneExtensions(Prefab prefab) {
       List<string> tags = null;
-      var deadZone = 0;
+      var claimDeadZoneMeters = 0;
+      var hostileDeadZoneMeters = 0;
       if (prefab.properties.Classes.ContainsKey("StrongZones")) {
         Log.Out($"[StrongZones] Prefab {prefab.PrefabName} has StrongZones config");
         DynamicProperties properties = prefab.properties.Classes["StrongZones"];
         tags = properties.Contains("Tags") ? properties.Values["Tags"].Split(',').ToList() : null;
-        properties.ParseInt("ClaimDeadZoneMeters", ref deadZone);
+        properties.ParseInt("ClaimDeadZoneMeters", ref claimDeadZoneMeters);
+        properties.ParseInt("HostileDeadZoneMeters", ref hostileDeadZoneMeters);
       }
 
       prefab.SetStrongZoneTags(tags);
-      prefab.SetClaimDeadZoneMeters(deadZone);
+      prefab.SetClaimDeadZoneMeters(claimDeadZoneMeters);
+      prefab.SetHostileDeadZoneMeters(hostileDeadZoneMeters);
     }
 
     public static void CloneStrongZoneExtensions(Prefab into, Prefab from, bool sharedData = false) {
@@ -380,10 +397,12 @@ namespace StrongUtils {
         tags = new List<string>(tags);
       }
 
-      var deadZone = from.GetClaimDeadZoneMeters();
+      var claimDeadZoneMeters = from.GetClaimDeadZoneMeters();
+      var hostileDeadZoneMeters = from.GetHostileDeadZoneMeters();
 
       into.SetStrongZoneTags(tags);
-      into.SetClaimDeadZoneMeters(deadZone);
+      into.SetClaimDeadZoneMeters(claimDeadZoneMeters);
+      into.SetHostileDeadZoneMeters(hostileDeadZoneMeters);
     }
 
     private static void UpdateCustomZones(XElement element) {
@@ -673,6 +692,7 @@ namespace StrongUtils {
 
   public class PrefabExtensionData {
     public int ClaimDeadZoneMeters;
+    public int HostileDeadZoneMeters;
     public List<string> StrongZoneTags = new();
   }
 
@@ -704,6 +724,14 @@ namespace StrongUtils {
 
     public static void SetClaimDeadZoneMeters(this Prefab prefab, int meters) {
       GetOrCreatePrefabExtensionData(prefab).ClaimDeadZoneMeters = meters;
+    }
+
+    public static int GetHostileDeadZoneMeters(this Prefab prefab) {
+      return GetPrefabExtensionData(prefab)?.HostileDeadZoneMeters ?? 0;
+    }
+
+    public static void SetHostileDeadZoneMeters(this Prefab prefab, int meters) {
+      GetOrCreatePrefabExtensionData(prefab).HostileDeadZoneMeters = meters;
     }
   }
 }
