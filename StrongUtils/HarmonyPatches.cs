@@ -61,6 +61,7 @@ namespace StrongUtils {
   public class WorldEnvironment_OnXMLChanged_Patch {
     private static void Postfix() {
       StrongCommands.OnXMLChanged();
+      StrongZones.OnXMLChanged();
     }
   }
 

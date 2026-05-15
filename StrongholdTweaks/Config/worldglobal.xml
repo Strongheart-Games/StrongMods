@@ -70,5 +70,14 @@
     <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3351 -1 2130 n"/>
 
     <property name="strong_zones_protected_zones" value="(-393,3516);(-150,3178)|(-950,-430);(-887,-365)"/>
+
+    <property class="strong_protected_difficulty_tiers_by_biome">
+      <property name="default" value="1"/>
+      <property name="pine_forest" value="1"/>
+      <property name="burnt_forest" value="2"/>
+      <property name="desert" value="3"/>
+      <property name="snow" value="4"/>
+      <property name="wasteland" value="4"/>
+    </property>
   </append>
 </config>

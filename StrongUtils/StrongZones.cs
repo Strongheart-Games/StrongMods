@@ -16,6 +16,7 @@ namespace StrongUtils {
     private const string SDefaultConfig = "<config></config>";
 
     private static StrongZones s_zones;
+    private static Dictionary<string, byte> s_protectedDifficultTiersByBiome = new() {["default"] = 1};
 
     private static readonly List<PlayerStatusCallback> s_playerEnterCallbacks = new();
     private static readonly List<PlayerStatusCallback> s_playerLeaveCallbacks = new();
@@ -325,12 +326,14 @@ namespace StrongUtils {
       var hostileDeadZoneMeters = prefab.GetHostileDeadZoneMeters();
 
       if (tags is null || tags.Count == 0) {
-        if (!prefab.bTraderArea) {
+        if (prefab.bTraderArea) {
+          tags = new List<string> { "no_claims" };
+          claimDeadZoneMeters = 100;
+        } else if (IsProtectedPrefab(prefabInstance)) {
+          tags = new List<string> { "no_claims" };
+        } else {
           return false;
         }
-
-        tags = new List<string> { "no_claims" };
-        claimDeadZoneMeters = 100;
       }
 
       var name = prefabInstance.name.Replace('.', '_');
@@ -412,6 +415,43 @@ namespace StrongUtils {
     private static List<StrongZone> GenerateCustomZones(XElement zones = null) {
       zones ??= ConfigManager.Instance.ReadConfigFile(SConfigFileName);
       return zones.Elements("zone").Select(StrongZone.FromXml).ToList();
+    }
+
+    public static void OnXMLChanged() {
+      var tiers = new Dictionary<string, byte>() {
+        ["default"] = 1
+      };
+      DynamicProperties properties = WorldEnvironment.Properties?.Classes["strong_protected_difficulty_tiers_by_biome"];
+      if (properties is not null) {
+        ParseProtectedDifficultTierForBiome(properties, "default", tiers);
+        ParseProtectedDifficultTierForBiome(properties, "pine_forest", tiers);
+        ParseProtectedDifficultTierForBiome(properties, "burnt_forest", tiers);
+        ParseProtectedDifficultTierForBiome(properties, "desert", tiers);
+        ParseProtectedDifficultTierForBiome(properties, "snow", tiers);
+        ParseProtectedDifficultTierForBiome(properties, "wasteland", tiers);
+      }
+      s_protectedDifficultTiersByBiome = tiers;
+    }
+
+    private static void ParseProtectedDifficultTierForBiome(
+      DynamicProperties properties,
+      string biome,
+      Dictionary<string, byte> tiers) {
+      var tier = -1;
+      properties.ParseInt(biome, ref tier);
+      if (tier >= 0) {
+        tiers[biome] = (byte)tier;
+      }
+    }
+
+    private static bool IsProtectedPrefab(PrefabInstance prefab) {
+      BiomeDefinition biome = GameManager.Instance.World.ChunkCache.ChunkProvider.GetBiomeProvider().GetBiomeAt(prefab.boundingBoxPosition.x, prefab.boundingBoxPosition.z);
+      if (!s_protectedDifficultTiersByBiome.ContainsKey(biome.m_sBiomeName)) {
+        Log.Warning($"[StrongZones] Biome {biome.m_sBiomeName} not found in configured rules; using default.");
+      }
+      var minProtectedTier = s_protectedDifficultTiersByBiome.GetValueOrDefault(biome.m_sBiomeName, s_protectedDifficultTiersByBiome["default"]);
+      var actualTier = prefab.prefab.DifficultyTier;
+      return actualTier >= minProtectedTier;
     }
   }
 
