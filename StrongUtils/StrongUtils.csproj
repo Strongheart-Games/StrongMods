@@ -101,6 +101,7 @@
     <Compile Include="StrongCommands.cs" />
     <Compile Include="StrongSworn.cs" />
     <Compile Include="StrongZones.cs" />
+    <Compile Include="TouchlessLootContainers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\buffs.xml">
