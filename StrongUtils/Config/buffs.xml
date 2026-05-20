@@ -32,6 +32,7 @@
       <effect_group>
         <triggered_effect trigger="onSelfBuffStart" action="ModifyCVar" cvar="$SniperDamage" operation="set" value="200"/>
         <triggered_effect trigger="onSelfBuffStart" action="AddBuff" buff="buff_no_hostiles_zone_violation_shoot"/>
+        <triggered_effect trigger="onSelfBuffStart" action="AddBuff" buff="buff_no_loot"/>
       </effect_group>
     </buff>
     <buff name="buff_no_hostiles_zone_violation_shoot">
@@ -77,6 +78,10 @@
         <passive_effect name="CrouchSpeed" operation="perc_subtract" value="1,1" duration="0,5"/>
         <passive_effect name="JumpStrength" operation="perc_subtract" value="1,1" duration="0,5"/>
       </effect_group>
+    </buff>
+    <!-- Marker buff that when applied to an entity makes it so they drop no loot on death. -->
+    <buff name="buff_no_loot" remove_on_death="false">
+      <stack_type value="ignore"/>
     </buff>
     <buff name="buff_no_claims"
           name_key="buff_no_claims_name"
