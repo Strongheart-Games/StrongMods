@@ -26,7 +26,7 @@ namespace StrongFill {
       // Add at the end so we don't bother checking the new changes in the loop above
       foreach (Vector3i position in positionsToFill) {
         BlockValue block = GameManager.Instance.World.GetBlock(position);
-        if (block.isair || block.isWater || block.ischild) {
+        if (block.isair || block.isWater || block.ischild || block.Block.AutoShapeType != EAutoShapeType.Shape) {
           continue;
         }
 
