@@ -8,5 +8,8 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "Template7DtDMod"
+  "sourceName": "Template7DtDMod",
+  "guids": [
+    "48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0"
+  ]
 }
