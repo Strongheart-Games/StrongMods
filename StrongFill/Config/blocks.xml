@@ -2,38 +2,23 @@
 <config>
   <append xpath="/blocks">
     <block name="pallet_bag_strong_fill">
-      <property name="CustomIcon" value="palletBagSandBaseMed" />
+      <property name="CustomIcon" value="palletBagSandSingleFlat" />
       <property name="CreativeMode" value="Dev" />
       <property name="Material" value="Msandstone"/>
       <property name="Shape" value="ModelEntity"/>
-      <property name="Model" value="@:Entities/Industrial/palletBagSandBaseMedPrefab.prefab"/>
+      <property name="Model" value="@:Entities/Industrial/palletBagSandSingleFlatPrefab.prefab"/>
       <property name="OnlySimpleRotations" value="true"/>
       <property name="Class" value="PlantGrowing"/>
-      <property name="PlantGrowing.Next" value="pallet_empty_strong_fill"/>
-      <property name="PlantGrowing.GrowthRate" value="0.03"/>
-      <property name="PlantGrowing.IsRandom" value="false"/>
-      <property name="PlantGrowing.FertileLevel" value="0"/>
-      <property name="PlantGrowing.LightLevelGrow" value="0"/>
-    </block>
-    <block name="pallet_empty_strong_fill">
-      <property name="CreativeMode" value="None" />
-      <property name="Material" value="Msandstone"/>
-      <property name="Shape" value="ModelEntity"/>
-      <property name="Model" value="@:Entities/Industrial/palletsWoodSinglePrefab.prefab"/>
-      <property name="ModelOffset" value="0,0,0"/>
-      <property name="Class" value="PlantGrowing"/>
       <property name="PlantGrowing.Next" value="strong_fill"/>
-      <property name="PlantGrowing.GrowthRate" value="0.01"/>
+      <property name="PlantGrowing.GrowthRate" value="0.03"/>
       <property name="PlantGrowing.IsRandom" value="false"/>
       <property name="PlantGrowing.FertileLevel" value="0"/>
       <property name="PlantGrowing.LightLevelGrow" value="0"/>
     </block>
     <block name="strong_fill">
       <property name="CreativeMode" value="None" />
-      <property name="Material" value="Msandstone"/>
-      <property name="Shape" value="ModelEntity"/>
-      <property name="Model" value="@:Entities/Industrial/palletsWoodSinglePrefab.prefab"/>
-      <property name="ModelOffset" value="0,0,0"/>
+      <property name="Material" value="Mair"/>
+      <property name="Shape" value="Invisible"/>
     </block>
   </append>
 </config>

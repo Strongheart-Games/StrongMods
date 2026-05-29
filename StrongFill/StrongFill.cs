@@ -17,6 +17,7 @@ namespace StrongFill {
         fillBlockChanges.Add(change);
         changes.Remove(change);
       }
+
       return fillBlockChanges;
     }
 
@@ -25,7 +26,7 @@ namespace StrongFill {
         return;
       }
 
-      List<BlockChangeInfo> additionalChanges = new List<BlockChangeInfo>();
+      var additionalChanges = new List<BlockChangeInfo>();
       World world = GameManager.Instance.World;
       foreach (BlockChangeInfo change in fillBlockChanges) {
         var posToFill = new Vector3i(change.pos.x, change.pos.y - 1, change.pos.z);
@@ -40,12 +41,10 @@ namespace StrongFill {
           });
         }
 
-        additionalChanges.Add(new BlockChangeInfo(change.pos, BlockValue.Air, MarchingCubes.DensityAirHi));
+        additionalChanges.Add(new BlockChangeInfo(change.pos, BlockValue.Air, MarchingCubes.DensityAir));
       }
 
-      if (additionalChanges != null) {
-        world.SetBlocksRPC(additionalChanges);
-      }
+      world.SetBlocksRPC(additionalChanges);
     }
   }
 
@@ -54,6 +53,7 @@ namespace StrongFill {
     private static void Prefix(List<BlockChangeInfo> _blocksToChange, out List<BlockChangeInfo> __state) {
       __state = StrongFill.RemoveFillBlockChanges(_blocksToChange);
     }
+
     private static void Postfix(List<BlockChangeInfo> __state) {
       StrongFill.Fill(__state);
     }
