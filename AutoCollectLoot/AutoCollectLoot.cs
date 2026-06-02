@@ -71,7 +71,8 @@ namespace AutoCollectLoot {
 
     public static bool TryGiveLoot(string itemName, EntityPlayer player) {
       ItemValue itemValue = ItemClass.GetItem(itemName);
-      if (itemValue is null) {
+      // GetItem() returns ItemValue.None, so we have to check for it with IsEmpty()
+      if (itemValue is null || itemValue.IsEmpty()) {
         return false;
       }
 

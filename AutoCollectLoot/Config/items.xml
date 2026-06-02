@@ -54,6 +54,18 @@
         <property name="LootList" value="zPackLab" />
       </property>
     </item>
+    <item name="item_loot_container_utility_strong">
+      <property name="Extends" value="item_loot_container_base_strong" />
+      <property name="CreativeMode" value="Player" />
+      <property name="DescriptionKey" value="item_loot_container_utility_desc_strong" />
+      <property name="CustomIconTint" value="78783A" />
+      <property class="Action0">
+        <property name="Class" value="OpenLootBundle" />
+        <property name="Delay" value="0" />
+        <property name="Sound_start" value="close_garbage" />
+        <property name="LootList" value="zPackUtility" />
+      </property>
+    </item>
     <item name="item_loot_container_soldier_strong">
       <property name="Extends" value="item_loot_container_base_strong" />
       <property name="CreativeMode" value="Player" />
