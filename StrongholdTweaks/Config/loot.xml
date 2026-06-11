@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <!-- This replaces rather than adds to the air drop loot table. Reported to author, remove until fixed -->
-  <remove xpath="/lootcontainers/lootcontainer[@name='airDrop']/item[@group='petanimals']" />
+  <conditional>
+    <if cond="mod_loaded('V2_ServerSideOnly_Oaks_Pets_and_Guards')">
+      <remove xpath="/lootcontainers/lootcontainer[@name='airDrop']/item[@group='petanimals']" />
+    </if>
+  </conditional>
 
   <append xpath="/lootcontainers/lootgroup[@name='groupZpackBoss']">
     <item name="item_opal_of_ophelia" count="1" loot_prob_template="med" force_prob="true" />
