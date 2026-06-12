@@ -76,12 +76,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlockStrongFill.cs" />
     <Compile Include="ModApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StrongFill.cs" />
+    <Compile Include="ServerClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\blocks.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\Localization.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\recipes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ModInfo.xml">

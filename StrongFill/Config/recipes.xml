@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/recipes">
+    <recipe name="strong_fill" count="1" craft_time="1">
+      <ingredient name="resourceCrushedSand" count="4" />
+    </recipe>
+  </append>
+</config>

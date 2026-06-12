@@ -1,0 +1,3 @@
+﻿Key,Source,Type,english
+strong_fill,blocks,Block,"[ffda03]Strong[-]Fill Terrain Gap Filler"
+strong_fill_desc,blocks,Block,"Place on terrain to smoothly connect it to adjacent cubes. Works best with cube or near-cube shapes.\n\nIf there's no gap to fill, it will do nothing and you can pick it up again to place it elsewhere."
