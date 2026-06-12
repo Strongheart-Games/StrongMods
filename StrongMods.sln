@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RWGTools", "RWGTools\RWGToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6d06c787-4d97-4071-8d58-918863767e40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,9 +104,9 @@ Global
 		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Release|Any CPU.Build.0 = Release|Any CPU
-    {6d06c787-4d97-4071-8d58-918863767e40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-    {6d06c787-4d97-4071-8d58-918863767e40}.Debug|Any CPU.Build.0 = Debug|Any CPU
-    {6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.ActiveCfg = Release|Any CPU
-    {6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6d06c787-4d97-4071-8d58-918863767e40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6d06c787-4d97-4071-8d58-918863767e40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
