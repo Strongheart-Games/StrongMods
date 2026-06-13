@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/blocks">
+    <block name="terrOreIronStrong">
+      <property name="Extends" value="terrOreIron" />
+      <property name="CustomIcon" value="terrOreIron" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrOreIronStrong" />
+    </block>
+
+    <block name="terrOreLeadStrong">
+      <property name="Extends" value="terrOreLead" />
+      <property name="CustomIcon" value="terrOreLead" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrOreLeadStrong" />
+    </block>
+
+    <block name="terrOreCoalStrong">
+      <property name="Extends" value="terrOreCoal" />
+      <property name="CustomIcon" value="terrOreCoal" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrOreCoalStrong" />
+    </block>
+
+    <block name="terrOrePotassiumNitrateStrong">
+      <property name="Extends" value="terrOrePotassiumNitrate" />
+      <property name="CustomIcon" value="terrOrePotassiumNitrate" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrOrePotassiumNitrateStrong" />
+    </block>
+
+    <block name="terrOreOilDepositStrong">
+      <property name="Extends" value="terrOreOilDeposit" />
+      <property name="CustomIcon" value="terrOreOilDeposit" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrOreOilDepositStrong" />
+    </block>
+  </append>
+</config>
