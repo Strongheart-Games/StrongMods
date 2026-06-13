@@ -1,0 +1,15 @@
+﻿{
+  "author": "str0ngh34rt",
+  "name": "7DtD Modlet",
+  "description": "A project for building a 7 Days to Die modlet (XML only).",
+  "identity": "str0ngh34rt.7DtDModlet.1.0",
+  "shortName": "7dtdmodlet",
+  "tags": {
+    "language": "XML",
+    "type": "project"
+  },
+  "sourceName": "Template7DtDModlet",
+  "guids": [
+    "48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0"
+  ]
+}

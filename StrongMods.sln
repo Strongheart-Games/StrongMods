@@ -1,5 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDModlet", "Template7DtDModlet\Template7DtDModlet.csproj", "{B1413BD6-A2C1-461A-9F97-EFAB66B4F8FF}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodRain", "BloodRain\BloodRain.csproj", "{44BCB2A9-427E-476F-9081-A39B3D46F610}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongUtils", "StrongUtils\StrongUtils.csproj", "{FED4B6B3-0482-4574-BBE8-6F189F5681DF}"
@@ -29,8 +33,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicFeralSense", "DynamicFeralSense\DynamicFeralSense.csproj", "{21319922-DC60-422A-B2CB-64D96496F224}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RWGTools", "RWGTools\RWGTools.csproj", "{EC278EEB-1E29-4789-A029-8C619F3DB5DB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
@@ -118,5 +120,7 @@ Global
 		{6D06C787-4D97-4071-8D58-918863767E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D06C787-4D97-4071-8D58-918863767E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D06C787-4D97-4071-8D58-918863767E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1413BD6-A2C1-461A-9F97-EFAB66B4F8FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1413BD6-A2C1-461A-9F97-EFAB66B4F8FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
