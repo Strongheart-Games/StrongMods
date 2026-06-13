@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongHonk", "StrongHonk\StrongHonk.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMining", "StrongMining\StrongMining.csproj", "{343152C4-6197-4461-9B01-E223627C59E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,5 +116,9 @@ Global
 		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343152C4-6197-4461-9B01-E223627C59E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343152C4-6197-4461-9B01-E223627C59E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343152C4-6197-4461-9B01-E223627C59E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343152C4-6197-4461-9B01-E223627C59E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
