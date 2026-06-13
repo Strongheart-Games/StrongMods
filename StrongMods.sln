@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongHonk", "StrongHonk\StrongHonk.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,5 +110,9 @@ Global
 		{6d06c787-4d97-4071-8d58-918863767e40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6d06c787-4d97-4071-8d58-918863767e40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
