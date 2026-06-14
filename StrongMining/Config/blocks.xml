@@ -35,5 +35,33 @@
       <property name="CustomIconTint" value="ffda03" />
       <property name="DowngradeBlock" value="terrOreOilDepositStrong" />
     </block>
+
+    <block name="terrStoneStrong">
+      <property name="Extends" value="terrStone" />
+      <property name="CustomIcon" value="terrStone" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrStoneStrong" />
+    </block>
+
+    <block name="terrDirtStrong">
+      <property name="Extends" value="terrDirt" />
+      <property name="CustomIcon" value="terrDirt" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrDirtStrong" />
+    </block>
+
+    <block name="terrSandStrong">
+      <property name="Extends" value="terrSand" />
+      <property name="CustomIcon" value="terrSand" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrSandStrong" />
+    </block>
+
+    <block name="terrSnowStrong">
+      <property name="Extends" value="terrSnow" />
+      <property name="CustomIcon" value="terrSnow" />
+      <property name="CustomIconTint" value="ffda03" />
+      <property name="DowngradeBlock" value="terrSnowStrong" />
+    </block>
   </append>
 </config>
