@@ -1,90 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/challenges">
+
     <challenge_category name="Stronghold" title_key="challengeCategoryStronghold"
                         icon="ui_game_symbol_strength_mastery" />
 
-    <challenge_group category="Stronghold" name="BecomeStrongSworn" title_key="challengeGroupBecomeStrongSworn"
-                     reward_text_key="challengeRewardBecomeStrongSworn"
-                     reward_event="challenge_reward_become_strongsworn" link_challenges="true" />
+    <challenge_group category="Stronghold" name="StrongholdUnlocks" title_key="challengeGroupStrongholdUnlocks" />
 
-    <challenge name="readHadesRules" title_key="challengeReadHadesRules" icon="ui_game_symbol_challenge_crafting_read_magazine"
-               group="BecomeStrongSworn" short_description_key="challengeReadHadesRulesShort"
-               description_key="challengeReadHadesRulesDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="readhadesrules" count="1"
-                 stat_text_key="challengeStatReadHadesRules" />
+    <challenge name="findStronghold" title_key="challengeFindStronghold" icon="ui_game_symbol_map"
+               group="StrongholdUnlocks" short_description_key="challengeFindStrongholdShort"
+               description_key="challengeFindStrongholdDesc" reward_text_key="challengeRewardStrongholdTP"
+               reward_event="challenge_reward_stronghold_tp">
+      <objective type="ChallengeStatAwarded" challenge_stat="stronghold_visited" count="1"
+                 stat_text_key="challengeStatStrongholdVisited" />
     </challenge>
 
-    <challenge name="readHadesSurvivalGuide" title_key="challengeReadHadesSurvivalGuide" icon="ui_game_symbol_challenge_crafting_read_magazine"
-               group="BecomeStrongSworn" short_description_key="challengeReadHadesSurvivalGuideShort"
-               description_key="challengeReadHadesSurvivalGuideDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="readhadessurvivalguide" count="1"
-                 stat_text_key="challengeStatReadHadesSurvivalGuide" />
+    <challenge name="completeFiveQuests" title_key="challengeCompleteFiveQuests" icon="ui_game_symbol_quest"
+               group="StrongholdUnlocks" short_description_key="challengeCompleteFiveQuestsShort"
+               description_key="challengeCompleteFiveQuestsDesc" reward_text_key="challengeRewardBedTP"
+               reward_event="challenge_reward_bed_tp">
+      <objective type="QuestComplete" quest_tag="poi,buried" count="5" />
+      <objective type="KillByTag" entity_tags="zombie" target_name_key="xuiZombies" count="20" />
     </challenge>
 
-    <challenge name="readFAQ" title_key="challengeReadFAQ" icon="ui_game_symbol_challenge_crafting_read_magazine"
-               group="BecomeStrongSworn" short_description_key="challengeReadFAQShort"
-               description_key="challengeReadFAQDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="readfaq" count="1"
-                 stat_text_key="challengeStatReadFAQ" />
-    </challenge>
-
-    <challenge name="readProjectZDocs" title_key="challengeReadProjectZDocs" icon="ui_game_symbol_challenge_crafting_read_magazine"
-               group="BecomeStrongSworn" short_description_key="challengeReadProjectZDocsShort"
-               description_key="challengeReadProjectZDocsDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="readprojectzdocs" count="1"
-                 stat_text_key="challengeStatReadProjectZDocs" />
-    </challenge>
-
-    <challenge name="useInteractiveMap" title_key="challengeUseInteractiveMap" icon="ui_game_symbol_map"
-               group="BecomeStrongSworn" short_description_key="challengeUseInteractiveMapShort"
-               description_key="challengeUseInteractiveMapDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="useinteractivemap" count="1"
-                 stat_text_key="challengeStatUseInteractiveMap" />
-    </challenge>
-
-    <challenge name="joinStrongholdDiscord" title_key="challengeJoinStrongholdDiscord" icon="ui_game_symbol_add_discord_friend"
-               group="BecomeStrongSworn" short_description_key="challengeJoinStrongholdDiscordShort"
-               description_key="challengeJoinStrongholdDiscordDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="joinstrongholddiscord" count="1"
-                 stat_text_key="challengeStatJoinStrongholdDiscord" />
-    </challenge>
-
-    <challenge name="readStrongholdDiscordRules" title_key="challengeReadStrongholdDiscordRules" icon="ui_game_symbol_add_discord_friend"
-               group="BecomeStrongSworn" short_description_key="challengeReadStrongholdDiscordRulesShort"
-               description_key="challengeReadStrongholdDiscordRulesDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="readstrongholddiscordrules" count="1"
-                 stat_text_key="challengeStatReadStrongholdDiscordRules" />
-    </challenge>
-
-    <challenge name="findTheFerryman" title_key="challengeFindTheFerryman" icon="ui_game_symbol_add_discord_friend"
-               group="BecomeStrongSworn" short_description_key="challengeFindTheFerrymanShort"
-               description_key="challengeFindTheFerrymanDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="findtheferryman" count="1"
-                 stat_text_key="challengeStatFindTheFerryman" />
-    </challenge>
-
-    <challenge name="takeStrongSwornOath" title_key="challengeTakeStrongSwornOath" icon="ui_game_symbol_talk"
-               group="BecomeStrongSworn" short_description_key="challengeTakeStrongSwornOathShort"
-               description_key="challengeTakeStrongSwornOathDesc" reward_text_key="challenge_reward_500xp"
-               reward_event="challenge_reward_500">
-      <objective type="ChallengeStatAwarded" challenge_stat="takestrongswornoath" count="1"
-                 stat_text_key="challengeStatTakeStrongSwornOath" />
-    </challenge>
-
-    <challenge name="becomeStrongSworn" title_key="challengeBecomeStrongSworn" icon="ui_game_symbol_strength_mastery"
-               group="BecomeStrongSworn" prerequisite_hint="challengeBecomeStrongSwornHint1"
-               hint="challengeBecomeStrongSwornHint2" short_description_key="challengeBecomeStrongSwornShort"
-               description_key="challengeBecomeStrongSwornDesc" redeem_always="false">
-      <objective type="ChallengeComplete" challenge="BecomeStrongSworn" is_redeemed="true" is_group="true" />
-    </challenge>
   </append>
 </config>

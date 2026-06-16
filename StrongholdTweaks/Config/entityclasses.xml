@@ -1,13 +1,7 @@
 <config>
   <!-- Edit player entity to increase health and stamina -->
-  <set
-    xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='HealthMax'][@value='100']/@value">
-    200
-  </set>  <!-- default = 100 -->
-  <set
-    xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='StaminaMax'][@value='100']/@value">
-    200
-  </set>  <!-- default = 100 -->
+  <set xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='HealthMax'][@value='100']/@value">200</set>  <!-- default = 100 -->
+  <set xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='StaminaMax'][@value='100']/@value">200</set>  <!-- default = 100 -->
   <insertAfter xpath="/entity_classes/entity_class[@name='playerMale']/effect_group/passive_effect[@name='StaminaMax']">
     <triggered_effect trigger="onSelfFirstSpawn" action="AddBuff" target="self" buff="buffEntitySpawnHeal" />
   </insertAfter>
@@ -17,7 +11,8 @@
   </csv>
 
   <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
-  <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab</setattribute>
+  <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab
+  </setattribute>
 
   <append xpath="/entity_classes/entity_class[@name='ChargedEliteLootContainer']">
     <property name="loot_item_name_strong" value="item_loot_container_charged_elite_strong" />
@@ -52,19 +47,19 @@
 
   <append xpath="/entity_classes">
     <entity_class name="animalRabbitGolf" extends="animalRabbit">
-      <property name="AITask-1" value="Look"/>
-      <property name="AITask-2" value=""/> <!-- The first empty AI Task ends the list -->
+      <property name="AITask-1" value="Look" />
+      <property name="AITask-2" value="" /> <!-- The first empty AI Task ends the list -->
       <!--<property name="MatColor" value="charged"/>-->
       <effect_group name="Base Effects">
-        <passive_effect name="HealthMax" operation="base_set" value="99999"/>
+        <passive_effect name="HealthMax" operation="base_set" value="99999" />
       </effect_group>
     </entity_class>
     <entity_class name="animalChickenGolf" extends="animalChicken">
-      <property name="AITask-1" value="Look"/>
-      <property name="AITask-2" value=""/> <!-- The first empty AI Task ends the list -->
+      <property name="AITask-1" value="Look" />
+      <property name="AITask-2" value="" /> <!-- The first empty AI Task ends the list -->
       <!--<property name="MatColor" value="charged"/>-->
       <effect_group name="Base Effects">
-        <passive_effect name="HealthMax" operation="base_set" value="99999"/>
+        <passive_effect name="HealthMax" operation="base_set" value="99999" />
       </effect_group>
     </entity_class>
   </append>

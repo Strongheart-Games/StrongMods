@@ -40,47 +40,14 @@ plantedStrongPumpkin2,blocks,Block,"[ffda03]Strong[-] Pumpkin (Growing)"
 plantedStrongPumpkin3Harvest,blocks,Block,"[ffda03]Strong[-] Pumpkin Plant"
 item_opal_of_ophelia,items,Items,Opal of Ophelia
 item_opal_of_ophelia_desc,items,Items,Fast travel currency. Used to unlock new transporters from Stronghold to the traders.\n\nClick [decea3]Use[-] to donate one opal towards unlocking the next trader transporter.\n\nRead more about the unlocking transporters with the [decea3]/transporters[-] chat command. See the current transporter status with [decea3]/transporters status[-].
-challengeCategoryStronghold,challenges,ChallengeCategory,"Stronghold"
-challengeGroupBecomeStrongSworn,challenges,ChallengeGroup,"Become StrongSworn"
-challengeRewardBecomeStrongSworn,challenges,ChallengeGroup,"StrongSworn Privileges"
-challengeReadHadesRules,challenges,Challenge,"Read the Hades Rules"
-challengeReadHadesRulesShort,challenges,Challenge,"Read the rules."
-challengeReadHadesRulesDesc,challenges,Challenge,"Read the Hades server rules before diving in.\n\nPress T to open chat and type [decea3]/rules[-] to get started."
-challengeStatReadHadesRules,challenges,Challenge,"Read the rules ([decea3]/rules[-])"
-challengeReadHadesSurvivalGuide,challenges,Challenge,"Read the Hades Survival Guide"
-challengeReadHadesSurvivalGuideShort,challenges,Challenge,"Read the survival guide."
-challengeReadHadesSurvivalGuideDesc,challenges,Challenge,"Read the Hades Survival Guide to get your bearings in the underworld.\n\nPress T to open chat and type [decea3]/guide[-] to get started."
-challengeStatReadHadesSurvivalGuide,challenges,Challenge,"Read the survival guide ([decea3]/guide[-])"
-challengeReadFAQ,challenges,Challenge,"Read the FAQ"
-challengeReadFAQShort,challenges,Challenge,"Read the FAQ."
-challengeReadFAQDesc,challenges,Challenge,"Read the frequently asked questions to get answers before you need them.\n\nPress T to open chat and type [decea3]/faq[-] to get started."
-challengeStatReadFAQ,challenges,Challenge,"Read the FAQ ([decea3]/faq[-])"
-challengeReadProjectZDocs,challenges,Challenge,"Read the Project Z Docs"
-challengeReadProjectZDocsShort,challenges,Challenge,"Read the Project Z docs."
-challengeReadProjectZDocsDesc,challenges,Challenge,"Read the Project Z documentation to understand how the server works.\n\nPress T to open chat and type [decea3]/pzdocs[-] to get started."
-challengeStatReadProjectZDocs,challenges,Challenge,"Read the Project Z docs ([decea3]/pzdocs[-])"
-challengeUseInteractiveMap,challenges,Challenge,"Use the Interactive Map"
-challengeUseInteractiveMapShort,challenges,Challenge,"Use the interactive map."
-challengeUseInteractiveMapDesc,challenges,Challenge,"Open and explore the Stronghold interactive map.\n\nPress T to open chat and type [decea3]/map[-] to get started."
-challengeStatUseInteractiveMap,challenges,Challenge,"Use the interactive map ([decea3]/map[-])"
-challengeJoinStrongholdDiscord,challenges,Challenge,"Join the Stronghold Discord"
-challengeJoinStrongholdDiscordShort,challenges,Challenge,"Join the Discord."
-challengeJoinStrongholdDiscordDesc,challenges,Challenge,"Join the Stronghold Discord server to connect with the community.\n\nPress T to open chat and type [decea3]/discord[-] to get the invite link."
-challengeStatJoinStrongholdDiscord,challenges,Challenge,"Join the Stronghold Discord ([decea3]/discord[-])"
-challengeReadStrongholdDiscordRules,challenges,Challenge,"Read the Stronghold Discord Rules"
-challengeReadStrongholdDiscordRulesShort,challenges,Challenge,"Read the Discord rules."
-challengeReadStrongholdDiscordRulesDesc,challenges,Challenge,"Read the Stronghold Discord rules to keep the community strong.\n\nPress T to open chat and type [decea3]/discordrules[-] to get started."
-challengeStatReadStrongholdDiscordRules,challenges,Challenge,"Read the Stronghold Discord rules ([decea3]/discordrules[-])"
-challengeFindTheFerryman,challenges,Challenge,"Find the Ferryman"
-challengeFindTheFerrymanShort,challenges,Challenge,"Find the Ferryman."
-challengeFindTheFerrymanDesc,challenges,Challenge,"Seek out the Ferryman in the Stronghold Discord to begin your initiation.\n\nPress T to open chat and type [decea3]/ferryman[-] to find your way to him."
-challengeStatFindTheFerryman,challenges,Challenge,"Find the Ferryman ([decea3]/ferryman[-])"
-challengeTakeStrongSwornOath,challenges,Challenge,"Take the StrongSworn Oath"
-challengeTakeStrongSwornOathShort,challenges,Challenge,"Take the oath."
-challengeTakeStrongSwornOathDesc,challenges,Challenge,"Swear the StrongSworn Oath and bind yourself to the Stronghold.\n\nIn Discord, find the Ferryman and click the [decea3]The StrongSworn Oath[-] button. Read your responsibilities as StrongSworn, then copy-paste the full command into game chat.\n\nPress T to open chat and paste the [decea3]/oath <pledge>[-] command to complete your initiation."
-challengeStatTakeStrongSwornOath,challenges,Challenge,"Take the StrongSworn Oath ([decea3]/oath <pledge>[-])"
-challengeBecomeStrongSworn,challenges,Challenge,"Become StrongSworn"
-challengeBecomeStrongSwornShort,challenges,Challenge,"Complete your initiation."
-challengeBecomeStrongSwornDesc,challenges,Challenge,"Complete all steps of your initiation and be welcomed into the Stronghold as StrongSworn."
-challengeBecomeStrongSwornHint1,challenges,Challenge,"Complete all challenges in the Become StrongSworn group."
-challengeBecomeStrongSwornHint2,challenges,Challenge,"You are one step away from becoming StrongSworn. Complete your initiation to claim your place in the Stronghold."
+challengeCategoryStronghold,challenges,ChallengeCategory,Stronghold
+challengeGroupStrongholdUnlocks,challenges,ChallengeGroup,Stronghold Unlocks
+challengeFindStronghold,challenges,Challenge,Find Stronghold
+challengeFindStrongholdShort,challenges,Challenge,Visit the Stronghold
+challengeFindStrongholdDesc,challenges,Challenge,Locate and visit the Stronghold to unlock the /stronghold and /sh teleport commands.
+challengeRewardStrongholdTP,challenges,Challenge,Unlock /stronghold Command
+challengeStatStrongholdVisited,challenges,Challenge,Stronghold Visited
+challengeCompleteFiveQuests,challenges,Challenge,Complete 5 Quests
+challengeCompleteFiveQuestsShort,challenges,Challenge,Finish 5 Quests
+challengeCompleteFiveQuestsDesc,challenges,Challenge,Complete 5 quests to unlock the /bed teleport command.
+challengeRewardBedTP,challenges,Challenge,Unlock /bed Command

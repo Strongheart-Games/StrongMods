@@ -89,6 +89,7 @@ namespace StrongUtils {
     }
 
     public static void Init() {
+      BuffManager.Init();
       NoHostileEnforcer.Init();
       NoClaimsEnforcer.Init();
       ConfigManager.Instance.RegisterConfigFile(SConfigFileName, SDefaultConfig, UpdateCustomZones);
@@ -321,6 +322,7 @@ namespace StrongUtils {
       zones = null;
       Prefab prefab = prefabInstance.prefab;
       List<string> tags = prefab.GetStrongZoneTags();
+      var buffName = prefab.GetBuffName();
       var claimDeadZoneMeters = prefab.GetClaimDeadZoneMeters();
       var hostileDeadZoneMeters = prefab.GetHostileDeadZoneMeters();
 
@@ -372,23 +374,26 @@ namespace StrongUtils {
       }
 
       zones ??= new List<StrongZone>();
-      zones.Add(new StrongZone(name, cornerXZ, oppositeCornerXZ, tags));
+      zones.Add(new StrongZone(name, cornerXZ, oppositeCornerXZ, tags, buffName));
       return true;
     }
 
     public static void InitializeStrongZoneExtensions(Prefab prefab) {
       List<string> tags = null;
+      string buffName = null;
       var claimDeadZoneMeters = 0;
       var hostileDeadZoneMeters = 0;
       if (prefab.properties.Classes.ContainsKey("StrongZones")) {
         Log.Out($"[StrongZones] Prefab {prefab.PrefabName} has StrongZones config");
         DynamicProperties properties = prefab.properties.Classes["StrongZones"];
         tags = properties.Contains("Tags") ? properties.Values["Tags"].Split(',').ToList() : null;
+        properties.ParseString("Buff", ref buffName);
         properties.ParseInt("ClaimDeadZoneMeters", ref claimDeadZoneMeters);
         properties.ParseInt("HostileDeadZoneMeters", ref hostileDeadZoneMeters);
       }
 
       prefab.SetStrongZoneTags(tags);
+      prefab.SetBuffName(buffName);
       prefab.SetClaimDeadZoneMeters(claimDeadZoneMeters);
       prefab.SetHostileDeadZoneMeters(hostileDeadZoneMeters);
     }
@@ -399,10 +404,12 @@ namespace StrongUtils {
         tags = new List<string>(tags);
       }
 
+      var buffName = from.GetBuffName();
       var claimDeadZoneMeters = from.GetClaimDeadZoneMeters();
       var hostileDeadZoneMeters = from.GetHostileDeadZoneMeters();
 
       into.SetStrongZoneTags(tags);
+      into.SetBuffName(buffName);
       into.SetClaimDeadZoneMeters(claimDeadZoneMeters);
       into.SetHostileDeadZoneMeters(hostileDeadZoneMeters);
     }
@@ -462,7 +469,7 @@ namespace StrongUtils {
     public readonly string Name;
     public readonly List<string> Tags;
 
-    public StrongZone(string name, Vector2i cornerXZ, Vector2i oppositeCornerXZ, List<string> tags = null) {
+    public StrongZone(string name, Vector2i cornerXZ, Vector2i oppositeCornerXZ, List<string> tags = null, string buffName = null) {
       Name = name;
       // Sort coordinates to ensure MinX <= MaxX and MinZ <= MaxZ
       MinX = Math.Min(cornerXZ.x, oppositeCornerXZ.x);
@@ -474,6 +481,8 @@ namespace StrongUtils {
       CornerXZ = new Vector2i(MinX, MinZ);
       OppositeCornerXZ = new Vector2i(MaxX, MaxZ);
       Radius = Vector3.Distance(Center, new Vector3(CornerXZ.x, -1, CornerXZ.y));
+      Buff = Tags.Contains("buff");
+      BuffName = buffName;
       NoReset = Tags.Contains("no_reset");
       NoHostiles = Tags.Contains("no_hostiles");
       NoClaims = Tags.Contains("no_claims");
@@ -484,6 +493,8 @@ namespace StrongUtils {
     public Vector2i CornerXZ { get; }
     public Vector2i OppositeCornerXZ { get; }
     public float Radius { get; }
+    public bool Buff { get; }
+    public string BuffName { get; }
     public bool NoReset { get; }
     public bool NoHostiles { get; }
     public bool NoClaims { get; }
@@ -565,6 +576,36 @@ namespace StrongUtils {
     public override string ToString() {
       return
         $"StrongZone(name={Name}, cornerXZ={CornerXZ}, oppositeCornerXZ={OppositeCornerXZ}, tags={string.Join(",", Tags)})";
+    }
+  }
+
+  public static class BuffManager {
+    public static void Init() {
+      StrongZones.RegisterPlayerCallbacks(OnPlayerEntered, OnPlayerLeft);
+    }
+
+    private static void OnPlayerEntered(EntityPlayer player, StrongZone zone) {
+      var buffName = zone.BuffName;
+      if (!zone.Buff || buffName is null || buffName.Length == 0) {
+        return;
+      }
+      if (!player.Buffs.HasBuff(buffName)) {
+        player.Buffs.AddBuff(buffName);
+      }
+    }
+
+    private static void OnPlayerLeft(EntityPlayer player, StrongZone zone) {
+      var buffName = zone.BuffName;
+      if (!zone.Buff || buffName is null || buffName.Length == 0) {
+        return;
+      }
+      List<StrongZone> zones = player.GetCurrentZones();
+      if (zones is not null && zones.Any(z => z.Buff && buffName.Equals(z.BuffName))) {
+        return;
+      }
+      if (player.Buffs.HasBuff(buffName)) {
+        player.Buffs.RemoveBuff(buffName);
+      }
     }
   }
 
@@ -700,6 +741,7 @@ namespace StrongUtils {
   }
 
   public class PrefabExtensionData {
+    public string BuffName;
     public int ClaimDeadZoneMeters;
     public int HostileDeadZoneMeters;
     public List<string> StrongZoneTags = new();
@@ -725,6 +767,14 @@ namespace StrongUtils {
 
     public static void SetStrongZoneTags(this Prefab prefab, List<string> newTags) {
       GetOrCreatePrefabExtensionData(prefab).StrongZoneTags = newTags;
+    }
+
+    public static string GetBuffName(this Prefab prefab) {
+      return GetPrefabExtensionData(prefab).BuffName;
+    }
+
+    public static void SetBuffName(this Prefab prefab, string newName) {
+      GetOrCreatePrefabExtensionData(prefab).BuffName = newName;
     }
 
     public static int GetClaimDeadZoneMeters(this Prefab prefab) {

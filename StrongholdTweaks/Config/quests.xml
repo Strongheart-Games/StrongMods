@@ -33,45 +33,7 @@
         <property name="biome_filter_type" value="AnyBiome" />
       </objective>
 
-      <action type="SetCVar">
-        <property name="cvar" value="can_tp_to_stronghold" />
-        <property name="value" value="1" />
-        <property name="on_complete" value="true" />
-      </action>
-      <action type="GameEvent">
-        <property name="event" value="action_add_quest_unlock_bed_tp" />
-        <property name="delay" value="3" />
-        <property name="on_complete" value="true" />
-      </action>
-      <reward type="Exp" value="100" />
-    </quest>
-    <quest id="quest_unlock_bed_tp">
-      <property name="name_key" value="quest_unlock_bed_tp" />
-      <property name="description_key" value="quest_unlock_bed_tp_desc" />
-      <property name="offer_key" value="quest_unlock_bed_tp_offer" />
-      <property name="subtitle_key" value="quest_unlock_bed_tp_subtitle" />
-      <property name="statement_key" value="quest_unlock_bed_tp_statement" />
-      <property name="response_key" value="quest_unlock_bed_tp_response" />
-      <property name="completion_key" value="quest_unlock_bed_tp_completion"/>
-      <property name="icon" value="ui_game_symbol_quest" />
-      <property name="category_key" value="quest" />
-      <property name="repeatable" value="false" />
-      <property name="shareable" value="false" />
-      <property name="add_to_tier_complete" value="false" />
-
-      <objective type="StatAwarded" phase="1">
-        <property name="stat_name" value="trader_quests_completed" />
-        <property name="stat_text" value="trader_quests_completed_text" />
-        <property name="stat_text_key" value="trader_quests_completed_text_key" />
-        <property name="count" value="5" />
-      </objective>
-
-      <action type="SetCVar">
-        <property name="cvar" value="can_tp_to_bed" />
-        <property name="value" value="1" />
-        <property name="on_complete" value="true" />
-      </action>
-      <reward type="Exp" value="100" />
+      <reward type="Exp" value="500" />
     </quest>
   </append>
 </config>
