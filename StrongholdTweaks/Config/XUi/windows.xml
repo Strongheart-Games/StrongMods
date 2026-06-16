@@ -1,39 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <setattribute xpath="/windows/window[@name='serverjoinrulesdialog']/panel[@name='content']/sprite[@name='backgroundMain']" name="globalopacitymod">0.95</setattribute>
-
-  <append xpath="/windows">
-    <window name="serverinfowindow" anchor="CenterTop" pos="-300,-300" width="600" height="350" cursor_area="true">
-      <panel name="header" pos="0,0" height="43" depth="1" disableautobackground="true">
-        <sprite depth="1" name="backgroundMain" sprite="menu_empty3px" pos="0,0" height="43" color="[black]"
-                type="sliced" fillcenter="true" globalopacity="true" />
-        <label style="header.name" pos="6,-6" text="Server Information" />
-      </panel>
-      <panel name="content" pos="0,-46" height="750" depth="1" pivot="center" disableautobackground="true">
-        <sprite depth="6" name="border" sprite="menu_empty3px" pos="0,0" height="300" color="[black]" type="sliced"
-                fillcenter="false" />
-        <sprite depth="1" name="backgroundMain" sprite="menu_empty3px" pos="2,-2" height="296" width="596"
-                color="[darkGrey]" type="sliced" fillcenter="true" globalopacity="true" globalopacitymod="0.95" />
-
-        <label pos="10,-20" depth="2" text="The Ferryman" />
-        <grid pos="20,-52" depth="2" rows="0" cell_width="560" cell_height="26" repeat_content="false"
-              arrangement="vertical">
-          <label text="The [ff0000]dead[-] walk these lands, and the [ff0000]sky bleeds red[-]. Seek me, survivor, if you would find the Stronghold... type [00ff00]/ferryman[-] to call upon Charon." font_size="22" />
-        </grid>
-
-        <label pos="10,-138" depth="2" text="Chat Commands" />
-        <grid pos="20,-170" depth="2" cols="2" rows="0" cell_width="110" cell_height="26" repeat_content="false"
-              arrangement="horizontal">
-          <label text="- [00ff00]/rules[-]" font_size="22" />
-          <label text="Open the rules in your browser" font_size="22" />
-          <label text="- [00ff00]/guide[-]" font_size="22" />
-          <label text="Open the survival guide in your browser" font_size="22" />
-          <label text="- [00ff00]/map[-]" font_size="22" />
-          <label text="Open the interactive map in your browser" font_size="22" />
-          <label text="- [00ff00]/discord[-]" font_size="22" />
-          <label text="Join our Discord" font_size="22" />
-        </grid>
-      </panel>
-    </window>
-  </append>
 </config>

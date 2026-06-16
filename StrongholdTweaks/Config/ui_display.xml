@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <append xpath="/ui_display_info/crafting_category_display/crafting_category_list[@display_type='farmerStation']">
-    <crafting_category name="StrongCrops" icon="ui_game_symbol_strength_mastery" display_name="lblCategoryStrongCrops" />
-  </append>
+  <conditional>
+    <if cond="mod_loaded('PootPavillion') and mod_loaded('ProjectZ')">
+      <append xpath="/ui_display_info/crafting_category_display/crafting_category_list[@display_type='farmerStation']">
+        <crafting_category name="StrongCrops" icon="ui_game_symbol_strength_mastery" display_name="lblCategoryStrongCrops" />
+      </append>
+    </if>
+  </conditional>
 </config>
