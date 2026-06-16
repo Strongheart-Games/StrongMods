@@ -110,7 +110,7 @@
     <Content Include="Config\buffs.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\Localization.txt">
+    <Content Include="Config\Localization.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ModInfo.xml">

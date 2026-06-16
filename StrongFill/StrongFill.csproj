@@ -85,7 +85,7 @@
     <Content Include="Config\blocks.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\Localization.txt">
+    <Content Include="Config\Localization.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Config\recipes.xml">
