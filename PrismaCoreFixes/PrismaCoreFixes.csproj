@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PrismaCore">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die Dedicated Server\Mods\PrismaCore\PrismaCore.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die Dedicated Server\Dependencies_3.0\PrismaCore\PrismaCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">
