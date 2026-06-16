@@ -146,6 +146,7 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
 [*.xml]
+max_line_length = 180
 resharper_wrap_tags_and_pi = true
 resharper_wrap_text = false
 resharper_keep_user_linebreaks = true
