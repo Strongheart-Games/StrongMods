@@ -10,8 +10,13 @@
       <property name="Model" value="@:Entities/Industrial/palletBagSandSingleFlatPrefab.prefab"/>
       <property name="OnlySimpleRotations" value="true"/>
       <property name="ServerClass" value="StrongFill.StrongFill, StrongFill"/>
-      <property name="UpgradeRated.ToBlock" value="air" />
-      <property name="UpgradeRated.Rate" value="10" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="air" />
+        <property name="GrowthRate" value="1" />
+      </property>
       <property name="CanPickup" value="true"/>
       <property name="PlaceEverywhere" value="true"/>
     </block>

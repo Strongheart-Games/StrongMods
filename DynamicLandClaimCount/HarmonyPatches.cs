@@ -4,29 +4,6 @@ using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace DynamicLandClaimCount {
-  [HarmonyPatch(typeof(BlockLandClaim), nameof(BlockLandClaim.HandleDeactivatingCurrentLandClaims))]
-  public class BlockLandClaimHandleDeactivatingCurrentLandClaimsPatch {
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,
-      ILGenerator generator) {
-      CodeMatcher codeMatcher = new(instructions, generator);
-      codeMatcher
-        .MatchStartForward(
-          //CodeMatch.LoadsConstant(EnumGameStats.LandClaimCount), // on linux this doesn't match; bug?
-          CodeMatch.Calls(() => GameStats.GetInt(default)),
-          CodeMatch.StoresLocal()
-        )
-        .ThrowIfInvalid("[DynamicLandClaimCount] Could not find insertion point")
-        .Advance(-1) // make up for removing the LoadsConstant in the match
-        .RemoveInstructions(2)
-        .InsertAndAdvance(
-          CodeInstruction.LoadArgument(1), // persistentPlayerData
-          CodeInstruction.Call(() => DynamicLandClaimCount.GetLandClaimCount((PersistentPlayerData)null))
-        );
-      //Log.Out($"[DynamicLandClaimCount] HandleDeactivatingCurrentLandClaims instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
-      return codeMatcher.Instructions();
-    }
-  }
-
   [HarmonyPatch(typeof(PersistentPlayerList), nameof(PersistentPlayerList.RemoveExtraLandClaims))]
   public class PersistentPlayerListRemoveExtraLandClaimsPatch {
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,

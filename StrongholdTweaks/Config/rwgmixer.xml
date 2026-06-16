@@ -2,6 +2,7 @@
 
   <!-- Let's make RWG a bit better, shall we? -->
 
+  <!-- Let's see if we need this still in 3.0
   <set xpath="/rwgmixer/world[@name='small']/property[@class='oldwest']/property[@name='tiles']/@value">2, 4</set>
   <set xpath="/rwgmixer/world[@name='medium']/property[@class='oldwest']/property[@name='tiles']/@value">2, 4</set>
   <set xpath="/rwgmixer/world[@name='large']/property[@class='oldwest']/property[@name='tiles']/@value">2, 4</set>
@@ -119,11 +120,12 @@
   <set xpath="/rwgmixer/district[@name='commercial']/property[@name='spawn_weight']/@value">0.6</set>
   <set xpath="/rwgmixer/district[@name='downtown']/property[@name='spawn_weight']/@value">0.6</set>
   <set xpath="/rwgmixer/district[@name='industrial']/property[@name='spawn_weight']/@value">0.6</set>
+  -->
 
   <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set>
   <append xpath="/rwgmixer">
-    <prefab_spawn_adjust partial_name="hades_s5_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
-    <prefab_spawn_adjust partial_name="hades_s5_horde_base_community" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="hades_s6_stronghold" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="hades_s6_horde_base_community" biomeTags="forest" bias="20" min_count="1" max_count="1" />
   </append>
 
 </config>

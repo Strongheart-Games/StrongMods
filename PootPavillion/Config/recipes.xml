@@ -1,0 +1,15 @@
+<configs>
+  <append xpath="/recipes">
+
+    <recipe name="pootPavillionStage0" count="1">
+      <ingredient name="resourceWood" count="10" />
+      <ingredient name="resourceMetalPipe" count="4" />
+      <ingredient name="resourceClayLump" count="30" />
+    </recipe>
+
+    <recipe name="drinkJarBoiledWater" count="1" craft_area="campfire" tags="cookable,hot" craft_time="20">
+      <ingredient name="resourceTinkle" count="2" />
+    </recipe>
+
+  </append>
+</configs>

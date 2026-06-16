@@ -1,0 +1,9 @@
+Key,File,Type,UsedIn,English
+pootPavillionStage0,blocks,Workstation,pootPavillionStage0_key,Poot Pavillion
+pootPavillionStage0Desc,blocks,Workstation,pootPavillionStage0Desc_key,A marvel of modern plumbing. A place to... collect... resources.
+pootPavillionStage2,blocks,Workstation,pootPavillionStage2_key,Poot Pavillion (FULL)
+pootPavillionStage2Desc,blocks,Workstation,pootPavillionStage2Desc_key,The Poot Pavillion is ready for collection.
+resourceDookie,items,Resource,resourceDookie_key,Dookie
+resourceDookieDesc,items,Resource,resourceDookieDesc_key,"A stinky solid. You might find a use for this one day."
+resourceTinkle,items,Resource,resourceTinkle_key,Tinkle
+resourceTinkleDesc,items,Resource,resourceTinkleDesc_key,A sterile liquid resource... you might be able to boil this on the campfire.

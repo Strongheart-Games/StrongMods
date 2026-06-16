@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/gameevents">
+    <action_sequence name="action_add_quest_unlock_bed_tp">
+      <action class="AddQuest">
+        <property name="quest" value="quest_unlock_bed_tp" />
+      </action>
+    </action_sequence>
+
     <action_sequence name="challenge_reward_become_strongsworn">
       <property name="allow_user_trigger" value="false" />
       <property name="action_type" value="Game" />

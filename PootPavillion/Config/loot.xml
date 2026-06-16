@@ -1,0 +1,11 @@
+<configs>
+  <append xpath="/lootcontainers">
+
+    <lootcontainer name="pootPavillionLoot" count="1" size="5,5" sound_open="loot_water" sound_close="loot_water"
+                   destroy_on_close="true">
+      <item name="resourceDookie" count="1" />
+      <item name="resourceTinkle" count="1,5" />
+    </lootcontainer>
+
+  </append>
+</configs>

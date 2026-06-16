@@ -11,8 +11,10 @@
       StrongHonk.RegisterHonkListener(OnHonk);
     }
 
-    private static bool CanHonkToOpen(Block block, WorldBase world, int clrIdx, Vector3i pos, BlockValue blockValue) {
-      return block is BlockDoor && !blockValue.ischild && block.Tags.GetTagNames().Contains(HonkToOpenTag) &&
+    private static bool CanHonkToOpen(Block block, WorldBase world, Vector3i pos, BlockValue blockValue) {
+      return block is BlockCompositeTileEntity tileEntity &&
+             tileEntity.CompositeData.TryGetFeatureData<TEFeatureDoor>(out TileEntityFeatureData _) &&
+             !blockValue.ischild && block.Tags.GetTagNames().Contains(HonkToOpenTag) &&
              GameManager.Instance.World.IsWithinTraderArea(pos);
     }
 
@@ -26,7 +28,7 @@
       BlockValue blockValue = world.GetBlock(pos);
       var chunkKey = WorldChunkCache.MakeChunkKey(World.toChunkXZ(pos.x), World.toChunkXZ(pos.z));
       Log.Out($"[StrongHonk] Activating {block.blockName} at {pos}");
-      block.OnBlockActivated(world, WorldChunkCache.extractClrIdx(chunkKey), pos, blockValue, null);
+      block.OnBlockActivated(world, pos, blockValue, null);
     }
   }
 }

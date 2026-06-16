@@ -1,9 +1,24 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace StrongFill {
-  public class BlockStrongFill : BlockUpgradeRated {
-    public override bool UpdateTick(WorldBase _world, int _clrIdx, Vector3i _blockPos, BlockValue _blockValue,
-      bool _bRandomTick, ulong _ticksIfLoaded, GameRandom _rnd) {
+  public class BlockStrongFill : BlockPlantGrowing {
+
+    public override void LateInit() {
+      DynamicProperties plantGrowing = Properties.Classes["PlantGrowing"];
+      // Allow air to be explicitly used as the next block
+      if (plantGrowing.Values.ContainsKey("Next"))
+      {
+        var next = plantGrowing.Values["Next"];
+        if (BlockValue.Air.Block.blockName.Equals(next)) {
+          nextPlant = BlockValue.Air;
+          plantGrowing.Values.Remove("Next");
+        }
+      }
+      base.LateInit();
+    }
+
+    public override bool UpdateTick(WorldBase _world, Vector3i _blockPos, BlockValue _blockValue, bool _bRandomTick, ulong _ticksIfLoaded, GameRandom _rnd) {
       List<BlockChangeInfo> fillChanges = Fill(new Vector3i(_blockPos.x, _blockPos.y - 1, _blockPos.z));
       if (fillChanges is null || fillChanges.Count == 0) {
         // If there's nothing to fill, leave the block there for the player to pick it up
@@ -11,7 +26,7 @@ namespace StrongFill {
       }
 
       GameManager.Instance.World.SetBlocksRPC(fillChanges);
-      return base.UpdateTick(_world, _clrIdx, _blockPos, _blockValue, _bRandomTick, _ticksIfLoaded, _rnd);
+      return base.UpdateTick(_world, _blockPos, _blockValue, _bRandomTick, _ticksIfLoaded, _rnd);
     }
 
     private static List<BlockChangeInfo> Fill(Vector3i pos) {
@@ -59,12 +74,7 @@ namespace StrongFill {
       }
 
       fillChanges ??= new List<BlockChangeInfo>();
-      fillChanges.Add(new BlockChangeInfo {
-        pos = pos,
-        bChangeDensity = true,
-        density = MarchingCubes.DensityTerrainHi,
-        bChangeBlockValue = false
-      });
+      fillChanges.Add(new BlockChangeInfo(pos, MarchingCubes.DensityTerrainHi));
     }
 
     private static bool IsShape(Vector3i pos) {

@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace StrongUtils {
   public class TouchlessLootContainers {
-    [HarmonyPatch(typeof(TileEntityLootContainer), nameof(TileEntityLootContainer.UpdateTick))]
+    [HarmonyPatch(typeof(TEFeatureStorage), nameof(TEFeatureStorage.UpdateTick))]
     public class TileEntityLootContainer_UpdateTick_Patch {
       private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
         CodeMatcher codeMatcher = new(instructions);
@@ -12,7 +12,7 @@ namespace StrongUtils {
             CodeMatch.Calls(() => GamePrefs.GetInt(EnumGamePrefs.LootRespawnDays)),
             CodeMatch.Branches()
           )
-          .ThrowIfInvalid("[StrongUtils] Could not find GamePrefs.GetInt() call")
+          .ThrowIfInvalid("[TouchlessLootContainers] Could not find GamePrefs.GetInt() call")
           .Advance(1)
           .Insert(new CodeInstruction(OpCodes.Ret));
         //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");

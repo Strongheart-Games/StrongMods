@@ -20,19 +20,6 @@
     <property name="strongsworn_cvar" value="strongsworn"/>
     <property name="chat_command_helper_authorized_cvar" value="strongsworn"/>
 
-    <!-- TODO: Patch DynamicProperties so value can be pulled from the body as well. -->
-    <property name="chat_command_helper_privileged_commands" value="
-      bed,
-      sh,
-      stronghold,
-      shop,
-      store,
-      shoplink,
-      storelink,
-      link,
-      claim,
-      buyticket,
-    " />
     <!-- TODO: Write our own /commands that links to the Survival Guide -->
     <property name="chat_command_helper_hidden_commands" value="
       commands,

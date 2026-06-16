@@ -12,6 +12,10 @@
     <triggered_effect trigger="onSelfFirstSpawn" action="AddBuff" target="self" buff="buffEntitySpawnHeal" />
   </insertAfter>
 
+  <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
+    book_find_stronghold
+  </csv>
+
   <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
   <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab</setattribute>
 

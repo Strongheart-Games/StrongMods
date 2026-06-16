@@ -78,6 +78,7 @@
     <Compile Include="BloodRain.cs" />
     <Compile Include="BloodRainConsoleCommand.cs" />
     <Compile Include="BloodRainChallenge.cs" />
+    <Compile Include="BloodRainParty.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -11,46 +11,51 @@ namespace StrongHonk {
       ConcurrentDictionary<string, ConcurrentDictionary<long, ConcurrentDictionary<Vector3i, TrackedBlock>>> s_blocks =
         new();
 
-    public static void AddCategory(string name, Func<Block, WorldBase, int, Vector3i, BlockValue, bool> filter) {
+    public static void AddCategory(string name, Func<Block, WorldBase, Vector3i, BlockValue, bool> filter) {
       s_categories.Add(new BlockCategory(name, filter));
       s_blocks.TryAdd(name, new ConcurrentDictionary<long, ConcurrentDictionary<Vector3i, TrackedBlock>>());
     }
 
     public static void ForeachNearbyBlock(string category, Vector3i pos, int maxDistance,
       Action<Block, Vector3i> callback) {
+      //Log.Out("[StrongHonk] ForeachNearbyBlock()");
       ConcurrentDictionary<long, ConcurrentDictionary<Vector3i, TrackedBlock>> blocksByChunk =
         s_blocks.GetValueOrDefault(category, null);
       if (blocksByChunk is null) {
+        //Log.Out($"[StrongHonk] No nearby blocks found; category {category} returned no tracked blocks");
         return;
       }
 
       TrackedBlock? closestBlock = null;
       var closestDistance = float.MaxValue;
-      foreach (var chunkKey in CaclulateNearbyChunkKeys(pos)) {
+      foreach (var chunkKey in CalculateNearbyChunkKeys(pos)) {
         ConcurrentDictionary<Vector3i, TrackedBlock> blocksByPos = blocksByChunk.GetValueOrDefault(chunkKey, null);
         if (blocksByPos is null) {
           continue;
         }
 
-        foreach (Vector3i blockPos in blocksByPos.Keys) {
-          var distance = (blockPos.ToVector3CenterXZ() - pos.ToVector3CenterXZ()).magnitude;
+        foreach (KeyValuePair<Vector3i, TrackedBlock> b in blocksByPos) {
+          var distance = (b.Key.ToVector3CenterXZ() - pos.ToVector3CenterXZ()).magnitude;
           if (distance > maxDistance || distance >= closestDistance) {
+            //Log.Out($"[StrongHonk] Block too far; ignoring: {b.Value.Block.blockName} distance: {distance}");
             continue;
           }
 
-          closestBlock = blocksByPos[blockPos];
+          closestBlock = b.Value;
           closestDistance = distance;
         }
       }
 
       if (closestBlock is null) {
+        //Log.Out("[StrongHonk] No nearby blocks found; closestBlock is null");
         return;
       }
 
+      //Log.Out($"[StrongHonk] Closest qualifying block: {((TrackedBlock)closestBlock).Block.blockName} distance: {closestDistance}");
       callback.Invoke(((TrackedBlock)closestBlock).Block, ((TrackedBlock)closestBlock).Pos);
     }
 
-    private static HashSet<long> CaclulateNearbyChunkKeys(Vector3i pos) {
+    private static HashSet<long> CalculateNearbyChunkKeys(Vector3i pos) {
       var posX = World.toChunkXZ(pos.x);
       var posZ = World.toChunkXZ(pos.z);
       var nearby = new HashSet<long>();
@@ -60,12 +65,13 @@ namespace StrongHonk {
         }
       }
 
+      //Log.Out($"[StrongHonk] Searching {nearby.Count} chunks: {string.Join(", ", nearby)}");
       return nearby;
     }
 
-    private static void AddBlock(Block block, WorldBase world, int clrIdx, Vector3i pos, BlockValue blockValue) {
+    private static void AddBlock(Block block, WorldBase world, Vector3i pos, BlockValue blockValue) {
       foreach (BlockCategory c in s_categories) {
-        if (!c.Filter(block, world, clrIdx, pos, blockValue)) {
+        if (!c.Filter(block, world, pos, blockValue)) {
           continue;
         }
 
@@ -80,9 +86,9 @@ namespace StrongHonk {
 
     private struct BlockCategory {
       public readonly string Name;
-      public readonly Func<Block, WorldBase, int, Vector3i, BlockValue, bool> Filter;
+      public readonly Func<Block, WorldBase, Vector3i, BlockValue, bool> Filter;
 
-      public BlockCategory(string name, Func<Block, WorldBase, int, Vector3i, BlockValue, bool> filter) {
+      public BlockCategory(string name, Func<Block, WorldBase, Vector3i, BlockValue, bool> filter) {
         Name = name;
         Filter = filter;
       }
@@ -100,9 +106,9 @@ namespace StrongHonk {
 
     [HarmonyPatch(typeof(Block), nameof(Block.OnBlockLoaded))]
     public class Block_OnBlockLoaded_Patch {
-      private static void Postfix(Block __instance, WorldBase _world, int _clrIdx, Vector3i _blockPos,
+      private static void Postfix(Block __instance, WorldBase _world, Vector3i _blockPos,
         BlockValue _blockValue) {
-        AddBlock(__instance, _world, _clrIdx, _blockPos, _blockValue);
+        AddBlock(__instance, _world, _blockPos, _blockValue);
       }
     }
   }

@@ -89,7 +89,6 @@ namespace StrongUtils {
     }
 
     public static void Init() {
-      StrongSwornOnlyEnforcer.Init();
       NoHostileEnforcer.Init();
       NoClaimsEnforcer.Init();
       ConfigManager.Instance.RegisterConfigFile(SConfigFileName, SDefaultConfig, UpdateCustomZones);
@@ -124,8 +123,8 @@ namespace StrongUtils {
 
     public static void SeedChunkProtectionLevels(
       Dictionary<long, ChunkProtectionLevel> chunkProtectionLevels,
-      Dictionary<HashSetLong, ChunkProtectionLevel> groupProtectionLevels,
-      Dictionary<long, HashSetLong> groupsByChunkKey) {
+      Dictionary<LongSetGroups.Group, ChunkProtectionLevel> groupProtectionLevels,
+      LongSetGroups groupsByChunkKey) {
       var protector = new StrongZoneChunkProtector(chunkProtectionLevels, groupProtectionLevels, groupsByChunkKey);
       foreach (KeyValuePair<long, ChunkProtectionLevel> chunk in s_zones._protectionLevelByChunk) {
         protector.AddProtectionLevel(chunk.Key, chunk.Value);
@@ -569,40 +568,6 @@ namespace StrongUtils {
     }
   }
 
-  public static class StrongSwornOnlyEnforcer {
-    public static void Init() {
-      StrongZones.RegisterPlayerCallbacks(OnPlayerEntered);
-    }
-
-    private static void OnPlayerEntered(EntityPlayer player, StrongZone zone) {
-      if (!zone.StrongSwornOnly || player.IsStrongSworn()) {
-        return;
-      }
-
-      player.Buffs.AddBuff("buff_strongsworn_zone_violation");
-
-      if (!TryGetRandomSpawnPositionOutsideZone(zone, out Vector3 newPosition)) {
-        Log.Out($"[StrongSwornEnforcer] Could not find random spawn position outside {zone.Name}");
-        return;
-      }
-
-      Log.Out($"[StrongSwornEnforcer] Teleporting {player.PlayerDisplayName} out of {zone.Name}");
-      if (player.isEntityRemote) {
-        SingletonMonoBehaviour<ConnectionManager>.Instance.Clients.ForEntityId(player.entityId)
-          .SendPackage(NetPackageManager.GetPackage<NetPackageTeleportPlayer>().Setup(newPosition));
-      } else {
-        player.Teleport(newPosition);
-      }
-    }
-
-    private static bool TryGetRandomSpawnPositionOutsideZone(StrongZone zone, out Vector3 position) {
-      var minRange = (int)Math.Ceiling(zone.Radius) + 2;
-      var maxRange = minRange + 5;
-      return GameManager.Instance.World.GetRandomSpawnPositionMinMaxToPosition(zone.Center, minRange, maxRange, 1,
-        false, out position);
-    }
-  }
-
   public static class NoHostileEnforcer {
     public static void Init() {
       StrongZones.RegisterEnemyCallbacks(OnEnemyEntered);
@@ -643,21 +608,25 @@ namespace StrongUtils {
       var addBuff = false;
       for (var x = 0; x < changes.Count; x++) {
         BlockChangeInfo change = changes[x];
-        if (change.blockValue.Block is not BlockLandClaim) {
+        if (change.blockValue.Block is not BlockCompositeTileEntity tileEntity) {
+          continue;
+        }
+        if (!tileEntity.CompositeData.TryGetFeatureData<TEFeatureLandClaim>(out TileEntityFeatureData _)) {
           continue;
         }
 
-        BlockValue oldBlock = GameManager.Instance.World.ChunkCache.GetBlock(change.pos);
-        if (oldBlock.Block is BlockLandClaim) {
+        Vector3i pos = change.blockValueRef.BlockPosition;
+        TileEntity oldBlock = GameManager.Instance.World.GetTileEntity(pos);
+        if (oldBlock?.GetSelfOrFeature<TEFeatureLandClaim>() is not null) {
           continue;
         }
 
-        List<StrongZone> zones = StrongZones.GetPlayerZonesForChunk(change.pos);
-        if (zones is null || !zones.Any(z => z.NoClaims && z.Contains(change.pos))) {
+        List<StrongZone> zones = StrongZones.GetPlayerZonesForChunk(pos);
+        if (zones is null || !zones.Any(z => z.NoClaims && z.Contains(pos))) {
           continue;
         }
 
-        Log.Out($"[NoClaimsEnforcer] Rejecting attempt to place claim at {change.pos}");
+        Log.Out($"[NoClaimsEnforcer] Rejecting attempt to place claim at {pos}");
         changes.RemoveAt(x);
         addBuff = true;
       }
@@ -678,16 +647,16 @@ namespace StrongUtils {
 
   public class StrongZoneChunkProtector {
     private readonly Dictionary<long, ChunkProtectionLevel> _sChunkProtectionLevels;
-    private readonly Dictionary<HashSetLong, ChunkProtectionLevel> _sGroupProtectionLevels;
-    private readonly Dictionary<long, HashSetLong> _sGroupsByChunkKey;
+    private readonly Dictionary<LongSetGroups.Group, ChunkProtectionLevel> _sGroupProtectionLevels;
+    private readonly LongSetGroups _sChunkGroups;
 
     public StrongZoneChunkProtector(
       Dictionary<long, ChunkProtectionLevel> chunkProtectionLevels,
-      Dictionary<HashSetLong, ChunkProtectionLevel> groupProtectionLevels,
-      Dictionary<long, HashSetLong> groupsByChunkKey) {
+      Dictionary<LongSetGroups.Group, ChunkProtectionLevel> groupProtectionLevels,
+      LongSetGroups chunkGroups) {
       _sChunkProtectionLevels = chunkProtectionLevels;
       _sGroupProtectionLevels = groupProtectionLevels;
-      _sGroupsByChunkKey = groupsByChunkKey;
+      _sChunkGroups = chunkGroups;
     }
 
     // TODO: figure out how to call this private method instead of replicating it here
@@ -704,7 +673,7 @@ namespace StrongUtils {
         _sChunkProtectionLevels[chunkKey] = protectionLevel;
       }
 
-      if (!_sGroupsByChunkKey.TryGetValue(chunkKey, out HashSetLong key)) {
+      if (!_sChunkGroups.TryGetGroup(chunkKey, out LongSetGroups.Group key)) {
         return;
       }
 

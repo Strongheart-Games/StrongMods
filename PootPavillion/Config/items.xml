@@ -1,0 +1,54 @@
+<configs>
+  <append xpath="/items">
+
+    <item name="resourceTinkle">
+      <property name="CustomIcon" value="drinkJarRiverWater" />
+      <property name="CustomIconTint" value="255,255,0" />
+      <property name="HoldType" value="3" />
+      <property name="Meshfile" value="@:Other/Items/Food/bottled_waterPrefab.prefab" />
+      <property name="DropMeshfile" value="@:Other/Items/Misc/sack_droppedPrefab.prefab" />
+      <property name="Material" value="Mglass" />
+      <property name="Stacknumber" value="500" />
+      <property name="EconomicValue" value="0" />
+      <property name="SellableToTrader" value="false" />
+      <property name="Group" value="Resources,Chemicals" />
+      <property name="DescriptionKey" value="resourceTinkleDesc" />
+    </item>
+
+    <item name="resourceDookie">
+      <property name="CustomIcon" value="twitchTurd" />
+      <property name="HoldType" value="3" />
+      <property name="Meshfile" value="@:Other/Items/Misc/sackPrefab.prefab" />
+      <property name="DropMeshfile" value="@:Other/Items/Misc/sack_droppedPrefab.prefab" />
+      <property name="Material" value="Morganic" />
+      <property name="Stacknumber" value="500" />
+      <property name="EconomicValue" value="0" />
+      <property name="SellableToTrader" value="false" />
+      <property name="Group" value="Resources" />
+      <property name="SoundPickup" value="poop_grab" />
+      <property name="SoundPlace" value="poop_place" />
+      <property name="DescriptionKey" value="resourceDookieDesc" />
+    </item>
+
+    <!-- Commenting these out because they seem to break empty jars in 2.5
+        <item name="resourceEmptyJar">
+            <property name="CustomIcon" value="drinkJarEmpty"/>
+            <property name="DescriptionKey" value="resourceEmptyJarDescription"/>
+            <property name="HoldType" value="3"/>
+            <property name="Meshfile" value="@:Other/Items/Misc/sackPrefab.prefab"/>
+            <property name="DropMeshfile" value="@:Other/Items/Misc/sack_droppedPrefab.prefab"/>
+            <property name="Material" value="Mglass"/>
+            <property name="Stacknumber" value="500"/>
+            <property name="EconomicValue" value="0"/>
+            <property name="Group" value="Resources"/>
+        </item>
+
+        <item name="drinkJarEmpty">
+            <property name="Extends" value="drinkJarBoiledWater"/>
+            <property name="CustomIcon" value="drinkJarEmpty"/>
+            <property name="DescriptionKey" value="drinkJarEmptyDesc"/>
+        </item>
+    -->
+
+  </append>
+</configs>

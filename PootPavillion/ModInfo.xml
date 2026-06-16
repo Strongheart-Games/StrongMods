@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ModInfo>
+  <Name value="PootPavillion" />
+  <DisplayName value="Poot Pavillion" />
+  <Description value="Adds a craftable toilet that generates Tinkle and Dookie over time." />
+  <Author value="LootandLipstick" />
+  <Version value="1.0.0" />
+  <Website value="" />
+</ModInfo>

@@ -1,0 +1,62 @@
+<configs>
+  <append xpath="/blocks">
+
+    <block name="pootPavillionStage0">
+      <property name="display_name_key" value="pootPavillion_Name" />
+
+      <property name="CustomIcon" value="cntToilet01" />
+      <property name="CustomIconTint" value="80,80,80" />
+      <property name="TintMaterial" value="0.8,0.8,0.8" />
+      <property name="CreativeMode" value="Player" />
+      <property name="Group" value="Building,TCScience,advBuilding" />
+      <property name="DescriptionKey" value="pootPavillionStage0Desc" />
+      <property name="Material" value="Mmetal" />
+      <property name="Shape" value="ModelEntity" />
+      <property name="Model" value="@:Entities/LootContainers/toiletCommercial01Prefab.prefab" />
+      <property name="Place" value="TowardsPlacerInverted" />
+
+      <property name="Class" value="PlantGrowing" />
+      <property name="EconomicValue" value="0" />
+      <property name="SellableToTrader" value="false" />
+
+      <!-- FIXES FOR UNDERGROUND PLACEMENT -->
+      <property name="IsTerrainDecoration" value="false" />
+      <property name="StabilitySupport" value="false" />
+
+      <!-- Replaced generic LightLevel with specific Grow/Stay values -->
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="pootPavillionStage2" />
+        <property name="GrowthRate" value="20" />
+      </property>
+      <property name="MaxDamage" value="800" />
+      <drop event="Destroy" name="pootPavillionStage0" count="1" />
+    </block>
+
+    <block name="pootPavillionStage2">
+      <property name="display_name_key" value="pootPavillion_Done_Name" />
+
+      <property name="Extends" value="pootPavillionStage0" />
+      <property name="CreativeMode" value="None" />
+      <property name="DescriptionKey" value="pootPavillionStage2Desc" />
+      <property name="Class" value="CompositeTileEntity" />
+      <property class="CompositeFeatures">
+        <property class="TEFeatureStorage">
+          <property name="LootList" value="pootPavillionLoot" />
+        </property>
+      </property>
+      <property name="EconomicValue" value="0" />
+      <property name="SellableToTrader" value="false" />
+      <!-- TODO: Fix and uncomment; this property is missing in 3.0
+      <property name="LootView.Prompt" value="Loot Poot Pavillion" /> -->
+      <property name="DowngradeBlock" value="pootPavillionStage0" />
+      <property name="CustomIconTint" value="0,0,0" />
+      <property name="TintMaterial" value="0,0,0" />
+      <property name="OpenSound" value="cnt_toilet_open" />
+      <property name="CloseSound" value="cnt_toilet_open" />
+    </block>
+
+  </append>
+</configs>

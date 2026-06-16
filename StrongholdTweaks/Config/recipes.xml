@@ -12,12 +12,16 @@
       <ingredient name="carBattery" count="5" />
     </recipe>
 
-    <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
-      <ingredient name="resourceResourceSet" count="1" />
-    </recipe>
+    <conditional>
+      <if cond="mod_loaded('ProjectZ')">
+        <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
+          <ingredient name="resourceResourceSet" count="1" />
+        </recipe>
+      </if>
+    </conditional>
 
     <conditional>
-      <if cond="mod_loaded('PootPavillion')">
+      <if cond="mod_loaded('PootPavillion') and mod_loaded('ProjectZ')">
         <recipe name="plantedStrongMushroom1" count="1" craft_time="900" craft_area="farmerStation">
           <ingredient name="plantedMushroom1Sel2" count="1" />
           <ingredient name="resourceDookie" count="10" />

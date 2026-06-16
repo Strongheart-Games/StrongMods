@@ -49,11 +49,6 @@
   <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='ne01']/@maxcount">2</set> <!-- original: 1 -->
   <set xpath="/spawning/biome[@name='pine_forest']/spawn[@id='ne01']/@respawndelay">2.32</set> <!-- original: 2.9 -->
 
-  <!-- Boss spawns -->
-  <append xpath="/spawning/biome[@name='pine_forest']">
-    <spawn id="boss01" maxcount="1" respawndelay="2.9" time="Night" entitygroup="BossesForestNight" />
-  </append>
-
 
   <!-- BURNT FOREST: ~2.5x zombies, 25% faster respawn -->
 
@@ -105,11 +100,6 @@
   <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ne01']/@maxcount">3</set> <!-- original: 1 -->
   <set xpath="/spawning/biome[@name='burnt_forest']/spawn[@id='ne01']/@respawndelay">1.65</set> <!-- original: 2.2 -->
 
-  <!-- Boss spawns -->
-  <append xpath="/spawning/biome[@name='burnt_forest']">
-    <spawn id="boss01" maxcount="1" respawndelay="2.2" time="Night" entitygroup="BossesBurntForestNight" />
-  </append>
-
 
   <!-- DESERT: ~3x zombies, 30% faster respawn -->
 
@@ -156,11 +146,6 @@
   <!-- Enemy animals - night -->
   <set xpath="/spawning/biome[@name='desert']/spawn[@id='ne01']/@maxcount">3</set> <!-- original: 1 -->
   <set xpath="/spawning/biome[@name='desert']/spawn[@id='ne01']/@respawndelay">1.26</set> <!-- original: 1.8 -->
-
-  <!-- Boss spawns -->
-  <append xpath="/spawning/biome[@name='desert']">
-    <spawn id="boss01" maxcount="1" respawndelay="1.8" time="Night" entitygroup="BossesDesertNight" />
-  </append>
 
 
   <!-- SNOW: ~3.5x zombies, 35% faster respawn -->
@@ -213,11 +198,6 @@
   <set xpath="/spawning/biome[@name='snow']/spawn[@id='ne01']/@maxcount">4</set> <!-- original: 1 -->
   <set xpath="/spawning/biome[@name='snow']/spawn[@id='ne01']/@respawndelay">1.04</set> <!-- original: 1.6 -->
 
-  <!-- Boss spawns -->
-  <append xpath="/spawning/biome[@name='snow']">
-    <spawn id="boss01" maxcount="1" respawndelay="1.6" time="Night" entitygroup="BossesSnowNight" />
-  </append>
-
 
   <!-- WASTELAND: ~4x zombies, 40% faster respawn -->
 
@@ -262,10 +242,26 @@
   <set xpath="/spawning/biome[@name='wasteland']/spawn[@id='ne01']/@respawndelay">0.36</set> <!-- original: 0.6 -->
 
   <!-- Boss spawns -->
-  <append xpath="/spawning/biome[@name='wasteland']">
-    <spawn id="boss01" maxcount="1" respawndelay="0.9" time="Any" entitygroup="BossesWasteland" />
-    <spawn id="boss02" maxcount="1" respawndelay="0.6" time="Night" entitygroup="BossesWastelandNight" />
-  </append>
+  <conditional>
+    <if cond="mod_loaded('ProjectZ')">
+      <append xpath="/spawning/biome[@name='pine_forest']">
+        <spawn id="boss01" maxcount="1" respawndelay="2.9" time="Night" entitygroup="BossesForestNight" />
+      </append>
+      <append xpath="/spawning/biome[@name='burnt_forest']">
+        <spawn id="boss01" maxcount="1" respawndelay="2.2" time="Night" entitygroup="BossesBurntForestNight" />
+      </append>
+      <append xpath="/spawning/biome[@name='desert']">
+        <spawn id="boss01" maxcount="1" respawndelay="1.8" time="Night" entitygroup="BossesDesertNight" />
+      </append>
+      <append xpath="/spawning/biome[@name='snow']">
+        <spawn id="boss01" maxcount="1" respawndelay="1.6" time="Night" entitygroup="BossesSnowNight" />
+      </append>
+      <append xpath="/spawning/biome[@name='wasteland']">
+        <spawn id="boss01" maxcount="1" respawndelay="0.9" time="Any" entitygroup="BossesWasteland" />
+        <spawn id="boss02" maxcount="1" respawndelay="0.6" time="Night" entitygroup="BossesWastelandNight" />
+      </append>
+    </if>
+  </conditional>
 
   <!-- Spawners reset every day to keep things fresh -->
   <setattribute xpath="/spawning/entityspawner/day/property[@name='ResetToday']" name="value">true</setattribute>

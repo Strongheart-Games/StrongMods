@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RWGTools")]
+[assembly: AssemblyTitle("StrongBoxes")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RWGTools")]
+[assembly: AssemblyProduct("StrongBoxes")]
 [assembly: AssemblyCopyright("Copyright ©  2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("EC278EEB-1E29-4789-A029-8C619F3DB5DB")]
+[assembly: Guid("6252E52E-1BBA-413F-B389-88546EE20AF1")]
 
 // Version information for an assembly consists of the following four values:
 //

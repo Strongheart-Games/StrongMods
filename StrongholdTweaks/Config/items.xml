@@ -21,6 +21,26 @@
   <csv xpath="/items/item[@name='meleeMasterTool']/property[@name='Tags']/@value" delim="," op="add">salvagingSkill,ImprovedParsing</csv>
        -->
 
+  <!-- Stronghold intro quest -->
+  <append xpath="/items">
+    <item name="book_find_stronghold">
+      <property name="Extends" value="questMaster"/>
+      <property name="CreativeMode" value="Player"/>
+      <property name="CustomIcon" value="cntBookPile13"/>
+      <property name="CustomIconTint" value="ffda03"/>
+      <property name="ItemTypeIcon" value="quest"/>
+      <property name="DescriptionKey" value="book_find_stronghold_desc"/>
+      <property name="NoScrapping" value="true"/>
+      <property name="Stacknumber" value="1"/>
+      <property class="Action0">
+        <property name="Class" value="Quest"/>
+        <property name="QuestGiven" value="quest_find_stronghold"/>
+        <property name="Delay" value="1"/>
+        <property name="UseAnimation" value="false"/>
+      </property>
+    </item>
+  </append>
+
   <append xpath="/items">
     <item name="item_opal_of_ophelia">
       <property name="Extends" value="casinoCoin" />

@@ -10,44 +10,6 @@
     <property name="AllowedRotations" value="All" />
   </append>
 
-  <!-- StrongMining -->
-  <append xpath="/blocks">
-    <block name="terrOreIronStrong">
-      <property name="Extends" value="terrOreIron" />
-      <property name="CustomIcon" value="terrOreIron" />
-      <property name="CustomIconTint" value="ffda03" />
-      <property name="DowngradeBlock" value="terrOreIronStrong" />
-    </block>
-
-    <block name="terrOreLeadStrong">
-      <property name="Extends" value="terrOreLead" />
-      <property name="CustomIcon" value="terrOreLead" />
-      <property name="CustomIconTint" value="ffda03" />
-      <property name="DowngradeBlock" value="terrOreLeadStrong" />
-    </block>
-
-    <block name="terrOreCoalStrong">
-      <property name="Extends" value="terrOreCoal" />
-      <property name="CustomIcon" value="terrOreCoal" />
-      <property name="CustomIconTint" value="ffda03" />
-      <property name="DowngradeBlock" value="terrOreCoalStrong" />
-    </block>
-
-    <block name="terrOrePotassiumNitrateStrong">
-      <property name="Extends" value="terrOrePotassiumNitrate" />
-      <property name="CustomIcon" value="terrOrePotassiumNitrate" />
-      <property name="CustomIconTint" value="ffda03" />
-      <property name="DowngradeBlock" value="terrOrePotassiumNitrateStrong" />
-    </block>
-
-    <block name="terrOreOilDepositStrong">
-      <property name="Extends" value="terrOreOilDeposit" />
-      <property name="CustomIcon" value="terrOreOilDeposit" />
-      <property name="CustomIconTint" value="ffda03" />
-      <property name="DowngradeBlock" value="terrOreOilDepositStrong" />
-    </block>
-  </append>
-
   <!-- StrongStones -->
   <append xpath="/blocks">
     <block name="block_strongstone">
@@ -87,10 +49,13 @@
     <block name="plantedStrongMushroom1">
       <property name="Extends" value="plantedMushroom1" />
       <property name="CustomIcon" value="plantedMushroom1" />
-      <property name="PlantGrowing.Next" value="plantedStrongMushroom2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongMushroom2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedMushroom1" count="0" />
@@ -98,10 +63,13 @@
     <block name="plantedStrongMushroom2">
       <property name="Extends" value="plantedMushroom2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongMushroom3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongMushroom3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedMushroom1" count="0" />
@@ -123,10 +91,13 @@
     <block name="plantedStrongAloe1">
       <property name="Extends" value="plantedAloe1" />
       <property name="CustomIcon" value="plantedAloe1" />
-      <property name="PlantGrowing.Next" value="plantedStrongAloe2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongAloe2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedAloe1" count="0" />
@@ -134,10 +105,13 @@
     <block name="plantedStrongAloe2">
       <property name="Extends" value="plantedAloe2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongAloe3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongAloe3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedAloe1" count="0" />
@@ -159,10 +133,13 @@
     <block name="plantedStrongYucca1">
       <property name="Extends" value="plantedYucca1" />
       <property name="CustomIcon" value="plantedYucca1" />
-      <property name="PlantGrowing.Next" value="plantedStrongYucca2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongYucca2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedYucca1" count="0" />
@@ -170,10 +147,13 @@
     <block name="plantedStrongYucca2">
       <property name="Extends" value="plantedYucca2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongYucca3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongYucca3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedYucca1" count="0" />
@@ -195,10 +175,13 @@
     <block name="plantedStrongPotato1">
       <property name="Extends" value="plantedPotato1" />
       <property name="CustomIcon" value="plantedPotato1" />
-      <property name="PlantGrowing.Next" value="plantedStrongPotato2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongPotato2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedPotato1" count="0" />
@@ -206,10 +189,13 @@
     <block name="plantedStrongPotato2">
       <property name="Extends" value="plantedPotato2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongPotato3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongPotato3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedPotato1" count="0" />
@@ -231,10 +217,13 @@
     <block name="plantedStrongCorn1">
       <property name="Extends" value="plantedCorn1" />
       <property name="CustomIcon" value="plantedCorn1" />
-      <property name="PlantGrowing.Next" value="plantedStrongCorn2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCorn2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCorn1" count="0" />
@@ -242,10 +231,13 @@
     <block name="plantedStrongCorn2">
       <property name="Extends" value="plantedCorn2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongCorn3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCorn3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCorn1" count="0" />
@@ -267,10 +259,13 @@
     <block name="plantedStrongGoldenrod1">
       <property name="Extends" value="plantedGoldenrod1" />
       <property name="CustomIcon" value="plantedGoldenrod1" />
-      <property name="PlantGrowing.Next" value="plantedStrongGoldenrod2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongGoldenrod2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedGoldenrod1" count="0" />
@@ -278,10 +273,13 @@
     <block name="plantedStrongGoldenrod2">
       <property name="Extends" value="plantedGoldenrod2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongGoldenrod3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongGoldenrod3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedGoldenrod1" count="0" />
@@ -303,10 +301,13 @@
     <block name="plantedStrongCotton1">
       <property name="Extends" value="plantedCotton1" />
       <property name="CustomIcon" value="plantedCotton1" />
-      <property name="PlantGrowing.Next" value="plantedStrongCotton2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCotton2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCotton1" count="0" />
@@ -314,10 +315,13 @@
     <block name="plantedStrongCotton2">
       <property name="Extends" value="plantedCotton2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongCotton3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCotton3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCotton1" count="0" />
@@ -339,10 +343,13 @@
     <block name="plantedStrongChrysanthemum1">
       <property name="Extends" value="plantedChrysanthemum1" />
       <property name="CustomIcon" value="plantedChrysanthemum1" />
-      <property name="PlantGrowing.Next" value="plantedStrongChrysanthemum2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongChrysanthemum2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedChrysanthemum1" count="0" />
@@ -350,10 +357,13 @@
     <block name="plantedStrongChrysanthemum2">
       <property name="Extends" value="plantedChrysanthemum2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongChrysanthemum3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongChrysanthemum3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedChrysanthemum1" count="0" />
@@ -375,10 +385,13 @@
     <block name="plantedStrongCoffee1">
       <property name="Extends" value="plantedCoffee1" />
       <property name="CustomIcon" value="plantedCoffee1" />
-      <property name="PlantGrowing.Next" value="plantedStrongCoffee2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCoffee2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCoffee1" count="0" />
@@ -386,10 +399,13 @@
     <block name="plantedStrongCoffee2">
       <property name="Extends" value="plantedCoffee2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongCoffee3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongCoffee3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedCoffee1" count="0" />
@@ -411,10 +427,13 @@
     <block name="plantedStrongBlueberry1">
       <property name="Extends" value="plantedBlueberry1" />
       <property name="CustomIcon" value="plantedBlueberry1" />
-      <property name="PlantGrowing.Next" value="plantedStrongBlueberry2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongBlueberry2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedBlueberry1" count="0" />
@@ -422,10 +441,13 @@
     <block name="plantedStrongBlueberry2">
       <property name="Extends" value="plantedBlueberry2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongBlueberry3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongBlueberry3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedBlueberry1" count="0" />
@@ -447,10 +469,13 @@
     <block name="plantedStrongHop1">
       <property name="Extends" value="plantedHop1" />
       <property name="CustomIcon" value="plantedHop1" />
-      <property name="PlantGrowing.Next" value="plantedStrongHop2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongHop2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedHop1" count="0" />
@@ -458,10 +483,13 @@
     <block name="plantedStrongHop2">
       <property name="Extends" value="plantedHop2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongHop3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongHop3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedHop1" count="0" />
@@ -483,10 +511,13 @@
     <block name="plantedStrongPumpkin1">
       <property name="Extends" value="plantedPumpkin1" />
       <property name="CustomIcon" value="plantedPumpkin1" />
-      <property name="PlantGrowing.Next" value="plantedStrongPumpkin2" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongPumpkin2" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedPumpkin1" count="0" />
@@ -494,10 +525,13 @@
     <block name="plantedStrongPumpkin2">
       <property name="Extends" value="plantedPumpkin2" />
       <property name="CreativeMode" value="None" />
-      <property name="PlantGrowing.Next" value="plantedStrongPumpkin3Harvest" />
-      <property name="PlantGrowing.GrowthRate" value="16" />
-      <property name="PlantGrowing.FertileLevel" value="0" />
-      <property name="PlantGrowing.LightLevelGrow" value="0" />
+      <property class="PlantGrowing">
+        <property name="LightLevelGrow" value="0" />
+        <property name="LightLevelStay" value="0" />
+        <property name="FertileLevel" value="0" />
+        <property name="Next" value="plantedStrongPumpkin3Harvest" />
+        <property name="GrowthRate" value="16" />
+      </property>
       <property name="Material" value="Mbedrock" />
       <property name="Group" value="StrongCrops" />
       <drop event="Destroy" name="plantedPumpkin1" count="0" />

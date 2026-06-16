@@ -1,7 +1,7 @@
 using System.Reflection;
 using HarmonyLib;
 
-namespace StrongHonk {
+namespace StrongBoxes {
   public class ModApi : IModApi {
     public void InitMod(Mod _modInstance) {
       Harmony harmony = new(_modInstance.Name);
@@ -10,7 +10,7 @@ namespace StrongHonk {
     }
 
     private static void OnGameAwake(ref ModEvents.SGameAwakeData data) {
-      OpenDoors.Init();
+      SortBoxes.Init();
     }
   }
 }

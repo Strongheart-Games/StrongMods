@@ -87,7 +87,7 @@ namespace AutoCollectLoot {
         belongsPlayerId = player.entityId
       });
       world.SpawnEntityInWorld(loot);
-      GameManager.Instance.CollectEntityServer(loot.entityId, player.entityId);
+      loot.Collect(player.entityId);
       return true;
     }
   }

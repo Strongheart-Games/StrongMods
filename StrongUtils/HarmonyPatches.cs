@@ -32,7 +32,7 @@ namespace StrongUtils {
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
       CodeMatcher codeMatcher = new(instructions);
       codeMatcher.MatchStartForward(
-          CodeMatch.Calls(() => ((Dictionary<HashSetLong, ChunkProtectionLevel>)null).Clear())
+          CodeMatch.Calls(() => ((Dictionary<LongSetGroups.Group, ChunkProtectionLevel>)null).Clear())
         )
         .ThrowIfInvalid("[StrongUtils] Could not find Clear() call")
         .Advance(1)
@@ -42,7 +42,7 @@ namespace StrongUtils {
           CodeInstruction.LoadArgument(0), // this
           CodeInstruction.LoadField(typeof(RegionFileManager), nameof(RegionFileManager.groupProtectionLevels)),
           CodeInstruction.LoadArgument(0), // this
-          CodeInstruction.LoadField(typeof(RegionFileManager), nameof(RegionFileManager.groupsByChunkKey)),
+          CodeInstruction.LoadField(typeof(RegionFileManager), nameof(RegionFileManager.chunkGroups)),
           CodeInstruction.Call(() => StrongZones.SeedChunkProtectionLevels(null, null, null))
         );
       //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
@@ -60,7 +60,6 @@ namespace StrongUtils {
   [HarmonyPatch(typeof(WorldEnvironment), nameof(WorldEnvironment.OnXMLChanged))]
   public class WorldEnvironment_OnXMLChanged_Patch {
     private static void Postfix() {
-      StrongCommands.OnXMLChanged();
       StrongZones.OnXMLChanged();
     }
   }
@@ -126,8 +125,8 @@ namespace StrongUtils {
 
   [HarmonyPatch(typeof(Prefab), MethodType.Constructor, typeof(Prefab), typeof(bool))]
   public class Prefab_Constructor_Patch {
-    private static void Postfix(Prefab __instance, Prefab _other, bool sharedData) {
-      StrongZones.CloneStrongZoneExtensions(__instance, _other, sharedData);
+    private static void Postfix(Prefab __instance, Prefab _other, bool _sharedData) {
+      StrongZones.CloneStrongZoneExtensions(__instance, _other, _sharedData);
     }
   }
 
@@ -158,7 +157,7 @@ namespace StrongUtils {
       ModEvents.GameAwake.RegisterHandler(ServerLifecycle.OnGameAwake);
       ModEvents.GameStartDone.RegisterHandler(ServerLifecycle.OnGameStartDone);
       ModEvents.GameShutdown.RegisterHandler(ServerLifecycle.OnGameShutdown);
-      ModEvents.ChatMessage.RegisterHandler(StrongCommands.HandleChatMessage);
+      ModEvents.ChatMessage.RegisterHandler(StrongTeleport.HandleChatMessage);
       ModEvents.PlayerDisconnected.RegisterHandler(PlayerDamage.HandlePlayerDisconnected);
       ModEvents.EntityKilled.RegisterHandler(PlayerDamage.HandleEntityKilled);
     }

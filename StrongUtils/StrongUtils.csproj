@@ -99,12 +99,14 @@
     <Compile Include="ServerLifecycle.cs" />
     <Compile Include="SpawnScaler.cs" />
     <Compile Include="StrongAudit.cs" />
-    <Compile Include="StrongCommands.cs" />
-    <Compile Include="StrongSworn.cs" />
+    <Compile Include="StrongTeleport.cs" />
     <Compile Include="StrongZones.cs" />
     <Compile Include="TouchlessLootContainers.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\blocks.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Config\buffs.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

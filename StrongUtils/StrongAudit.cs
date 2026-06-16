@@ -15,8 +15,8 @@ namespace StrongUtils {
       var minZ = int.MaxValue;
       var maxZ = int.MinValue;
       foreach (BlockChangeInfo change in _blocksToChange) {
-        var x = change.pos.x;
-        var z = change.pos.z;
+        var x = change.blockValueRef.BlockPosition.x;
+        var z = change.blockValueRef.BlockPosition.z;
         minX = Math.Min(x, minX);
         maxX = Math.Max(x, maxX);
         minZ = Math.Min(z, minZ);
