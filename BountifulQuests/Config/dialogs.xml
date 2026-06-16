@@ -7,6 +7,5 @@
 
   <!-- Always offer jobs, even if player has already accepted one from this trader -->
   <remove xpath="dialogs/dialog[@id='trader']/response[@id='jobsnone']" />
-  <remove
-    xpath="dialogs/dialog[@id='trader']/response[starts-with(@id, 'jobshave')]/requirement[@type='QuestStatus']" />
+  <remove xpath="dialogs/dialog[@id='trader']/response[starts-with(@id, 'jobshave')]/requirement[@type='QuestStatus']" />
 </config>
