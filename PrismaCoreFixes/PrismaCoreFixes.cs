@@ -1,19 +1,19 @@
 using System.Collections.Generic;
-using System.Reflection;
 using HarmonyLib;
 using PrismaCore;
 
 namespace PrismaCoreFixes {
-  [HarmonyPatch(typeof(ChatFilter), nameof(ChatFilter.Exec))]
+  // Use strings in the HarmonyPatch() annotation to avoid runtime errors if PrismaCore is not present
+  [HarmonyPatch("PrismaCore.ChatFilter", "Exec")]
   public class ChatFilterExecPatch {
-    private static readonly List<string> CpmChatCommands = new List<string> {
+    private static readonly List<string> PrismaCoreChatCommands = new List<string> {
       "ft", "ftw", "mv", "mvw", "tb", "rt", "get", "listwp", "setwp", "delwp", "ls", "bag", "day7", "hostiles", "bed",
       "loctrack", "bubble"
     };
 
     private static void Postfix(string _message, ref ModEvents.EModEventResult __result) {
       var command = "";
-      if (TryGetCommand(_message, ref command) && !CpmChatCommands.ContainsCaseInsensitive(command)) {
+      if (TryGetCommand(_message, ref command) && !PrismaCoreChatCommands.ContainsCaseInsensitive(command)) {
         __result = ModEvents.EModEventResult.Continue;
       }
     }
@@ -31,18 +31,6 @@ namespace PrismaCoreFixes {
       }
 
       return true;
-    }
-  }
-
-  public class Initializer : IModApi {
-    public void InitMod(Mod _modInstance) {
-      if (!ModManager.ModLoaded("PrismaCore")) {
-        Log.Out("[PrismaCoreFixes] PrismaCore not loaded, aborting patching process.");
-        return;
-      }
-
-      var harmony = new Harmony(_modInstance.Name);
-      harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
   }
 }

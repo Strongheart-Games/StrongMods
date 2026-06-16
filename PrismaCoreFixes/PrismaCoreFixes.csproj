@@ -8,8 +8,8 @@
     <ProjectGuid>{98109D45-BDDB-4B31-8C31-933E1AD3851D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CPMFixes</RootNamespace>
-    <AssemblyName>CPMFixes</AssemblyName>
+    <RootNamespace>PrismaCoreFixes</RootNamespace>
+    <AssemblyName>PrismaCoreFixes</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -75,7 +75,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HarmonyPatches.cs" />
+    <Compile Include="PrismaCoreFixes.cs" />
+    <Compile Include="ModApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
