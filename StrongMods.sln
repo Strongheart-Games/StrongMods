@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCollectLoot", "AutoColl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicLandClaimCount", "DynamicLandClaimCount\DynamicLandClaimCount.csproj", "{8E52B445-96E6-4625-92C0-B17575AC7C55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPMFixes", "CPMFixes\CPMFixes.csproj", "{98109D45-BDDB-4B31-8C31-933E1AD3851D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrismaCoreFixes", "PrismaCoreFixes\PrismaCoreFixes.csproj", "{98109D45-BDDB-4B31-8C31-933E1AD3851D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCommandHelper\ChatCommandHelper.csproj", "{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}"
 EndProject

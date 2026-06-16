@@ -14,17 +14,17 @@
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>  <!-- For Compatibility with PrismaCore -->
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\CPMFixes</OutputPath>
+    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\$(MSBuildProjectName)</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>  <!-- For Compatibility with PrismaCore -->
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PrismaCore">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\PrismaCore\PrismaCore.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die Dedicated Server\Mods\PrismaCore\PrismaCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">

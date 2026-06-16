@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Reflection;
-using PrismaCore;
-using PrismaCore.CustomCommands;
 using HarmonyLib;
+using PrismaCore;
 
-namespace CPMFixes {
+namespace PrismaCoreFixes {
   [HarmonyPatch(typeof(ChatFilter), nameof(ChatFilter.Exec))]
   public class ChatFilterExecPatch {
-    public static readonly List<string> CpmChatCommands = new List<string> {
+    private static readonly List<string> CpmChatCommands = new List<string> {
       "ft", "ftw", "mv", "mvw", "tb", "rt", "get", "listwp", "setwp", "delwp", "ls", "bag", "day7", "hostiles", "bed",
       "loctrack", "bubble"
     };
@@ -38,7 +37,7 @@ namespace CPMFixes {
   public class Initializer : IModApi {
     public void InitMod(Mod _modInstance) {
       if (!ModManager.ModLoaded("PrismaCore")) {
-        Log.Out("[CPMFixes] CPM not loaded, aborting patching process.");
+        Log.Out("[PrismaCoreFixes] PrismaCore not loaded, aborting patching process.");
         return;
       }
 
