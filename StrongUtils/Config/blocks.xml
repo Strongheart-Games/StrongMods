@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
+  <!--
   <append xpath="/blocks">
     <block name="strongclaim">
       <property name="Extends" value="keystoneBlock" />
@@ -10,4 +11,5 @@
       <property name="MeshDamage" value="" />
     </block>
   </append>
+  -->
 </config>
