@@ -10,8 +10,12 @@ namespace BloodRain {
         message +=
           $"\n  interval: {spawner.interval}\n  nextStageTime: {spawner.nextStageTime}\n  numToSpawn: {spawner.numToSpawn}\n  spawnCount: {spawner.spawnCount}";
       }
-      Log.Out(message);
-      //Whisper(message, spawner.memberIDs.ToList());
+
+      if (GameManager.IsDedicatedServer) {
+        Log.Out(message);
+      } else {
+        Whisper(message, spawner.memberIDs.ToList());
+      }
     }
 
     private static void Whisper(string message, List<int> recipientEntityIds) {
