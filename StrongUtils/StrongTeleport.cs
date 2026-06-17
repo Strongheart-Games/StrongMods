@@ -26,8 +26,9 @@
     }
 
     public static ModEvents.EModEventResult HandleChatMessage(ref ModEvents.SChatMessageData _data) {
-      Log.Out("[StrongTeleport] HandleChatMessage");
-      if (GameManager.Instance.World.GetEntity(_data.SenderEntityId) is not EntityPlayer player) {
+      Log.Out($"[StrongTeleport] HandleChatMessage");
+      var senderEntityId = _data.ClientInfo?.entityId ?? _data.SenderEntityId;
+      if (GameManager.Instance.World.GetEntity(senderEntityId) is not EntityPlayer player) {
         // Don't handle messages from the server
         return ModEvents.EModEventResult.Continue;
       }

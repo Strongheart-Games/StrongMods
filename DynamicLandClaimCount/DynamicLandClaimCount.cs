@@ -42,13 +42,15 @@ namespace DynamicLandClaimCount {
     }
 
     public static ModEvents.EModEventResult HandleChatMessage(ref ModEvents.SChatMessageData _data) {
-      if (_data.Message.ToLower() == "/claims") {
-        PersistentPlayerData player = GameManager.Instance.getPersistentPlayerData(_data.ClientInfo);
-        WhisperLandClaimCount(player, _data.ClientInfo);
-        return ModEvents.EModEventResult.StopHandlersAndVanilla;
+      if (_data.Message.ToLower() != "/claims") {
+        return ModEvents.EModEventResult.Continue;
       }
 
-      return ModEvents.EModEventResult.Continue;
+      PersistentPlayerData player = _data.ClientInfo is null
+        ? GameManager.Instance.GetPersistentLocalPlayer()
+        : GameManager.Instance.getPersistentPlayerData(_data.ClientInfo);
+      WhisperLandClaimCount(player, _data.ClientInfo);
+      return ModEvents.EModEventResult.StopHandlersAndVanilla;
     }
 
     public static void WhisperLandClaimCount(PersistentPlayerData player, ClientInfo client = null) {

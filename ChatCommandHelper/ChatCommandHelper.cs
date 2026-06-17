@@ -59,15 +59,17 @@ namespace ChatCommandHelper {
     }
 
     private static bool IsAuthorized(ModEvents.SChatMessageData _data) {
-      var player = GameManager.Instance.World.GetEntity(_data.SenderEntityId) as EntityPlayer;
+      var senderEntityId = _data.ClientInfo?.entityId ?? _data.SenderEntityId;
+      var player = GameManager.Instance.World.GetEntity(senderEntityId) as EntityPlayer;
       // null implies it's the server, which is always authorized
       return player is null || player.GetCVar(s_authorizedCvar) != 0;
     }
 
     private static void Whisper(ModEvents.SChatMessageData _data, string message) {
+      var senderEntityId = _data.ClientInfo?.entityId ?? _data.SenderEntityId;
       // Use the net package's logic to determine whether to send the message to the client or not
       NetPackageChat package = NetPackageManager.GetPackage<NetPackageChat>().Setup(EChatType.Whisper, -1, message,
-        new List<int> { _data.SenderEntityId }, EMessageSender.None,
+        new List<int> { senderEntityId }, EMessageSender.None,
         GeneratedTextManager.BbCodeSupportMode.Supported);
       package.ProcessPackage(GameManager.Instance.World, GameManager.Instance);
     }
