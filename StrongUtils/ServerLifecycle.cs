@@ -4,6 +4,9 @@ namespace StrongUtils {
   public class ServerLifecycle {
 
     public static void OnGameAwake(ref ModEvents.SGameAwakeData data) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       var configDirectory = Path.Combine(GameIO.GetSaveGameDir(), "StrongMods");
       ConfigManager.Init(configDirectory);
       Log.Out("[StrongUtils] Initialized ConfigManager");
@@ -14,6 +17,9 @@ namespace StrongUtils {
     }
 
     public static void OnGameStartDone(ref ModEvents.SGameStartDoneData data) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       StrongZones.Init();
       Log.Out("[StrongUtils] Initialized StrongZones");
       FastTravel.Init();
@@ -25,6 +31,9 @@ namespace StrongUtils {
     }
 
     public static void OnGameShutdown(ref ModEvents.SGameShutdownData data) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       ConfigManager.Instance?.Dispose();
       Log.Out("[StrongUtils] Disposed ConfigManager");
     }

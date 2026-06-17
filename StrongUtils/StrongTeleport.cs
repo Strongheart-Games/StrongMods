@@ -13,6 +13,9 @@
     private static string s_strongholdPrefabName;
 
     public static void Init() {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       foreach (PrefabInstance prefab in GameManager.Instance.GetDynamicPrefabDecorator().allPrefabs) {
         if (!prefab.prefab.HasAnyQuestTag(FastTags<TagGroup.Global>.GetTag(StrongholdPrefabTag))) {
           continue;

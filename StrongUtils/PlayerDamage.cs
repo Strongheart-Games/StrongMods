@@ -72,6 +72,9 @@ namespace StrongUtils {
     }
 
     public static void HandlePlayerDisconnected(ref ModEvents.SPlayerDisconnectedData data) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       if (GameManager.Instance?.World?.GetEntity(data.ClientInfo.entityId) is not EntityPlayer player) {
         return;
       }
@@ -80,6 +83,9 @@ namespace StrongUtils {
     }
 
     public static void HandleEntityKilled(ref ModEvents.SEntityKilledData data) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       if (data.KilledEntitiy is not EntityPlayer player) {
         return;
       }

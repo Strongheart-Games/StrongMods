@@ -116,6 +116,9 @@ namespace StrongUtils {
     }
 
     private static void OnEntityUpdate(Entity entity) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
       StrongZones.OnUpdateEntity(entity);
       if (entity is EntityPlayer player) {
         FastTravel.ProcessFastTravelDonations(player);
