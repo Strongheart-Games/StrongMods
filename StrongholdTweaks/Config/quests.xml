@@ -22,7 +22,7 @@
       <property name="completion_key" value="quest_find_stronghold_completion"/>
       <property name="icon" value="ui_game_symbol_quest" />
       <property name="category_key" value="quest" />
-      <property name="repeatable" value="false" />
+      <property name="repeatable" value="true" />
       <property name="shareable" value="false" />
       <property name="add_to_tier_complete" value="false" />
 
@@ -31,6 +31,12 @@
         <property name="location_name" value="Stronghold" />
         <property name="nav_object" value="quest" />
         <property name="biome_filter_type" value="AnyBiome" />
+      </objective>
+
+      <objective type="StatAwarded" phase="2">
+        <property name="stat_name" value="stronghold_visited" />
+        <property name="stat_text" value="Enter Stronghold" />
+        <property name="count" value="1" />
       </objective>
 
       <action type="ShowMessageWindow">

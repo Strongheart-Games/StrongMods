@@ -8,7 +8,7 @@
           icon_color="0,200,0">
       <stack_type value="ignore" />
       <effect_group>
-        <triggered_effect trigger="onSelfBuffStart" action="AwardChallenge" challenge_stat="stronghold_visited" count="1"/>
+        <triggered_effect trigger="onSelfBuffStart" action="AwardQuestStat" stat="stronghold_visited" count="1"/>
       </effect_group>
     </buff>
     <buff name="buff_strongsworn_zone_violation"

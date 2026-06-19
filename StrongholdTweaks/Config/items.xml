@@ -42,6 +42,7 @@
     <!-- Leave this in here in case someone still has it in their inventory, but it shouldn't be given out any more -->
     <item name="book_find_stronghold">
       <property name="Extends" value="map_stronghold" />
+      <property name="Stacknumber" value="1" />
     </item>
   </append>
 
