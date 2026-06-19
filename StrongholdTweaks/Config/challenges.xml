@@ -7,17 +7,10 @@
 
     <challenge_group category="Stronghold" name="StrongholdUnlocks" title_key="challengeGroupStrongholdUnlocks" />
 
-    <challenge name="findStronghold" title_key="challengeFindStronghold" icon="ui_game_symbol_map"
-               group="StrongholdUnlocks" short_description_key="challengeFindStrongholdShort"
-               description_key="challengeFindStrongholdDesc" reward_text_key="challengeRewardStrongholdTP"
-               reward_event="challenge_reward_stronghold_tp">
-      <objective type="ChallengeStatAwarded" challenge_stat="stronghold_visited" count="1"
-                 stat_text_key="challengeStatStrongholdVisited" />
-    </challenge>
 
-    <challenge name="completeFiveQuests" title_key="challengeCompleteFiveQuests" icon="ui_game_symbol_quest"
-               group="StrongholdUnlocks" short_description_key="challengeCompleteFiveQuestsShort"
-               description_key="challengeCompleteFiveQuestsDesc" reward_text_key="challengeRewardBedTP"
+    <challenge name="unlockBedFastTravel" title_key="challengeUnlockBedFastTravel" icon="ui_game_symbol_quest"
+               group="StrongholdUnlocks" short_description_key="challengeUnlockBedFastTravelShort"
+               description_key="challengeUnlockBedFastTravelDesc" reward_text_key="challengeRewardBedTP"
                reward_event="challenge_reward_bed_tp">
       <objective type="QuestComplete" quest_tag="poi,buried" count="5" />
       <objective type="KillByTag" entity_tags="zombie" target_name_key="xuiZombies" count="20" />

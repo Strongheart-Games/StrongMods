@@ -26,8 +26,8 @@
     <item name="book_find_stronghold">
       <property name="Extends" value="questMaster" />
       <property name="CreativeMode" value="Player" />
-      <property name="CustomIcon" value="cntBookPile13" />
-      <property name="CustomIconTint" value="ffda03" />
+      <property name="CustomIcon" value="treasureQuestMaster" />
+      <property name="CustomIconTint" value="ff6a02" />
       <property name="ItemTypeIcon" value="quest" />
       <property name="DescriptionKey" value="book_find_stronghold_desc" />
       <property name="NoScrapping" value="true" />
@@ -45,7 +45,7 @@
     <item name="item_opal_of_ophelia">
       <property name="Extends" value="casinoCoin" />
       <property name="CustomIcon" value="foodEgg" />
-      <property name="CustomIconTint" value="85,30,255" />
+      <property name="CustomIconTint" value="ff6a02" />
       <property name="DescriptionKey" value="item_opal_of_ophelia_desc" />
       <property name="CreativeMode" value="Dev" />
       <property name="EconomicValue" value="0" />

@@ -7,18 +7,6 @@
       </action>
     </action_sequence>
 
-    <action_sequence name="challenge_reward_stronghold_tp">
-      <property name="allow_user_trigger" value="false" />
-      <property name="action_type" value="Game" />
-
-      <action class="ModifyCVar">
-        <property name="phase" value="0" />
-        <property name="cvar" value="can_tp_to_stronghold" />
-        <property name="operation" value="set" />
-        <property name="value" value="1" />
-      </action>
-    </action_sequence>
-
     <action_sequence name="challenge_reward_bed_tp">
       <property name="allow_user_trigger" value="false" />
       <property name="action_type" value="Game" />

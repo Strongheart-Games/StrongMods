@@ -33,7 +33,23 @@
         <property name="biome_filter_type" value="AnyBiome" />
       </objective>
 
+      <action type="ShowMessageWindow">
+        <property name="message" value="quest_stronghold_found_description"/>
+        <property name="title" value="quest_stronghold_found_description_title"/>
+        <property name="on_complete" value="true" />
+      </action>
+
+      <action type="SetCVar">
+        <property name="cvar" value="can_tp_to_stronghold" />
+        <property name="value" value="1" />
+        <property name="on_complete" value="true" />
+      </action>
+
       <reward type="Exp" value="500" />
+      <reward type="Item" id="ironDoorBlockVariantHelper" value="2"/>
+      <reward type="Item" id="cntSteelWritableCrate" value="5"/>
+      <reward type="Item" id="toolCookingPot" value="1"/>
+      <reward type="Item" id="meleeToolPaintToolAdmin" value="1"/>
     </quest>
   </append>
 </config>

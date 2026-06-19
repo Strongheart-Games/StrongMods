@@ -2,52 +2,55 @@ Key,Source,Type,english
 mod_hybrid_vehicle_kit_strong,item_modifiers,Mod,"Hybrid Vehicle Kit"
 mod_hybrid_vehicle_kit_desc_strong,item_modifiers,Mod,"Adds torque and power to any vehicle by adding a hybrid battery and motor. Provides modest fuel savings for gas-powered vehicles."
 lblCategoryStrongCrops,UI,Tooltip,"StrongCrops"
-plantedStrongMushroom1,blocks,Block,"[ffda03]Strong[-] Mushrooms (Spores)"
-plantedStrongMushroom2,blocks,Block,"[ffda03]Strong[-] Mushrooms (Growing)"
-plantedStrongMushroom3Harvest,blocks,Block,"[ffda03]Strong[-] Mushrooms"
-plantedStrongAloe1,blocks,Block,"[ffda03]Strong[-] Aloe (Seed)"
-plantedStrongAloe2,blocks,Block,"[ffda03]Strong[-] Aloe (Growing)"
-plantedStrongAloe3Harvest,blocks,Block,"[ffda03]Strong[-] Aloe Plant"
-plantedStrongYucca1,blocks,Block,"[ffda03]Strong[-] Yucca (Seed)"
-plantedStrongYucca2,blocks,Block,"[ffda03]Strong[-] Yucca (Growing)"
-plantedStrongYucca3Harvest,blocks,Block,"[ffda03]Strong[-] Yucca Plant"
-plantedStrongPotato1,blocks,Block,"[ffda03]Strong[-] Potato (Seed)"
-plantedStrongPotato2,blocks,Block,"[ffda03]Strong[-] Potato (Growing)"
-plantedStrongPotato3Harvest,blocks,Block,"[ffda03]Strong[-] Potato Plant"
-plantedStrongCorn1,blocks,Block,"[ffda03]Strong[-] Corn (Seed)"
-plantedStrongCorn2,blocks,Block,"[ffda03]Strong[-] Corn (Growing)"
-plantedStrongCorn3Harvest,blocks,Block,"[ffda03]Strong[-] Corn Plant"
-plantedStrongGoldenrod1,blocks,Block,"[ffda03]Strong[-] Goldenrod (Seed)"
-plantedStrongGoldenrod2,blocks,Block,"[ffda03]Strong[-] Goldenrod (Growing)"
-plantedStrongGoldenrod3Harvest,blocks,Block,"[ffda03]Strong[-] Goldenrod Plant"
-plantedStrongCotton1,blocks,Block,"[ffda03]Strong[-] Cotton (Seed)"
-plantedStrongCotton2,blocks,Block,"[ffda03]Strong[-] Cotton (Growing)"
-plantedStrongCotton3Harvest,blocks,Block,"[ffda03]Strong[-] Cotton Plant"
-plantedStrongChrysanthemum1,blocks,Block,"[ffda03]Strong[-] Chrysanthemum (Seed)"
-plantedStrongChrysanthemum2,blocks,Block,"[ffda03]Strong[-] Chrysanthemum (Growing)"
-plantedStrongChrysanthemum3Harvest,blocks,Block,"[ffda03]Strong[-] Chrysanthemum Plant"
-plantedStrongCoffee1,blocks,Block,"[ffda03]Strong[-] Coffee (Seed)"
-plantedStrongCoffee2,blocks,Block,"[ffda03]Strong[-] Coffee (Growing)"
-plantedStrongCoffee3Harvest,blocks,Block,"[ffda03]Strong[-] Coffee Plant"
-plantedStrongBlueberry1,blocks,Block,"[ffda03]Strong[-] Blueberry (Seed)"
-plantedStrongBlueberry2,blocks,Block,"[ffda03]Strong[-] Blueberry (Growing)"
-plantedStrongBlueberry3Harvest,blocks,Block,"[ffda03]Strong[-] Blueberry Plant"
-plantedStrongHop1,blocks,Block,"[ffda03]Strong[-] Hop (Seed)"
-plantedStrongHop2,blocks,Block,"[ffda03]Strong[-] Hop (Growing)"
-plantedStrongHop3Harvest,blocks,Block,"[ffda03]Strong[-] Hop Plant"
-plantedStrongPumpkin1,blocks,Block,"[ffda03]Strong[-] Pumpkin (Seed)"
-plantedStrongPumpkin2,blocks,Block,"[ffda03]Strong[-] Pumpkin (Growing)"
-plantedStrongPumpkin3Harvest,blocks,Block,"[ffda03]Strong[-] Pumpkin Plant"
+plantedStrongMushroom1,blocks,Block,"[ff6a02]Strong[-] Mushrooms (Spores)"
+plantedStrongMushroom2,blocks,Block,"[ff6a02]Strong[-] Mushrooms (Growing)"
+plantedStrongMushroom3Harvest,blocks,Block,"[ff6a02]Strong[-] Mushrooms"
+plantedStrongAloe1,blocks,Block,"[ff6a02]Strong[-] Aloe (Seed)"
+plantedStrongAloe2,blocks,Block,"[ff6a02]Strong[-] Aloe (Growing)"
+plantedStrongAloe3Harvest,blocks,Block,"[ff6a02]Strong[-] Aloe Plant"
+plantedStrongYucca1,blocks,Block,"[ff6a02]Strong[-] Yucca (Seed)"
+plantedStrongYucca2,blocks,Block,"[ff6a02]Strong[-] Yucca (Growing)"
+plantedStrongYucca3Harvest,blocks,Block,"[ff6a02]Strong[-] Yucca Plant"
+plantedStrongPotato1,blocks,Block,"[ff6a02]Strong[-] Potato (Seed)"
+plantedStrongPotato2,blocks,Block,"[ff6a02]Strong[-] Potato (Growing)"
+plantedStrongPotato3Harvest,blocks,Block,"[ff6a02]Strong[-] Potato Plant"
+plantedStrongCorn1,blocks,Block,"[ff6a02]Strong[-] Corn (Seed)"
+plantedStrongCorn2,blocks,Block,"[ff6a02]Strong[-] Corn (Growing)"
+plantedStrongCorn3Harvest,blocks,Block,"[ff6a02]Strong[-] Corn Plant"
+plantedStrongGoldenrod1,blocks,Block,"[ff6a02]Strong[-] Goldenrod (Seed)"
+plantedStrongGoldenrod2,blocks,Block,"[ff6a02]Strong[-] Goldenrod (Growing)"
+plantedStrongGoldenrod3Harvest,blocks,Block,"[ff6a02]Strong[-] Goldenrod Plant"
+plantedStrongCotton1,blocks,Block,"[ff6a02]Strong[-] Cotton (Seed)"
+plantedStrongCotton2,blocks,Block,"[ff6a02]Strong[-] Cotton (Growing)"
+plantedStrongCotton3Harvest,blocks,Block,"[ff6a02]Strong[-] Cotton Plant"
+plantedStrongChrysanthemum1,blocks,Block,"[ff6a02]Strong[-] Chrysanthemum (Seed)"
+plantedStrongChrysanthemum2,blocks,Block,"[ff6a02]Strong[-] Chrysanthemum (Growing)"
+plantedStrongChrysanthemum3Harvest,blocks,Block,"[ff6a02]Strong[-] Chrysanthemum Plant"
+plantedStrongCoffee1,blocks,Block,"[ff6a02]Strong[-] Coffee (Seed)"
+plantedStrongCoffee2,blocks,Block,"[ff6a02]Strong[-] Coffee (Growing)"
+plantedStrongCoffee3Harvest,blocks,Block,"[ff6a02]Strong[-] Coffee Plant"
+plantedStrongBlueberry1,blocks,Block,"[ff6a02]Strong[-] Blueberry (Seed)"
+plantedStrongBlueberry2,blocks,Block,"[ff6a02]Strong[-] Blueberry (Growing)"
+plantedStrongBlueberry3Harvest,blocks,Block,"[ff6a02]Strong[-] Blueberry Plant"
+plantedStrongHop1,blocks,Block,"[ff6a02]Strong[-] Hop (Seed)"
+plantedStrongHop2,blocks,Block,"[ff6a02]Strong[-] Hop (Growing)"
+plantedStrongHop3Harvest,blocks,Block,"[ff6a02]Strong[-] Hop Plant"
+plantedStrongPumpkin1,blocks,Block,"[ff6a02]Strong[-] Pumpkin (Seed)"
+plantedStrongPumpkin2,blocks,Block,"[ff6a02]Strong[-] Pumpkin (Growing)"
+plantedStrongPumpkin3Harvest,blocks,Block,"[ff6a02]Strong[-] Pumpkin Plant"
 item_opal_of_ophelia,items,Items,Opal of Ophelia
 item_opal_of_ophelia_desc,items,Items,Fast travel currency. Used to unlock new transporters from Stronghold to the traders.\n\nClick [decea3]Use[-] to donate one opal towards unlocking the next trader transporter.\n\nRead more about the unlocking transporters with the [decea3]/transporters[-] chat command. See the current transporter status with [decea3]/transporters status[-].
-challengeCategoryStronghold,challenges,ChallengeCategory,Stronghold
+quest_find_stronghold,quests,Quest,Sanctuary at [ff6a02]Stronghold[-]
+quest_find_stronghold_desc,quests,Quest,"The apocalypse took almost everything, but humanity endures. Follow the coordinates to [ff6a02]Stronghold[-]. We are a beacon of hope offering safety, shelter, and a community ready to [ff6a02]rebuild humanity[-].\n\nHere you will find a [ff6a02]hotel[-] to rest, a bustling [ff6a02]market[-], and shared spaces for [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-]."
+quest_find_stronghold_offer,quests,Quest,"Survivor, if you are reading this, you are not alone. You are invited to [ff6a02]Stronghold[-], a sanctuary dedicated to [ff6a02]rebuilding humanity[-] in the apocalypse.\n\nMake your way here to discover our [ff6a02]hotel[-], [ff6a02]market[-], [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-] facilities.\n\nReaching the settlement safely will also unlock our [ff6a02]fast travel network[-]!"
+quest_find_stronghold_subtitle,quests,Quest,Travel to the safe haven of [ff6a02]Stronghold[-].
+quest_find_stronghold_statement,quests,Quest,Accept this invitation and make your way to [ff6a02]Stronghold[-] to secure your future.
+quest_find_stronghold_response,quests,Quest,I am on my way to [ff6a02]Stronghold[-].
+quest_find_stronghold_completion,quests,Quest,Welcome home! You have officially joined the [ff6a02]Stronghold[-] community.
+quest_stronghold_found_description_title,quests,Quest,Welcome to [ff6a02]Stronghold[-]
+quest_stronghold_found_description,quests,Quest,"You have safely arrived at [ff6a02]Stronghold[-]!\n\nAs a new member of our community, your map has been synced to our [ff6a02]fast travel network[-]. Take these welcome supplies, grab a room at the [ff6a02]hotel[-], and explore the [ff6a02]market[-] and community areas.\n\nTogether, we will [ff6a02]rebuild humanity[-]."challengeCategoryStronghold,challenges,ChallengeCategory,Stronghold
 challengeGroupStrongholdUnlocks,challenges,ChallengeGroup,Stronghold Unlocks
-challengeFindStronghold,challenges,Challenge,Find Stronghold
-challengeFindStrongholdShort,challenges,Challenge,Visit the Stronghold
-challengeFindStrongholdDesc,challenges,Challenge,Locate and visit the Stronghold to unlock the /stronghold and /sh teleport commands.
-challengeRewardStrongholdTP,challenges,Challenge,Unlock /stronghold Command
-challengeStatStrongholdVisited,challenges,Challenge,Stronghold Visited
-challengeCompleteFiveQuests,challenges,Challenge,Complete 5 Quests
-challengeCompleteFiveQuestsShort,challenges,Challenge,Finish 5 Quests
-challengeCompleteFiveQuestsDesc,challenges,Challenge,Complete 5 quests to unlock the /bed teleport command.
-challengeRewardBedTP,challenges,Challenge,Unlock /bed Command
+challengeUnlockBedFastTravel,challenges,Challenge,Unlock Fast Travel: Bed
+challengeUnlockBedFastTravelShort,challenges,Challenge,Complete quests and defeat zombies to enable bed fast travel.
+challengeUnlockBedFastTravelDesc,challenges,Challenge,Prove your survival skills by completing 5 quests and slaying 20 zombies. Accomplishing this will grant you the permanent ability to teleport directly to your bed.
+challengeRewardBedTP,challenges,Challenge,Fast Travel: Bed Unlocked
