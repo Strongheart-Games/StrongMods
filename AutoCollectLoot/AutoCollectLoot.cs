@@ -76,6 +76,11 @@ namespace AutoCollectLoot {
         return false;
       }
 
+      ClientInfo client = ConnectionManager.Instance.Clients.ForEntityId(player.entityId);
+      if (client is null) {
+        return false;
+      }
+
       World world = GameManager.Instance.World;
       var loot = (EntityItem)EntityFactory.CreateEntity(new EntityCreationData {
         entityClass = EntityClass.FromString("item"),
@@ -87,7 +92,8 @@ namespace AutoCollectLoot {
         belongsPlayerId = player.entityId
       });
       world.SpawnEntityInWorld(loot);
-      loot.Collect(player.entityId);
+      client.SendPackage(NetPackageManager.GetPackage<NetPackageEntityCollect>().Setup(loot.entityId, client.entityId));
+      world.RemoveEntity(loot.entityId, EnumRemoveEntityReason.Despawned);
       return true;
     }
   }
