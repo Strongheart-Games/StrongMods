@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
+  <!-- Remove buffDukeNote from use -->
+  <!-- This is a little fragile as it removes _all_ AddBuff actions from the event, but there's only one for now -->
+  <remove xpath="/gameevents/action_sequence[@name='game_first_spawn']/action[@class='AddBuff']" />
+
   <append xpath="/gameevents">
     <action_sequence name="action_add_quest_unlock_bed_tp">
       <action class="AddQuest">

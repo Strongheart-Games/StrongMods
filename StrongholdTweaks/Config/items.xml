@@ -23,13 +23,13 @@
 
   <!-- Stronghold intro quest -->
   <append xpath="/items">
-    <item name="book_find_stronghold">
+    <item name="map_stronghold">
       <property name="Extends" value="questMaster" />
       <property name="CreativeMode" value="Player" />
       <property name="CustomIcon" value="treasureQuestMaster" />
       <property name="CustomIconTint" value="ff6a02" />
       <property name="ItemTypeIcon" value="quest" />
-      <property name="DescriptionKey" value="book_find_stronghold_desc" />
+      <property name="DescriptionKey" value="map_stronghold_desc" />
       <property name="NoScrapping" value="true" />
       <property name="Stacknumber" value="1" />
       <property class="Action0">
@@ -38,6 +38,10 @@
         <property name="Delay" value="1" />
         <property name="UseAnimation" value="false" />
       </property>
+    </item>
+    <!-- Leave this in here in case someone still has it in their inventory, but it shouldn't be given out any more -->
+    <item name="book_find_stronghold">
+      <property name="Extends" value="map_stronghold" />
     </item>
   </append>
 

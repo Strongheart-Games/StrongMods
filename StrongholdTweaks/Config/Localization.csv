@@ -38,19 +38,22 @@ plantedStrongHop3Harvest,blocks,Block,"[ff6a02]Strong[-] Hop Plant"
 plantedStrongPumpkin1,blocks,Block,"[ff6a02]Strong[-] Pumpkin (Seed)"
 plantedStrongPumpkin2,blocks,Block,"[ff6a02]Strong[-] Pumpkin (Growing)"
 plantedStrongPumpkin3Harvest,blocks,Block,"[ff6a02]Strong[-] Pumpkin Plant"
-item_opal_of_ophelia,items,Items,Opal of Ophelia
-item_opal_of_ophelia_desc,items,Items,Fast travel currency. Used to unlock new transporters from Stronghold to the traders.\n\nClick [decea3]Use[-] to donate one opal towards unlocking the next trader transporter.\n\nRead more about the unlocking transporters with the [decea3]/transporters[-] chat command. See the current transporter status with [decea3]/transporters status[-].
-quest_find_stronghold,quests,Quest,Sanctuary at [ff6a02]Stronghold[-]
-quest_find_stronghold_desc,quests,Quest,"The apocalypse took almost everything, but humanity endures. Follow the coordinates to [ff6a02]Stronghold[-]. We are a beacon of hope offering safety, shelter, and a community ready to [ff6a02]rebuild humanity[-].\n\nHere you will find a [ff6a02]hotel[-] to rest, a bustling [ff6a02]market[-], and shared spaces for [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-]."
-quest_find_stronghold_offer,quests,Quest,"Survivor, if you are reading this, you are not alone. You are invited to [ff6a02]Stronghold[-], a sanctuary dedicated to [ff6a02]rebuilding humanity[-] in the apocalypse.\n\nMake your way here to discover our [ff6a02]hotel[-], [ff6a02]market[-], [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-] facilities.\n\nReaching the settlement safely will also unlock our [ff6a02]fast travel network[-]!"
+item_opal_of_ophelia,items,Item,Opal of Ophelia
+item_opal_of_ophelia_desc,items,Item,Fast travel currency. Used to unlock new transporters from Stronghold to the traders.\n\nClick [decea3]Use[-] to donate one opal towards unlocking the next trader transporter.\n\nRead more about the unlocking transporters with the [decea3]/transporters[-] chat command. See the current transporter status with [decea3]/transporters status[-].
+map_stronghold,items,Item,[ff6a02]Stronghold[-] Map
+map_stronghold_desc,items,Item,A map to a place called [ff6a02]Stronghold[-] with a message scrawled on it in what looks like coal.
+quest_find_stronghold,quests,Quest,Find [ff6a02]Stronghold[-]
+quest_find_stronghold_desc,quests,Quest,"The apocalypse took almost everything, but humanity endures. Join us at [ff6a02]Stronghold[-]. We are a beacon of hope offering safety, shelter, and a community ready to [ff6a02]rebuild humanity[-].\n\nWe offer a [ff6a02]hotel[-] to rest, a bustling [ff6a02]market[-], and shared spaces for [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-]."
+quest_find_stronghold_offer,quests,Quest,"Survivor, if you are reading this, you are not alone. You are invited to [ff6a02]Stronghold[-], a sanctuary dedicated to [ff6a02]rebuilding humanity[-] in the apocalypse.\n\nWe offer a [ff6a02]hotel[-], [ff6a02]market[-], [ff6a02]community crafting[-], [ff6a02]gardening[-], and [ff6a02]mining[-] facilities.\n\nOnce you arrive we can also teach you to use our [ff6a02]fast travel network[-]!"
 quest_find_stronghold_subtitle,quests,Quest,Travel to the safe haven of [ff6a02]Stronghold[-].
 quest_find_stronghold_statement,quests,Quest,Accept this invitation and make your way to [ff6a02]Stronghold[-] to secure your future.
 quest_find_stronghold_response,quests,Quest,I am on my way to [ff6a02]Stronghold[-].
 quest_find_stronghold_completion,quests,Quest,Welcome home! You have officially joined the [ff6a02]Stronghold[-] community.
 quest_stronghold_found_description_title,quests,Quest,Welcome to [ff6a02]Stronghold[-]
-quest_stronghold_found_description,quests,Quest,"You have safely arrived at [ff6a02]Stronghold[-]!\n\nAs a new member of our community, your map has been synced to our [ff6a02]fast travel network[-]. Take these welcome supplies, grab a room at the [ff6a02]hotel[-], and explore the [ff6a02]market[-] and community areas.\n\nTogether, we will [ff6a02]rebuild humanity[-]."challengeCategoryStronghold,challenges,ChallengeCategory,Stronghold
+quest_stronghold_found_description,quests,Quest,"Welcome to [ff6a02]Stronghold[-]!\n\nAs a new member of our community, your map has been synced to our [ff6a02]fast travel network[-]. Type [decea3]/sh[-] or [decea3]/stronghold[-] in chat at any time to be teleported back here.\n\nTake these welcome supplies, grab a room at the [ff6a02]hotel[-], and explore the [ff6a02]market[-] and community areas.\n\nTogether, we will [ff6a02]rebuild humanity[-]."
+challengeCategoryStronghold,challenges,ChallengeCategory,Stronghold
 challengeGroupStrongholdUnlocks,challenges,ChallengeGroup,Stronghold Unlocks
 challengeUnlockBedFastTravel,challenges,Challenge,Unlock Fast Travel: Bed
-challengeUnlockBedFastTravelShort,challenges,Challenge,Complete quests and defeat zombies to enable bed fast travel.
-challengeUnlockBedFastTravelDesc,challenges,Challenge,Prove your survival skills by completing 5 quests and slaying 20 zombies. Accomplishing this will grant you the permanent ability to teleport directly to your bed.
-challengeRewardBedTP,challenges,Challenge,Fast Travel: Bed Unlocked
+challengeUnlockBedFastTravelShort,challenges,Challenge,Secure the area.
+challengeUnlockBedFastTravelDesc,challenges,Challenge,Complete 5 quests and slay 20 zombies..
+challengeRewardBedTP,challenges,Challenge,/bed unlocked
