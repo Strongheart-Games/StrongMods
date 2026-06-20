@@ -6,17 +6,16 @@
     <triggered_effect trigger="onSelfFirstSpawn" action="AddBuff" target="self" buff="buffEntitySpawnHeal" />
   </insertAfter>
 
-  <!-- Adjust spawn items
-         * Remove Duke's Note
-         * Add the Map to Stronghold
-         * Buff the type and amount of food, drink and bandages -->
-  <set xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value">
-    map_stronghold,drinkJarYuccaJuice=5,foodBaconAndEggs=5,medicalFirstAidBandage=5,meleeToolTorch
-  </set>
+  <!-- Adjust spawn items -->
+  <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="remove">
+    drinkJarBoiledWater,drinkJarBoiledWater=2,foodCanChili,medicalFirstAidBandage,noteDuke01
+  </csv>
+  <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
+    map_stronghold,drinkJarYuccaJuice=5,foodBaconAndEggs=5,medicalFirstAidBandage=5
+  </csv>
 
   <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
-  <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab
-  </setattribute>
+  <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab</setattribute>
 
   <append xpath="/entity_classes/entity_class[@name='ChargedEliteLootContainer']">
     <property name="loot_item_name_strong" value="item_loot_container_charged_elite_strong" />
