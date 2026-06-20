@@ -25,11 +25,12 @@ namespace StrongBoxes {
         targets.AddRange(GetQualifiedSortTargets(k, sortBox));
       }
 
-      targets.Sort((a, b) => -1);
+      // TODO: Sort by distance
 
       foreach (SortTarget t in targets) {
         Transfer(sortBox, t);
       }
+      Log.Out("[StrongBoxes] Sort done");
     }
 
     private static void Transfer(TileEntity source, SortTarget target) {
