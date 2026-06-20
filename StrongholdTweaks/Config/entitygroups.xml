@@ -1,5 +1,10 @@
 ﻿<config>
   <conditional>
+    <if cond="mod_loaded('V3_ServerSideZombiesLITE')">
+      <remove xpath="/entitygroups/entitygroup[not(contains(@name,'Wasteland'))]/e[contains(@n,'PLUS')]" />
+    </if>
+  </conditional>
+  <conditional>
     <if cond="mod_loaded('ProjectZ')">
       <csv xpath="/entitygroups/entitygroup[@name='WildGameForestNight']/text()" delim="\n" op="remove">*Boss*</csv>
       <csv xpath="/entitygroups/entitygroup[@name='EnemyAnimalsForest']/text()" delim="\n" op="remove">*Boss*</csv>
