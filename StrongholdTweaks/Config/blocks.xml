@@ -550,17 +550,33 @@
     </block>
   </append>
 
-  <!-- Warp pads are returned when destroyed -->
-  <append xpath="/blocks/block[@name='warpPadBlockSecure']">
-    <dropextendsoff />
-    <drop event="Destroy" name="warpPadBlockSecure" count="1" />
-    <drop event="Fall" name="warpPadBlockSecure" count="1" prob=".9" stick_chance=".9" />
-  </append>
-  <append xpath="/blocks/block[@name='warpPadBlockPortable']">
-    <dropextendsoff />
-    <drop event="Destroy" name="warpPadBlockPortable" count="1" />
-    <drop event="Fall" name="warpPadBlockPortable" count="1" prob=".9" stick_chance=".9" />
-  </append>
+  <!-- Warp pads / quantum elevators are returned when destroyed -->
+  <conditional>
+    <if cond="mod_loaded('TheMeanOnes_WarpPads')">
+      <append xpath="/blocks/block[@name='warpPadBlockSecure']">
+        <dropextendsoff />
+        <drop event="Destroy" name="warpPadBlockSecure" count="1" />
+        <drop event="Fall" name="warpPadBlockSecure" count="1" prob=".9" stick_chance=".9" />
+      </append>
+      <append xpath="/blocks/block[@name='warpPadBlockPortable']">
+        <dropextendsoff />
+        <drop event="Destroy" name="warpPadBlockPortable" count="1" />
+        <drop event="Fall" name="warpPadBlockPortable" count="1" prob=".9" stick_chance=".9" />
+      </append>
+    </if>
+    <if cond="mod_loaded('ANZ_elevador_quantico')">
+      <append xpath="/blocks/block[@name='quantumElevatorBlockSecure']">
+        <dropextendsoff />
+        <drop event="Destroy" name="quantumElevatorBlockSecure" count="1" />
+        <drop event="Fall" name="quantumElevatorBlockSecure" count="1" prob=".9" stick_chance=".9" />
+      </append>
+      <append xpath="/blocks/block[@name='quantumElevatorBlockPortable']">
+        <dropextendsoff />
+        <drop event="Destroy" name="quantumElevatorBlockPortable" count="1" />
+        <drop event="Fall" name="quantumElevatorBlockPortable" count="1" prob=".9" stick_chance=".9" />
+      </append>
+    </if>
+  </conditional>
 
   <!-- All blocks not explicitly set as unstackable will stack to 65k. -->
   <setattribute xpath="/blocks/block/property[@name='Stacknumber'][@value > 1]" name="value">65000</setattribute>
