@@ -1,4 +1,4 @@
-﻿namespace StrongHonk {
+﻿namespace StrongHorns {
   public static class OpenDoors {
     private const string BlockCategoryName = "trader_doors";
     private const string HonkToOpenTag = "honk_to_open";
@@ -8,7 +8,7 @@
 
     public static void Init() {
       NearbyBlockFinder.AddCategory(BlockCategoryName, CanHonkToOpen);
-      StrongHonk.RegisterHonkListener(OnHonk);
+      StrongHorns.RegisterHonkListener(OnHonk);
     }
 
     private static bool CanHonkToOpen(Block block, WorldBase world, Vector3i pos, BlockValue blockValue) {
@@ -19,16 +19,24 @@
     }
 
     private static void OnHonk(EntityVehicle vehicle) {
-      Log.Out($"[StrongHonk] Honk from {vehicle.vehicle.vehicleName} at {vehicle.position}");
+      Log.Out($"[StrongHorns] Honk from {vehicle.vehicle.vehicleName} at {vehicle.position}");
       NearbyBlockFinder.ForeachNearbyBlock(BlockCategoryName, vehicle.GetBlockPosition(), MaxDistance, OpenDoor);
     }
 
     private static void OpenDoor(Block block, Vector3i pos) {
-      World world = GameManager.Instance.World;
-      BlockValue blockValue = world.GetBlock(pos);
-      var chunkKey = WorldChunkCache.MakeChunkKey(World.toChunkXZ(pos.x), World.toChunkXZ(pos.z));
-      Log.Out($"[StrongHonk] Activating {block.blockName} at {pos}");
-      block.OnBlockActivated(world, pos, blockValue, null);
+      TileEntity tileEntity = GameManager.Instance.World.GetTileEntity(pos);
+      if (tileEntity is null) {
+        Log.Out($"[StrongHorns] Can't open {block.blockName} at {pos}; it is not a Tile Entity.");
+        return;
+      }
+
+      if (!tileEntity.TryGetSelfOrFeature(out TEFeatureDoor door)) {
+        Log.Out($"[StrongHorns] Can't open {block.blockName} at {pos}; it is not a door.");
+        return;
+      }
+      Log.Out($"[StrongHorns] Activating {block.blockName} at {pos}");
+      // TODO: Don't animate for slower doors like big wood doors and drawbridges
+      door.SetOpen(!door.isOpen, true);
     }
   }
 }

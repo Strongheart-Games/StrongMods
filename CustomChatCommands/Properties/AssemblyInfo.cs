@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("StrongHonk")]
+[assembly: AssemblyTitle("CustomChatCommands")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("StrongHonk")]
+[assembly: AssemblyProduct("CustomChatCommands")]
 [assembly: AssemblyCopyright("Copyright ©  2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6539557B-0DA2-4767-9ADB-31210C1364BD")]
+[assembly: Guid("D194BA9E-280B-4C9A-A505-7274594AD064")]
 
 // Version information for an assembly consists of the following four values:
 //

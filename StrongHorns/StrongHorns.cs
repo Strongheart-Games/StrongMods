@@ -4,8 +4,8 @@ using Audio;
 using HarmonyLib;
 using UnityEngine;
 
-namespace StrongHonk {
-  public static class StrongHonk {
+namespace StrongHorns {
+  public static class StrongHorns {
     private static readonly ConcurrentBag<Action<EntityVehicle>> s_onHonkListeners = new();
 
     public static void RegisterHonkListener(Action<EntityVehicle> listener) {

@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using HarmonyLib;
 
-namespace StrongHonk {
+namespace StrongHorns {
   public static class NearbyBlockFinder {
     private static readonly ConcurrentBag<BlockCategory> s_categories = new();
 
@@ -18,11 +18,11 @@ namespace StrongHonk {
 
     public static void ForeachNearbyBlock(string category, Vector3i pos, int maxDistance,
       Action<Block, Vector3i> callback) {
-      //Log.Out("[StrongHonk] ForeachNearbyBlock()");
+      //Log.Out("[StrongHorns] ForeachNearbyBlock()");
       ConcurrentDictionary<long, ConcurrentDictionary<Vector3i, TrackedBlock>> blocksByChunk =
         s_blocks.GetValueOrDefault(category, null);
       if (blocksByChunk is null) {
-        //Log.Out($"[StrongHonk] No nearby blocks found; category {category} returned no tracked blocks");
+        //Log.Out($"[StrongHorns] No nearby blocks found; category {category} returned no tracked blocks");
         return;
       }
 
@@ -37,7 +37,7 @@ namespace StrongHonk {
         foreach (KeyValuePair<Vector3i, TrackedBlock> b in blocksByPos) {
           var distance = (b.Key.ToVector3CenterXZ() - pos.ToVector3CenterXZ()).magnitude;
           if (distance > maxDistance || distance >= closestDistance) {
-            //Log.Out($"[StrongHonk] Block too far; ignoring: {b.Value.Block.blockName} distance: {distance}");
+            //Log.Out($"[StrongHorns] Block too far; ignoring: {b.Value.Block.blockName} distance: {distance}");
             continue;
           }
 
@@ -47,11 +47,11 @@ namespace StrongHonk {
       }
 
       if (closestBlock is null) {
-        //Log.Out("[StrongHonk] No nearby blocks found; closestBlock is null");
+        //Log.Out("[StrongHorns] No nearby blocks found; closestBlock is null");
         return;
       }
 
-      //Log.Out($"[StrongHonk] Closest qualifying block: {((TrackedBlock)closestBlock).Block.blockName} distance: {closestDistance}");
+      //Log.Out($"[StrongHorns] Closest qualifying block: {((TrackedBlock)closestBlock).Block.blockName} distance: {closestDistance}");
       callback.Invoke(((TrackedBlock)closestBlock).Block, ((TrackedBlock)closestBlock).Pos);
     }
 
@@ -65,7 +65,7 @@ namespace StrongHonk {
         }
       }
 
-      //Log.Out($"[StrongHonk] Searching {nearby.Count} chunks: {string.Join(", ", nearby)}");
+      //Log.Out($"[StrongHorns] Searching {nearby.Count} chunks: {string.Join(", ", nearby)}");
       return nearby;
     }
 

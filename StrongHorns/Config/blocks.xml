@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <csv xpath="/blocks/block[starts-with(@name, 'chainlinkGateDouble')]/property[@name='Tags']/@value" delim=","
-       op="add">honk_to_open
+  <csv xpath="/blocks/block[starts-with(@name, 'chainlinkGateDouble')]/property[@name='Tags']/@value" delim="," op="add">
+    honk_to_open
   </csv>
   <csv xpath="/blocks/block[starts-with(@name, 'chainlinkFenceDoor')]/property[@name='Tags']/@value" delim="," op="add">
     honk_to_open
   </csv>
-  <csv xpath="/blocks/block[@name='doorWoodLargeGate']/property[@name='Tags']/@value" delim="," op="add">honk_to_open
+  <csv xpath="/blocks/block[@name='doorWoodLargeGate']/property[@name='Tags']/@value" delim="," op="add">
+    honk_to_open
   </csv>
   <csv xpath="/blocks/block[starts-with(@name, 'oldWoodDoor')]/property[@name='Tags']/@value" delim="," op="add">
     honk_to_open

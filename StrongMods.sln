@@ -30,13 +30,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicFeralSense", "Dynami
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongHonk", "StrongHonk\StrongHonk.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongHorns", "StrongHorns\StrongHorns.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMining", "StrongMining\StrongMining.csproj", "{343152C4-6197-4461-9B01-E223627C59E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongBoxes", "StrongBoxes\StrongBoxes.csproj", "{6252E52E-1BBA-413F-B389-88546EE20AF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PootPavillion", "PootPavillion\PootPavillion.csproj", "{3BABA8DB-AD22-49E9-A719-D3AF58D7C181}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomChatCommands", "CustomChatCommands\CustomChatCommands.csproj", "{D194BA9E-280B-4C9A-A505-7274594AD064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,5 +116,9 @@ Global
 		{3BABA8DB-AD22-49E9-A719-D3AF58D7C181}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BABA8DB-AD22-49E9-A719-D3AF58D7C181}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BABA8DB-AD22-49E9-A719-D3AF58D7C181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D194BA9E-280B-4C9A-A505-7274594AD064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D194BA9E-280B-4C9A-A505-7274594AD064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D194BA9E-280B-4C9A-A505-7274594AD064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D194BA9E-280B-4C9A-A505-7274594AD064}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
