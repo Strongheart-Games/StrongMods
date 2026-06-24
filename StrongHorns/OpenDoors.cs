@@ -34,9 +34,14 @@
         Log.Out($"[StrongHorns] Can't open {block.blockName} at {pos}; it is not a door.");
         return;
       }
-      Log.Out($"[StrongHorns] Activating {block.blockName} at {pos}");
+
+      var currentState = door.IsOpen();
+      var action = currentState ? "Closing" : "Opening";
+      // There's a bug in the regular version of 7DtD that the boolean logic is flipped
+      var newState = GameManager.IsDedicatedServer ? !currentState : currentState;
+      Log.Out($"[StrongHorns] {action} {block.blockName} at {pos}");
       // TODO: Don't animate for slower doors like big wood doors and drawbridges
-      door.SetOpen(!door.isOpen, true);
+      door.SetOpen(newState, true);
     }
   }
 }
