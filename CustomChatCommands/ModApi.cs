@@ -3,7 +3,7 @@ using System.IO;
 namespace CustomChatCommands {
   public class ModApi : IModApi {
     public void InitMod(Mod mod) {
-      CommandManager.LoadCommandsFromXml(GetConfigPath());
+      CommandManager.Init(GetConfigPath());
       ModEvents.ChatMessage.RegisterHandler(OnChatMessage);
       Log.Out("[CustomChatCommands] Initialized and listening for chat triggers.");
     }
@@ -22,15 +22,16 @@ namespace CustomChatCommands {
     }
 
     private ModEvents.EModEventResult OnChatMessage(ref ModEvents.SChatMessageData data) {
-      if (string.IsNullOrEmpty(data.Message)) {
+      // EntityFactory.cFirstEntityID == 1
+      if (data.SenderEntityId < 1 || string.IsNullOrEmpty(data.Message)) {
         return ModEvents.EModEventResult.Continue;
       }
 
       var messageParts = data.Message.Split(' ');
       var potentialTrigger = messageParts[0];
 
-      if (!CommandManager.CommandsCache.TryGetValue(potentialTrigger, out ChatCommand command)) {
-        Log.Out($"[CustomChatCommands] Command not found: {potentialTrigger} (configured commands: {string.Join(",", CommandManager.CommandsCache.Keys)})");
+      if (!CommandManager.Commands.TryGetValue(potentialTrigger, out ChatCommand command)) {
+        Log.Out($"[CustomChatCommands] Command not found: {potentialTrigger} (configured commands: {string.Join(",", CommandManager.Commands.Keys)})");
         return ModEvents.EModEventResult.Continue;
       }
 

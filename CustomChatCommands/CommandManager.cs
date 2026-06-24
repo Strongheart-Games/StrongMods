@@ -1,16 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace CustomChatCommands {
   public static class CommandManager {
-    public static readonly Dictionary<string, ChatCommand> CommandsCache = new(StringComparer.OrdinalIgnoreCase);
+    private static FileSystemWatcher s_watcher;
+    public static string FilePath { get; private set; }
 
-    public static void LoadCommandsFromXml(string filePath) {
-      CommandsCache.Clear();
+    public static Dictionary<string, ChatCommand> Commands { get; private set; } =
+      new(StringComparer.OrdinalIgnoreCase);
+
+    public static void Init(string filePath) {
+      FilePath = filePath;
+      LoadCommandsFromXml();
+
+      var directory = Path.GetDirectoryName(filePath);
+      var fileName = Path.GetFileName(filePath);
+      var watcher = new FileSystemWatcher(directory, fileName) {
+        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
+        EnableRaisingEvents = true
+      };
+      watcher.Changed += (_, _) => LoadCommandsFromXml();
+      s_watcher = watcher;
+    }
+
+    private static void LoadCommandsFromXml() {
+      Dictionary<string, ChatCommand> commands = new();
       try {
+        Log.Out($"[CustomChatCommands] Loading {FilePath}...");
         var xmlDoc = new XmlDocument();
-        xmlDoc.Load(filePath);
+        xmlDoc.Load(FilePath);
 
         XmlNodeList commandNodes = xmlDoc.SelectNodes("/CustomChatCommands/Command");
         if (commandNodes == null) {
@@ -57,12 +77,14 @@ namespace CustomChatCommands {
 
           ParseActionList(cmdNode.SelectNodes("Execute/Action"), newCommand.Actions);
 
-          CommandsCache[trigger] = newCommand;
+          commands[trigger] = newCommand;
         }
       } catch (Exception ex) {
         Log.Error($"[CustomChatCommands] Error parsing CustomChatCommands XML: {ex.Message}");
       }
-      Log.Out($"[CustomChatCommands] Loaded {CommandsCache.Count} commands: {string.Join(",", CommandsCache.Keys)}");
+
+      Commands = commands;
+      Log.Out($"[CustomChatCommands] Loaded {commands.Count} commands: {string.Join(",", commands.Keys)}");
     }
 
     private static void ParseActionList(XmlNodeList nodes, List<CommandAction> targetList) {

@@ -45,7 +45,10 @@ namespace CustomChatCommands {
 
         switch (action.Type) {
           case ActionType.Console:
-            SdtdConsole.Instance.ExecuteSync(message, null);
+            List<string> output = SdtdConsole.Instance.ExecuteSync(message, null);
+            foreach (var line in output) {
+              Log.Out($"[CustomChatCommands] {line}");
+            }
             break;
           case ActionType.Whisper:
             if (sender.ClientInfo is null) {

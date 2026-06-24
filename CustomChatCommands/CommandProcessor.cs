@@ -19,15 +19,15 @@
         ClientInfo clientInfo = sender.ClientInfo;
         name = clientInfo.playerName;
         entityId = clientInfo.entityId.ToString();
-        platformId = clientInfo.PlatformId != null ? clientInfo.PlatformId.CombinedString : "UnknownPlatformID";
-        eosId = clientInfo.CrossplatformId != null ? clientInfo.CrossplatformId.CombinedString : "UnknownEOSID";
+        platformId = clientInfo.PlatformId != null ? clientInfo.PlatformId.CombinedString : "UnknownPlatformId";
+        eosId = clientInfo.CrossplatformId != null ? clientInfo.CrossplatformId.CombinedString : "UnknownEOSId";
       }
 
       return rawCommand
         .Replace("{Name}", name)
-        .Replace("{EntityID}", entityId)
-        .Replace("{PlatformID}", platformId)
-        .Replace("{EOSID}", eosId);
+        .Replace("{EntityId}", entityId)
+        .Replace("{PlatformId}", platformId)
+        .Replace("{EOSId}", eosId);
     }
   }
 }
