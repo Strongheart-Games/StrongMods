@@ -21,7 +21,7 @@ namespace StrongUtils.Commands {
     {
       if (@params.Count != 2)
       {
-        Log.Out("Error: Usage is <player> <prefab>");
+        SdtdConsole.Instance.Output("Error: Usage is <player> <prefab>");
         return;
       }
 
@@ -31,11 +31,11 @@ namespace StrongUtils.Commands {
       if (TryGetNearestPrefabByName(prefab, out var coordinates))
       {
         SdtdConsole.Instance.ExecuteSync($"teleportplayer {player} {coordinates}", null);
-        Log.Out($"Teleporting {player} to nearest '{prefab}' at {coordinates}.");
+        SdtdConsole.Instance.Output($"Teleporting {player} to nearest '{prefab}' at {coordinates}.");
       }
       else
       {
-        Log.Out($"Error: Could not find a prefab named '{prefab}'.");
+        SdtdConsole.Instance.Output($"Error: Could not find a prefab named '{prefab}'.");
       }
     }
 
