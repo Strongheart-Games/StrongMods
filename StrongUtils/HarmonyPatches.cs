@@ -160,7 +160,6 @@ namespace StrongUtils {
       ModEvents.GameAwake.RegisterHandler(ServerLifecycle.OnGameAwake);
       ModEvents.GameStartDone.RegisterHandler(ServerLifecycle.OnGameStartDone);
       ModEvents.GameShutdown.RegisterHandler(ServerLifecycle.OnGameShutdown);
-      ModEvents.ChatMessage.RegisterHandler(StrongTeleport.HandleChatMessage);
       ModEvents.PlayerDisconnected.RegisterHandler(PlayerDamage.HandlePlayerDisconnected);
       ModEvents.EntityKilled.RegisterHandler(PlayerDamage.HandleEntityKilled);
     }

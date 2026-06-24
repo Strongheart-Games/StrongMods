@@ -24,8 +24,6 @@ namespace StrongUtils {
       Log.Out("[StrongUtils] Initialized StrongZones");
       FastTravel.Init();
       Log.Out("[StrongUtils] Initialized FastTravel");
-      StrongTeleport.Init();
-      Log.Out("[StrongUtils] Initialized StrongTeleport");
       ServerLifecycleCommands.OnGameStartDone();
       Log.Out("[StrongUtils] Done running OnGameStartDone commands");
     }

@@ -100,7 +100,6 @@
     <Compile Include="ServerLifecycle.cs" />
     <Compile Include="SpawnScaler.cs" />
     <Compile Include="StrongAudit.cs" />
-    <Compile Include="StrongTeleport.cs" />
     <Compile Include="StrongZones.cs" />
     <Compile Include="TouchlessLootContainers.cs" />
   </ItemGroup>
