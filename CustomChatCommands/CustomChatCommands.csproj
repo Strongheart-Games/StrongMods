@@ -76,6 +76,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChatCommandSender.cs" />
     <Compile Include="CommandEvaluator.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandProcessor.cs" />

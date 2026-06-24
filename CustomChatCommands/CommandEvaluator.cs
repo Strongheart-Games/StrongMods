@@ -4,18 +4,25 @@ using UnityEngine;
 
 namespace CustomChatCommands {
   public static class CommandEvaluator {
-    public static bool CheckRequirements(ClientInfo cInfo, ChatCommand command) {
-      var playerAdminLevel = GameManager.Instance.adminTools.Users.GetUserPermissionLevel(cInfo);
-      if (playerAdminLevel > command.MinAdminLevel) {
+    public static bool CheckRequirements(ChatCommandSender sender, ChatCommand command) {
+      EntityPlayer player = sender.GetEntityPlayer();
+      if (player is null) {
         return false;
+      }
+
+      if (!player.IsAdmin) {
+        if (sender.ClientInfo is null) {
+          return false;
+        }
+        AdminTools adminTools = GameManager.Instance.adminTools;
+        var playerAdminLevel = adminTools is null ? 0 : adminTools.Users.GetUserPermissionLevel(sender.ClientInfo);
+        if (playerAdminLevel > command.MinAdminLevel) {
+          return false;
+        }
       }
 
       if (command.Requirements.Count <= 0) {
         return true;
-      }
-
-      if (!GameManager.Instance.World.Players.dict.TryGetValue(cInfo.entityId, out EntityPlayer localPlayer)) {
-        return false;
       }
 
       foreach (CommandRequirement req in command.Requirements) {
@@ -23,7 +30,7 @@ namespace CustomChatCommands {
           continue;
         }
 
-        var currentCVarValue = localPlayer.GetCVar(req.Name);
+        var currentCVarValue = player.GetCVar(req.Name);
         if (!Mathf.Approximately(currentCVarValue, req.Value)) {
           return false;
         }
@@ -32,20 +39,27 @@ namespace CustomChatCommands {
       return true;
     }
 
-    public static void ExecuteActionList(List<CommandAction> actions, ClientInfo cInfo) {
+    public static void ExecuteActionList(List<CommandAction> actions, ChatCommandSender sender) {
       foreach (CommandAction action in actions) {
-        var message = CommandProcessor.ReplaceVariables(action.CommandText, cInfo);
+        var message = CommandProcessor.ReplaceVariables(action.CommandText, sender);
 
         switch (action.Type) {
           case ActionType.Console:
             SdtdConsole.Instance.ExecuteSync(message, null);
             break;
           case ActionType.Whisper:
-            cInfo.SendPackage(NetPackageManager.GetPackage<NetPackageChat>().Setup(EChatType.Whisper, -1, message, null,
-              EMessageSender.None, GeneratedTextManager.BbCodeSupportMode.Supported));
+            if (sender.ClientInfo is null) {
+              GameManager.Instance.ChatMessageClient(EChatType.Whisper, -1, message, new List<int> {sender.EntityId}, EMessageSender.None, GeneratedTextManager.BbCodeSupportMode.Supported);
+            } else {
+              GameManager.Instance.ChatMessageServer(sender.ClientInfo, EChatType.Whisper, -1, message, new List<int> {sender.EntityId}, EMessageSender.None);
+            }
             break;
           case ActionType.Broadcast:
-            GameManager.Instance.ChatMessageServer(cInfo, EChatType.Global, -1, message, null, EMessageSender.None);
+            if (sender.ClientInfo is null) {
+              GameManager.Instance.ChatMessageClient(EChatType.Global, -1, message, null, EMessageSender.None, GeneratedTextManager.BbCodeSupportMode.Supported);
+            } else {
+              GameManager.Instance.ChatMessageServer(sender.ClientInfo, EChatType.Global, -1, message, null, EMessageSender.None);
+            }
             break;
           case ActionType.Unknown:
           default:

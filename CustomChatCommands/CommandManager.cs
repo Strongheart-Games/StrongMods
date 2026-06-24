@@ -62,6 +62,7 @@ namespace CustomChatCommands {
       } catch (Exception ex) {
         Log.Error($"[CustomChatCommands] Error parsing CustomChatCommands XML: {ex.Message}");
       }
+      Log.Out($"[CustomChatCommands] Loaded {CommandsCache.Count} commands: {string.Join(",", CommandsCache.Keys)}");
     }
 
     private static void ParseActionList(XmlNodeList nodes, List<CommandAction> targetList) {
