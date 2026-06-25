@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-  <!-- Let's see if we still need this with 3.0
   <include filename="spawning_progressive_biome_difficulty.xml" />
-  -->
 
   <!-- Spawners reset every day to keep things fresh -->
   <!-- Let's see if we still need this with 3.0
