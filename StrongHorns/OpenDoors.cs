@@ -35,13 +35,11 @@
         return;
       }
 
-      var currentState = door.IsOpen();
-      var action = currentState ? "Closing" : "Opening";
-      // There's a bug in the regular version of 7DtD that the boolean logic is flipped
-      var newState = GameManager.IsDedicatedServer ? !currentState : currentState;
+      var currentlyOpen = door.IsOpen();
+      var action = currentlyOpen ? "Closing" : "Opening";
       Log.Out($"[StrongHorns] {action} {block.blockName} at {pos}");
       // TODO: Don't animate for slower doors like big wood doors and drawbridges
-      door.SetOpen(newState, true);
+      door.SetOpen(!currentlyOpen, true);
     }
   }
 }
