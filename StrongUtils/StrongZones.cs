@@ -35,8 +35,8 @@ namespace StrongUtils {
       InitializeChunkCaches();
       Log.Out(
         $"[StrongZones] Loaded {prefabZones?.Count ?? 0} prefab zones and {customZones?.Count ?? 0} custom zones");
-      Log.Out($"[StrongZones] Prefab zones: \n  {string.Join("\n  ", _prefabZones)}");
-      Log.Out($"[StrongZones] Custom zones: \n  {string.Join("\n  ", _customZones)}");
+      // Log.Out($"[StrongZones] Prefab zones: \n  {string.Join("\n  ", _prefabZones)}");
+      // Log.Out($"[StrongZones] Custom zones: \n  {string.Join("\n  ", _customZones)}");
     }
 
     private void InitializeChunkCaches() {
