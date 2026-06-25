@@ -13,7 +13,7 @@
     </recipe>
 
     <conditional>
-      <if cond="mod_loaded('ProjectZ')">
+      <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
         <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
           <ingredient name="resourceResourceSet" count="1" />
         </recipe>
@@ -21,7 +21,7 @@
     </conditional>
 
     <conditional>
-      <if cond="mod_loaded('PootPavillion') and mod_loaded('ProjectZ')">
+      <if cond="mod_loaded('PootPavillion') and (mod_loaded('ProjectZ') or mod_loaded('Z_Bosses'))">
         <recipe name="plantedStrongMushroom1" count="1" craft_time="900" craft_area="farmerStation">
           <ingredient name="plantedMushroom1Sel2" count="1" />
           <ingredient name="resourceDookie" count="10" />

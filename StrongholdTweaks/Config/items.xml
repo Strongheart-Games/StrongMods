@@ -66,7 +66,7 @@
   </append>
 
   <conditional>
-    <if cond="mod_loaded('ProjectZ')">
+    <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
       <append xpath="/items">
         <item name="item_loot_container_charged_elite_strong">
           <property name="Extends" value="item_loot_container_base_strong" />

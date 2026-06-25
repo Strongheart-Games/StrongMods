@@ -243,7 +243,7 @@
 
   <!-- Boss spawns -->
   <conditional>
-    <if cond="mod_loaded('ProjectZ')">
+    <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
       <append xpath="/spawning/biome[@name='pine_forest']">
         <spawn id="boss01" maxcount="1" respawndelay="2.9" time="Night" entitygroup="BossesForestNight" />
       </append>

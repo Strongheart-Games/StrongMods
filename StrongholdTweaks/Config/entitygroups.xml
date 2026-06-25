@@ -1,11 +1,22 @@
 ﻿<config>
   <conditional>
+    <if cond="mod_loaded('AEC_AIO_BOSS_EXTREME_EDITION')">
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesAll']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesNight']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesDowntown']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesForestDowntown']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesForestDowntownNight']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesBurntForest']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+      <remove xpath="/entitygroups/entitygroup[@name='ZombiesDesert']/e[contains(@n,'AEC') or @n='RunningKamikaze']" />
+    </if>
+  </conditional>
+  <conditional>
     <if cond="mod_loaded('V3_ServerSideZombiesLITE')">
       <remove xpath="/entitygroups/entitygroup[not(contains(@name,'Wasteland'))]/e[contains(@n,'PLUS')]" />
     </if>
   </conditional>
   <conditional>
-    <if cond="mod_loaded('ProjectZ')">
+    <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
       <csv xpath="/entitygroups/entitygroup[@name='WildGameForestNight']/text()" delim="\n" op="remove">*Boss*</csv>
       <csv xpath="/entitygroups/entitygroup[@name='EnemyAnimalsForest']/text()" delim="\n" op="remove">*Boss*</csv>
       <csv xpath="/entitygroups/entitygroup[starts-with(@name, 'EnemyAnimals')]/text()" delim="\n" op="remove">boss*</csv>
