@@ -1,6 +1,7 @@
 <config>
   <!-- Remove the intro to buried supplies quest -->
   <!-- TODO: check whether this is still needed in 3.0 -->
+  <!--
   <remove xpath="//quests/quest_list/quest[@id='intro_buried_supplies']" />
   <insertBefore xpath="/quests/quest[@id='quest_whiteRiverCitizen1']/reward">
     <action type="SetCVar">
@@ -9,6 +10,7 @@
       <property name="on_complete" value="true" />
     </action>
   </insertBefore>
+  -->
 
   <!-- Stronghold intro quests -->
   <append xpath="/quests">

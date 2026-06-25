@@ -12,7 +12,7 @@
                group="StrongholdUnlocks" short_description_key="challengeUnlockBedFastTravelShort"
                description_key="challengeUnlockBedFastTravelDesc" reward_text_key="challengeRewardBedTP"
                reward_event="challenge_reward_bed_tp">
-      <objective type="QuestComplete" quest_tag="poi,buried" count="5" />
+      <objective type="QuestComplete" count="5" />
       <objective type="KillByTag" entity_tags="zombie" target_name_key="xuiZombies" count="20" />
     </challenge>
 
