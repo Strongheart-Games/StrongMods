@@ -42,6 +42,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomChatCommands", "Custo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AECInternationalMarketFixes", "AECInternationalMarketFixes\AECInternationalMarketFixes.csproj", "{791AD590-BA3D-45E9-A2ED-493B6CEF729F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongLocks", "StrongLocks\StrongLocks.csproj", "{85873556-03BB-4F43-8CC9-DC090FAA260C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,5 +128,9 @@ Global
 		{791AD590-BA3D-45E9-A2ED-493B6CEF729F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{791AD590-BA3D-45E9-A2ED-493B6CEF729F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{791AD590-BA3D-45E9-A2ED-493B6CEF729F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85873556-03BB-4F43-8CC9-DC090FAA260C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85873556-03BB-4F43-8CC9-DC090FAA260C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85873556-03BB-4F43-8CC9-DC090FAA260C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85873556-03BB-4F43-8CC9-DC090FAA260C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
