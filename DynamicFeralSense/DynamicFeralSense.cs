@@ -20,13 +20,13 @@ namespace DynamicFeralSense {
 
       switch (biome?.m_BiomeType) {
         case BiomeDefinition.BiomeType.PineForest:
-          return 0.2f * multiplier;
+          return 0.0f * multiplier;
         case BiomeDefinition.BiomeType.burnt_forest:
-          return 0.4f * multiplier;
+          return 0.25f * multiplier;
         case BiomeDefinition.BiomeType.Desert:
-          return 0.6f * multiplier;
+          return 0.5f * multiplier;
         case BiomeDefinition.BiomeType.Snow:
-          return 0.8f * multiplier;
+          return 0.75f * multiplier;
         case BiomeDefinition.BiomeType.Wasteland:
           return multiplier;
         default:
