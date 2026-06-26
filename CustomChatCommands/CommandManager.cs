@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using JetBrains.Annotations;
+using UniLinq;
 
 namespace CustomChatCommands {
   public static class CommandManager {
     private static FileSystemWatcher s_watcher;
     public static string FilePath { get; private set; }
 
-    public static Dictionary<string, ChatCommand> Commands { get; private set; } =
-      new(StringComparer.OrdinalIgnoreCase);
+    public static Dictionary<string, ChatCommand> Commands { get; private set; } = NewCommandsDict();
+
+    private static Dictionary<string, ChatCommand> NewCommandsDict() {
+      return new Dictionary<string, ChatCommand>(StringComparer.OrdinalIgnoreCase);
+    }
 
     public static void Init(string filePath) {
       FilePath = filePath;
@@ -26,7 +31,7 @@ namespace CustomChatCommands {
     }
 
     private static void LoadCommandsFromXml() {
-      Dictionary<string, ChatCommand> commands = new();
+      Dictionary<string, ChatCommand> commands = NewCommandsDict();
       try {
         Log.Out($"[CustomChatCommands] Loading {FilePath}...");
         var xmlDoc = new XmlDocument();
@@ -47,6 +52,8 @@ namespace CustomChatCommands {
             continue;
           }
 
+          List<string> aliases = cmdNode.Attributes["aliases"]?.Value?.Split(",").ToList() ?? new List<string>();
+
           var description = cmdNode.Attributes["description"]?.Value ?? string.Empty;
 
           var minAdmin = 1000;
@@ -56,6 +63,7 @@ namespace CustomChatCommands {
 
           var newCommand = new ChatCommand {
             Trigger = trigger,
+            Aliases = aliases,
             Description = description,
             MinAdminLevel = minAdmin
           };
@@ -78,6 +86,9 @@ namespace CustomChatCommands {
           ParseActionList(cmdNode.SelectNodes("Execute/Action"), newCommand.Actions);
 
           commands[trigger] = newCommand;
+          foreach (var alias in newCommand.Aliases) {
+            commands[alias] = newCommand;
+          }
         }
       } catch (Exception ex) {
         Log.Error($"[CustomChatCommands] Error parsing CustomChatCommands XML: {ex.Message}");
@@ -88,7 +99,7 @@ namespace CustomChatCommands {
     }
 
     private static void ParseActionList(XmlNodeList nodes, List<CommandAction> targetList) {
-      if (nodes == null) {
+      if (nodes is null) {
         return;
       }
 

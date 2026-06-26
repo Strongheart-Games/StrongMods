@@ -21,6 +21,7 @@ namespace CustomChatCommands {
 
   public class ChatCommand {
     public string Trigger { get; set; }
+    public List<string> Aliases { get; set; } = new();
     public string Description { get; set; }
     public int MinAdminLevel { get; set; } = 1000;
 
