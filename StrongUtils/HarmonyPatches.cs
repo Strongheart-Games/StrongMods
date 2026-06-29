@@ -160,6 +160,7 @@ namespace StrongUtils {
       ModEvents.GameAwake.RegisterHandler(ServerLifecycle.OnGameAwake);
       ModEvents.GameStartDone.RegisterHandler(ServerLifecycle.OnGameStartDone);
       ModEvents.GameShutdown.RegisterHandler(ServerLifecycle.OnGameShutdown);
+      ModEvents.PlayerSpawnedInWorld.RegisterHandler(BackpackItemsOnEnterGame.OnPlayerSpawnedInWorld);
       ModEvents.PlayerDisconnected.RegisterHandler(PlayerDamage.HandlePlayerDisconnected);
       ModEvents.EntityKilled.RegisterHandler(PlayerDamage.HandleEntityKilled);
     }

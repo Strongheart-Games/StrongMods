@@ -6,47 +6,60 @@
     <triggered_effect trigger="onSelfFirstSpawn" action="AddBuff" target="self" buff="buffEntitySpawnHeal" />
   </insertAfter>
 
-  <!-- Adjust spawn items -->
+  <!-- Adjust starter items -->
   <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="remove">
     drinkJarBoiledWater,drinkJarBoiledWater=2,foodCanChili,medicalFirstAidBandage,noteDuke01
   </csv>
   <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
-    map_stronghold,drinkJarYuccaJuice=5,foodBaconAndEggs=5,medicalFirstAidBandage=5
+    foodBaconAndEggs=5,drinkJarYuccaJuice=5,medicalFirstAidBandage=5
   </csv>
+  <insertAfter xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']">
+    <!-- These items should go to your backpack instead of your toolbar so that they can't be deleted on death -->
+    <property class="BackpackItemsOnEnterGame">
+      <property name="GameModeSurvival" value="map_stronghold" />
+      <property name="GameModeSurvivalSP" value="map_stronghold" />
+      <property name="GameModeSurvivalMP" value="map_stronghold" />
+    </property>
+  </insertAfter>
 
-  <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
-  <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab</setattribute>
+  <conditional>
+    <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
+      <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
+      <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab
+      </setattribute>
 
-  <append xpath="/entity_classes/entity_class[@name='ChargedEliteLootContainer']">
-    <property name="loot_item_name_strong" value="item_loot_container_charged_elite_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='InfernalEliteLootContainer']">
-    <property name="loot_item_name_strong" value="item_loot_container_infernal_elite_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='smallMiniBossLootContainer']">
-    <property name="loot_item_name_strong" value="item_loot_container_small_mini_boss_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']">
-    <property name="loot_item_name_strong" value="item_loot_container_mini_boss_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerShocker']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_shocker_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerMutantHog']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_mutant_hog_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerBull']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_bull_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerVeteran']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_veteran_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerAncientYeti']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_ancient_yeti_strong" />
-  </append>
-  <append xpath="/entity_classes/entity_class[@name='BossLootContainerCarrier']">
-    <property name="loot_item_name_strong" value="item_loot_container_boss_carrier_strong" />
-  </append>
+      <append xpath="/entity_classes/entity_class[@name='ChargedEliteLootContainer']">
+        <property name="loot_item_name_strong" value="item_loot_container_charged_elite_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='InfernalEliteLootContainer']">
+        <property name="loot_item_name_strong" value="item_loot_container_infernal_elite_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='smallMiniBossLootContainer']">
+        <property name="loot_item_name_strong" value="item_loot_container_small_mini_boss_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']">
+        <property name="loot_item_name_strong" value="item_loot_container_mini_boss_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerShocker']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_shocker_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerMutantHog']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_mutant_hog_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerBull']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_bull_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerVeteran']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_veteran_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerAncientYeti']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_ancient_yeti_strong" />
+      </append>
+      <append xpath="/entity_classes/entity_class[@name='BossLootContainerCarrier']">
+        <property name="loot_item_name_strong" value="item_loot_container_boss_carrier_strong" />
+      </append>
+    </if>
+  </conditional>
 
   <append xpath="/entity_classes">
     <entity_class name="animalRabbitGolf" extends="animalRabbit">

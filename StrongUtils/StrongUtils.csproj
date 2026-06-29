@@ -76,6 +76,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackpackItemsOnEnterGame.cs" />
     <Compile Include="BuffNoLoot.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="Commands\DenyAllCommand.cs" />
