@@ -76,6 +76,12 @@ namespace AutoCollectLoot {
         return false;
       }
 
+      var itemStack = new ItemStack(itemValue, 1);
+
+      if (!player.isEntityRemote) {
+        return player.bag.AddItem(itemStack);
+      }
+
       ClientInfo client = ConnectionManager.Instance.Clients.ForEntityId(player.entityId);
       if (client is null) {
         return false;
@@ -85,7 +91,7 @@ namespace AutoCollectLoot {
       var loot = (EntityItem)EntityFactory.CreateEntity(new EntityCreationData {
         entityClass = EntityClass.FromString("item"),
         id = EntityFactory.nextEntityID++,
-        itemStack = new ItemStack(itemValue, 1),
+        itemStack = itemStack,
         pos = player.position,
         rot = new Vector3(20f, 0f, 20f),
         lifetime = 60 * 20, // 20 minutes, in case their inventory is full
