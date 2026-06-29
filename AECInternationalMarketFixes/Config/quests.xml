@@ -5,12 +5,8 @@
       <append xpath="/quests">
         <quest id="aec_im_tutorial">
           <property name="name_key" value="quest_aec_im_tutorial" />
-          <property name="description_key" value="quest_aec_im_tutorial_desc" />
           <property name="offer_key" value="quest_aec_im_tutorial_offer" />
-          <property name="subtitle_key" value="quest_aec_im_tutorial_subtitle" />
-          <property name="statement_key" value="quest_aec_im_tutorial_statement" />
-          <property name="response_key" value="quest_aec_im_tutorial_response" />
-          <property name="completion_key" value="quest_aec_im_tutorial_completion" />
+          <property name="description_key" value="quest_aec_im_tutorial_desc" />
           <property name="icon" value="ui_game_symbol_quest" />
           <property name="category_key" value="quest" />
           <property name="repeatable" value="true" />

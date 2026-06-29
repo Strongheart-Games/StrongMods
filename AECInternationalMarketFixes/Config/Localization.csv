@@ -1,13 +1,10 @@
 ﻿Key,Source,Context,English
-aecIMTutorialBook,items,Item,International Market Starter Guide
-aecIMTutorialBookDesc,items,Item,"This guide explains how to earn your first Crypto Miner using the International Market."
-quest_aec_im_tutorial,quests,Quest,International Market Tutorial
-quest_aec_im_tutorial_desc,quests,Quest,"Learn the basics of the International Market. Harvest Zombie Ears, exchange them for a Crypto Miner, and begin generating passive income."
-quest_aec_im_tutorial_offer,quests,Quest,"Welcome to the International Market.\n\nThe old world may be gone, but commerce survived.\n\nEvery zombie you kill carries something of value. Collect enough Zombie Ears and you can exchange them for equipment through the International Market.\n\nYour first goal is to earn a Crypto Miner. Once it's running, you'll begin generating cryptocurrency that can be spent on supplies delivered straight to your base."
-quest_aec_im_tutorial_subtitle,quests,Quest,Learn how the International Market works.
-quest_aec_im_tutorial_statement,quests,Quest,"Start by collecting 100 Zombie Ears. If you don't already have an International Market terminal, you'll need to build one first. Then use it to request a Crypto Miner."
-quest_aec_im_tutorial_response,quests,Quest,"Sounds simple enough. I'll start collecting ears."
-quest_aec_im_tutorial_completion,quests,Quest,"Well done.\n\nYou've taken your first step into the International Market. Your Crypto Miner will steadily generate cryptocurrency while it's powered, allowing you to purchase increasingly valuable supplies through the Market.\n\nHappy trading."
+aecIMTutorialBook,items,Item,International Market Tutorial
+aecIMTutorialBookDesc,items,Item,"Starts a quest to learn the basics of using the [DECEA3]International Market[-]."
+quest_aec_im_tutorial,quests,Quest,[DECEA3]International Market[-] Tutorial
+quest_aec_im_tutorial_offer,quests,Quest,"Learn the basics of the International Market. Harvest [DECEA3]Zombie Ears[-], exchange them for a [DECEA3]Crypto Miner[-], and begin generating passive income."
+quest_aec_im_tutorial_desc,quests,Quest,"Welcome to the International Market.\n\nThe old world may be gone, but commerce survived...and adapted.\n\nThrough the International Market, you can request thousands of different items by air drop, including food, medicine, building supplies, tools, and even vehicles.\n\nThis tutorial will teach you how to craft an [DECEA3]International Market Terminal[-] and use it to request your first [DECEA3]Crypto Miner[-]. You'll pay for it with [DECEA3]Zombie Ears[-], the first of many commodities accepted by the Market.\n\nOnce your Crypto Miner is running, you'll be ready to collect [DECEA3]Connection Cards[-] from participating nations. These unlock additional cryptocurrencies to mine, allowing you to purchase increasingly valuable items through the Market."
+internationalMarket,blocks,Block,International Market Terminal
 questItem_blackMarket,items,Request,[DECEA3]zIM[-] Airdrop Request for [DECEA3]Black Market[-]
 questNameKey_AirdropRequest,Quest,Quest Info,[DECEA3]zIM[-] Airdrop Request from [DECEA3]International Market[-]
 questItem_CryptoMiner,items,Request,[DECEA3]zIM[-] Airdrop Request for [DECEA3]Crypto Miner[-]
