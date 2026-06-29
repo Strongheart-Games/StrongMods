@@ -8,7 +8,7 @@
 
   <!-- Adjust starter items -->
   <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="remove">
-    drinkJarBoiledWater,drinkJarBoiledWater=2,foodCanChili,medicalFirstAidBandage,noteDuke01
+    drinkJarBoiledWater,drinkJarBoiledWater=2,foodCanChili,medicalFirstAidBandage,noteDuke01,aecIMTutorialBook
   </csv>
   <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
     foodBaconAndEggs=5,drinkJarYuccaJuice=5,medicalFirstAidBandage=5
@@ -16,9 +16,9 @@
   <insertAfter xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']">
     <!-- These items should go to your backpack instead of your toolbar so that they can't be deleted on death -->
     <property class="BackpackItemsOnEnterGame">
-      <property name="GameModeSurvival" value="map_stronghold" />
-      <property name="GameModeSurvivalSP" value="map_stronghold" />
-      <property name="GameModeSurvivalMP" value="map_stronghold" />
+      <property name="GameModeSurvival" value="map_stronghold,aecIMTutorialBook" />
+      <property name="GameModeSurvivalSP" value="map_stronghold,aecIMTutorialBook" />
+      <property name="GameModeSurvivalMP" value="map_stronghold,aecIMTutorialBook" />
     </property>
   </insertAfter>
 

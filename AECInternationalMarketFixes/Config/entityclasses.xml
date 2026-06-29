@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <conditional>
+    <if cond="not(mod_loaded('StrongholdTweaks'))">
+      <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
+        aecIMTutorialBook
+      </csv>
+    </if>
+  </conditional>
+</config>

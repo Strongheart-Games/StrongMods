@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <conditional>
+    <if cond="mod_loaded('AEC_InternationalMarket')">
+      <append xpath="/quests">
+        <quest id="aec_im_tutorial">
+          <property name="name_key" value="quest_aec_im_tutorial" />
+          <property name="description_key" value="quest_aec_im_tutorial_desc" />
+          <property name="offer_key" value="quest_aec_im_tutorial_offer" />
+          <property name="subtitle_key" value="quest_aec_im_tutorial_subtitle" />
+          <property name="statement_key" value="quest_aec_im_tutorial_statement" />
+          <property name="response_key" value="quest_aec_im_tutorial_response" />
+          <property name="completion_key" value="quest_aec_im_tutorial_completion" />
+          <property name="icon" value="ui_game_symbol_quest" />
+          <property name="category_key" value="quest" />
+          <property name="repeatable" value="true" />
+          <property name="shareable" value="false" />
+          <property name="add_to_tier_complete" value="false" />
+
+          <objective type="Fetch" id="zombieEar" value="100" phase="1" />
+
+          <objective type="Craft" id="internationalMarket" value="1" phase="2" optional="true" />
+          <objective type="BlockPlace" id="internationalMarket" value="1" phase="2" optional="true" />
+          <objective type="Craft" id="questItem_CryptoMiner" value="1" phase="2" />
+
+          <objective type="Fetch" id="cryptoMiner" value="1" phase="3" />
+          <objective type="BlockPlace" id="cryptoMiner" value="1" phase="3" />
+
+          <reward type="Exp" value="5000" />
+        </quest>
+      </append>
+    </if>
+  </conditional>
+</config>
