@@ -78,7 +78,8 @@
   <ItemGroup>
     <Compile Include="ModApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StrongVehicleLocks.cs" />
+    <Compile Include="StrongBlockLocks.cs" />
+    <Compile Include="StrongEntityLocks.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".template.config\template.json" />
