@@ -13,8 +13,8 @@ namespace StrongUtils {
         Block block = __instance.blockValue.Block;
         Vector3i pos = __instance.ToWorldPos();
         PrefabInstance poi = GameManager.Instance.World.GetPOIAtPosition(pos);
-        Log.Warning(
-          $"[SignDiagnostics] Could not load canvas block {block.blockName} at {pos} in {poi.prefab.LocalizedEnglishName} ({poi.prefab.PrefabName}):\n{__exception}");
+        var location = poi is null ? "" : $" in {poi.prefab.LocalizedEnglishName} ({poi.prefab.PrefabName})";
+        Log.Warning($"[SignDiagnostics] Could not load canvas block {block.blockName}{location}:\n{__exception}");
 
         return null;
       }
