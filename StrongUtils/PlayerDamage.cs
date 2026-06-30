@@ -14,9 +14,8 @@ namespace StrongUtils {
     ///   Records a damage event for the given player, keeping only the most recent
     ///   <see cref="MaxEvents" /> entries. Thread-safe.
     /// </summary>
-    public static void RecordDamage(EntityPlayer player, DamageSource source,
-      int strength, bool crit, float impulseScale) {
-      if (player is null) {
+    public static void RecordDamage(EntityPlayer player, DamageSource source, int strength, bool crit, float impulseScale) {
+      if (player is null || ConnectionManager.Instance.IsClient) {
         return;
       }
 
@@ -96,6 +95,10 @@ namespace StrongUtils {
     }
 
     public static void ValidateDamageEntityPackage(NetPackageDamageEntity package) {
+      if (ConnectionManager.Instance.IsClient) {
+        return;
+      }
+
       Entity entity = GameManager.Instance?.World?.GetEntity(package.entityId);
 
       if (entity is not EntityPlayer player) {
