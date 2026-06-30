@@ -99,6 +99,7 @@
     <Compile Include="ServerLifecycleCommands.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerLifecycle.cs" />
+    <Compile Include="SignDiagnostics.cs" />
     <Compile Include="SpawnScaler.cs" />
     <Compile Include="StrongAudit.cs" />
     <Compile Include="StrongZones.cs" />
