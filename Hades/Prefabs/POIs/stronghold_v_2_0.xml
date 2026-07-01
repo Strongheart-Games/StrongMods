@@ -8,12 +8,12 @@
   <property name="DifficultyTier" value="0" />
   <property name="ShowQuestClearCount" value="1" />
   <property name="TraderArea" value="False" />
-  <property name="PrefabSize" value="102, 36, 100" />
+  <property name="PrefabSize" value="102, 39, 100" />
   <property name="RotationToFaceNorth" value="2" />
   <property name="Zoning" value="none" />
-  <property name="EditorGroups" value="roads/signs" />
+  <property name="EditorGroups" value="Wilderness" />
   <property name="SleeperVolumeSize" value="5, 1, 1#5, 4, 5" />
-  <property name="SleeperVolumeStart" value="49, 0, 0#49, 1, -2" />
+  <property name="SleeperVolumeStart" value="49, 3, 0#49, 4, -2" />
   <property name="SleeperVolumeGroupId" value="0,0" />
   <property name="SleeperVolumeGroup" value="GroupGenericZombie,5,6,GroupGenericZombie,5,6" />
   <property name="SleeperIsLootVolume" value="False,False" />
@@ -22,6 +22,15 @@
   <property name="SleeperVolumeTriggeredBy" value=" # " />
   <property name="Tags" value="wilderness" />
   <property name="QuestTags" value="find_stronghold" />
+  <property name="YOffset" value="-4" />
+  <property name="POIMarkerSize" value="7, 1, 1" />
+  <property name="POIMarkerStart" value="48, 3, 0" />
+  <property name="POIMarkerGroup" value="roadexit" />
+  <property name="POIMarkerTags" value="" />
+  <property name="POIMarkerType" value="RoadExit" />
+  <property name="POIMarkerPartToSpawn" value="" />
+  <property name="POIMarkerPartRotations" value="2" />
+  <property name="POIMarkerPartSpawnChance" value="1" />
   <property class="StrongZones">
     <property name="Tags" value="no_reset,no_hostiles,no_claims,buff" />
     <property name="Buff" value="buff_in_stronghold" />
@@ -30,8 +39,8 @@
   </property>
   <property class="Stats">
     <property name="LightsVolume" value="1809.557" />
-    <property name="TotalVertices" value="710793" />
-    <property name="TotalTriangles" value="360630" />
+    <property name="TotalVertices" value="737261" />
+    <property name="TotalTriangles" value="402670" />
     <property class="BlockEntities">
       <property name="Vertices" value="70355" />
       <property name="Triangles" value="21654" />
@@ -57,25 +66,25 @@
       <property name="Triangles" value="0" />
     </property>
     <property class="ChunkMeshes5">
-      <property name="Vertices" value="5798" />
-      <property name="Triangles" value="9704" />
+      <property name="Vertices" value="32266" />
+      <property name="Triangles" value="51744" />
     </property>
   </property>
   <property class="IndexedBlockOffsets">
     <property class="POILight">
-      <property name="0" value="85, 1, 8" />
+      <property name="0" value="85, 4, 8" />
     </property>
     <property class="challenge_polymers">
-      <property name="0" value="56, 1, 82" />
+      <property name="0" value="56, 4, 82" />
     </property>
     <property class="challenge_mech_parts">
-      <property name="0" value="51, 2, 88" />
-      <property name="1" value="51, 10, 88" />
-      <property name="2" value="51, 18, 88" />
-      <property name="3" value="51, 26, 88" />
+      <property name="0" value="51, 5, 88" />
+      <property name="1" value="51, 13, 88" />
+      <property name="2" value="51, 21, 88" />
+      <property name="3" value="51, 29, 88" />
     </property>
     <property class="TraderOnOff">
-      <property name="0" value="72, 1, 76" />
+      <property name="0" value="72, 4, 76" />
     </property>
   </property>
 </prefab>
