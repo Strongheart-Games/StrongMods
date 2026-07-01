@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <set xpath="/rwgmixer/prefab_spawn_adjust[starts-with(@partial_name,'trader_')]/@max_count">8</set>
+  <append xpath="/rwgmixer">
+    <prefab_spawn_adjust partial_name="stronghold_v_2_0" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+    <prefab_spawn_adjust partial_name="piddlys_hole" biomeTags="forest" bias="20" min_count="1" max_count="1" />
+  </append>
+</config>

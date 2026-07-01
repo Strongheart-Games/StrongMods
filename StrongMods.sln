@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongLocks", "StrongLocks\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthZ", "AuthZ\AuthZ.csproj", "{9951FF29-1B0A-4F33-AFA0-CAEC5FD35B5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hades", "Hades\Hades.csproj", "{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,5 +140,9 @@ Global
 		{9951FF29-1B0A-4F33-AFA0-CAEC5FD35B5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9951FF29-1B0A-4F33-AFA0-CAEC5FD35B5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9951FF29-1B0A-4F33-AFA0-CAEC5FD35B5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

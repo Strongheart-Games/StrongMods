@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\zzzzzzzzzz_$(MSBuildProjectName)</OutputPath>
+    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Mods\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <SavesOutputPath>$(AppData)\7DaysToDie\Saves</SavesOutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
-    <Content Include="**/*" Exclude="*.csproj;Saves/**/*" />
-    <SavesContent Include="Saves/**/*" />
+    <Content Include="**/*" Exclude="*.csproj" />
   </ItemGroup>
-
   <Target Name="Build">
     <Copy SourceFiles="@(Content)"
           DestinationFiles="@(Content->'$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(SavesContent)"
-          DestinationFiles="@(SavesContent->'$(SavesOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
   </Target>
-
+  <!-- Don't remove the directory as it will include un-version-controlled world files
   <Target Name="Clean">
     <RemoveDir Directories="$(OutputPath)" Condition="Exists('$(OutputPath)')" />
-  </Target>
+  </Target> -->
 </Project>

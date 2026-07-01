@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/sandbox_overrides">
+    <preset name="Hades S6"
+            description="Settings for Stronghold Hades Season 6."
+            code="AAAGABGACGADGAEIARJASDAWCAYDAZBBBABDIAMKBSEBTFANBAOBBJCBLEBMCBNCBOACVCBWACABCCGCFACOHCXBEKBEXFEPAEQAETIFPH"
+            default="true" />
+  </append>
+</config>

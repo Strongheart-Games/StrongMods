@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CustomChatCommands>
+  <Command trigger="/horde" description="Teleport to the [ff6a02]Community Horde Base[-] in the Pine Forest" minAdminLevel="1000">
+    <Execute>
+      <Action type="console">teleportplayertoprefab {EntityId} hades_s6_horde_base_community</Action>
+    </Execute>
+  </Command>
+
+  <Command trigger="/stronghold" aliases="/sh" description="Teleport to Stronghold." minAdminLevel="1000">
+    <Requirements>
+      <Requirement type="cvar" name="can_tp_to_stronghold" value="1" />
+      <OnUnauthorized>
+        <Action type="whisper">Complete the [ff6a02]Find Stronghold[-] quest to unlock this teleport. Read the map you received on first spawn to start the quest.</Action>
+      </OnUnauthorized>
+    </Requirements>
+
+    <Execute>
+      <Action type="console">teleportplayertoprefab {EntityId} hades_s6_stronghold</Action>
+    </Execute>
+  </Command>
+
+  <Command trigger="/bed" description="Teleport to their bedroll, if set." minAdminLevel="1000">
+    <Requirements>
+      <Requirement type="cvar" name="can_tp_to_bed" value="1" />
+      <OnUnauthorized>
+        <Action type="whisper">Complete the [ff6a02]Unlock Fast Travel: Bed[-] challenge to unlock this teleport. You can find this challenge in the Stronghold challenges tab.
+        </Action>
+      </OnUnauthorized>
+    </Requirements>
+
+    <Execute>
+      <Action type="console">teleportplayertobed {EntityId}</Action>
+    </Execute>
+  </Command>
+</CustomChatCommands>

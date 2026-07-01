@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WalkerSim xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://zeh.matt/WalkerSim WalkerSimSchema.xsd" Version="5" xmlns="http://zeh.matt/WalkerSim">
+  <Logging>
+    <General>true</General>
+    <Spawns>false</Spawns>
+    <Despawns>false</Despawns>
+    <EntityClassSelection>false</EntityClassSelection>
+    <Events>false</Events>
+  </Logging>
+  <RandomSeed>665992037</RandomSeed>
+  <PopulationDensity>250</PopulationDensity>
+  <SpawnActivationRadius>96</SpawnActivationRadius>
+  <StartAgentsGrouped>true</StartAgentsGrouped>
+  <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
+  <SoundDistanceScale>1</SoundDistanceScale>
+  <AgentStartPosition>RandomLocation</AgentStartPosition>
+  <AgentRespawnPosition>RandomLocation</AgentRespawnPosition>
+  <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
+  <SpawnProtectionTime>300</SpawnProtectionTime>
+  <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
+  <MaxSpawnedZombies>85%</MaxSpawnedZombies>
+  <PopulationStartPercent>25</PopulationStartPercent>
+  <FullPopulationAtDay>14</FullPopulationAtDay>
+  <Systems>
+    <System Name="Pine" Weight="1" GroupSize="1" StartPosition="Global" StartBiome="PineForest" RespawnPosition="Global" RespawnBiome="PineForest" SpeedScale="1"
+            PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Bounce" Color="#00FF00">
+      <Processor Type="StickToBiome" Distance="50" Power="0.2" Param1="3" Param2="3" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.1" Param1="50" Param2="600" />
+      <Processor Type="WorldEvents" Distance="50" Power="0.1" />
+      <Processor Type="AvoidAnyGroup" Distance="15" Power="1" />
+    </System>
+    <System Name="Burnt" Weight="2" GroupSize="2" StartPosition="Global" StartBiome="BurntForest" RespawnPosition="Global" RespawnBiome="BurntForest" SpeedScale="1"
+            PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Bounce" Color="#FF00FF">
+      <Processor Type="StickToBiome" Distance="50" Power="0.2" Param1="9" Param2="9" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.1" Param1="50" Param2="600" />
+      <Processor Type="WorldEvents" Distance="50" Power="0.1" />
+      <Processor Type="AvoidAnyGroup" Distance="15" Power="1" />
+    </System>
+    <System Name="Desert" Weight="3" GroupSize="3" StartPosition="Global" StartBiome="Desert" RespawnPosition="Global" RespawnBiome="Desert" SpeedScale="1"
+            PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Bounce" Color="#FFFF77">
+      <Processor Type="StickToBiome" Distance="50" Power="0.2" Param1="5" Param2="5" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.1" Param1="50" Param2="600" />
+      <Processor Type="WorldEvents" Distance="50" Power="0.1" />
+      <Processor Type="AvoidAnyGroup" Distance="15" Power="1" />
+    </System>
+    <System Name="Snow" Weight="5" GroupSize="5" StartPosition="Global" StartBiome="Snow" RespawnPosition="Global" RespawnBiome="Snow" SpeedScale="1" PostSpawnBehavior="Wander"
+            PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Bounce" Color="#FFFFFF">
+      <Processor Type="StickToBiome" Distance="50" Power="0.2" Param1="1" Param2="3" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.1" Param1="50" Param2="600" />
+      <Processor Type="WorldEvents" Distance="50" Power="0.1" />
+      <Processor Type="AvoidAnyGroup" Distance="15" Power="1" />
+    </System>
+    <System Name="Wasteland" Weight="8" GroupSize="8" StartPosition="Global" StartBiome="Wasteland" RespawnPosition="Global" RespawnBiome="Wasteland" SpeedScale="1"
+            PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Bounce" Color="#ffa800">
+      <Processor Type="StickToBiome" Distance="50" Power="0.2" Param1="8" Param2="8" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.1" Param1="50" Param2="600" />
+      <Processor Type="WorldEvents" Distance="50" Power="0.1" />
+      <Processor Type="AvoidAnyGroup" Distance="15" Power="1" />
+    </System>
+  </Systems>
+</WalkerSim>
