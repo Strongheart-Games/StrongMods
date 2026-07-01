@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthZ", "AuthZ\AuthZ.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hades", "Hades\Hades.csproj", "{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerSpawnedTraders", "PlayerSpawnedTraders\PlayerSpawnedTraders.csproj", "{25731978-87DD-4A91-9830-16C92FBFE4DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,5 +148,9 @@ Global
 		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAAE66FC-E15E-41D2-AF00-B5C47F28DCEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25731978-87DD-4A91-9830-16C92FBFE4DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25731978-87DD-4A91-9830-16C92FBFE4DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25731978-87DD-4A91-9830-16C92FBFE4DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25731978-87DD-4A91-9830-16C92FBFE4DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

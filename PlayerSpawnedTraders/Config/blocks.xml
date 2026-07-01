@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <insertAfter xpath="/blocks/block[@name='spawnTrader']">
+    <block name="spawnTraderRekt">
+      <property name="Extends" value="spawnTrader"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="SpawnClass" value="npcTraderRekt" />
+    </block>
+    <block name="spawnTraderJen">
+      <property name="Extends" value="spawnTrader"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="SpawnClass" value="npcTraderJen" />
+    </block>
+    <block name="spawnTraderBob">
+      <property name="Extends" value="spawnTrader"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="SpawnClass" value="npcTraderBob" />
+    </block>
+    <block name="spawnTraderHugh">
+      <property name="Extends" value="spawnTrader"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="SpawnClass" value="npcTraderHugh" />
+    </block>
+    <block name="spawnTraderJoel">
+      <property name="Extends" value="spawnTrader"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="SpawnClass" value="npcTraderJoel" />
+    </block>
+
+    <block name="traderRektPlaceable">
+      <property name="Extends" value="decoMannequinMale"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="AllowedRotations" value="Basic90"/>
+      <property name="CustomIcon" value="signTraderRektExteriorLarge"/>
+      <property name="DescriptionKey" value="traderRektPlaceableDesc"/>
+      <property name="Class" value="PlantGrowing" />
+      <property class="PlantGrowing">
+        <property name="IsGrowOnTopEnabled" value="false"/>
+        <property name="Next" value="spawnTraderRekt"/>
+        <property name="FertileLevel" value="0"/>
+        <property name="LightLevelGrow" value="0"/>
+        <property name="LightLevelStay" value="0"/>
+        <property name="IsRandom" value="false"/>
+        <property name="GrowthRate" value="0.02"/>
+      </property>
+    </block>
+    <block name="traderJenPlaceable">
+      <property name="Extends" value="decoMannequinFemale"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="AllowedRotations" value="Basic90"/>
+      <property name="CustomIcon" value="signTraderJenExterior"/>
+      <property name="DescriptionKey" value="traderJenPlaceableDesc"/>
+      <property name="Class" value="PlantGrowing" />
+      <property class="PlantGrowing">
+        <property name="IsGrowOnTopEnabled" value="false"/>
+        <property name="Next" value="spawnTraderJen"/>
+        <property name="FertileLevel" value="0"/>
+        <property name="LightLevelGrow" value="0"/>
+        <property name="LightLevelStay" value="0"/>
+        <property name="IsRandom" value="false"/>
+        <property name="GrowthRate" value="0.02"/>
+      </property>
+    </block>
+    <block name="traderBobPlaceable">
+      <property name="Extends" value="decoMannequinMale"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="AllowedRotations" value="Basic90"/>
+      <property name="CustomIcon" value="signTraderBobExteriorLarge"/>
+      <property name="DescriptionKey" value="traderBobPlaceableDesc"/>
+      <property name="Class" value="PlantGrowing" />
+      <property class="PlantGrowing">
+        <property name="IsGrowOnTopEnabled" value="false"/>
+        <property name="Next" value="spawnTraderBob"/>
+        <property name="FertileLevel" value="0"/>
+        <property name="LightLevelGrow" value="0"/>
+        <property name="LightLevelStay" value="0"/>
+        <property name="IsRandom" value="false"/>
+        <property name="GrowthRate" value="0.02"/>
+      </property>
+    </block>
+    <block name="traderHughPlaceable">
+      <property name="Extends" value="decoMannequinMale"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="AllowedRotations" value="Basic90"/>
+      <property name="CustomIcon" value="signTraderHughExterior"/>
+      <property name="DescriptionKey" value="traderHughPlaceableDesc"/>
+      <property name="Class" value="PlantGrowing" />
+      <property class="PlantGrowing">
+        <property name="IsGrowOnTopEnabled" value="false"/>
+        <property name="Next" value="spawnTraderHugh"/>
+        <property name="FertileLevel" value="0"/>
+        <property name="LightLevelGrow" value="0"/>
+        <property name="LightLevelStay" value="0"/>
+        <property name="IsRandom" value="false"/>
+        <property name="GrowthRate" value="0.02"/>
+      </property>
+    </block>
+    <block name="traderJoelPlaceable">
+      <property name="Extends" value="decoMannequinMale"/>
+      <property name="CreativeMode" value="None"/>
+      <property name="AllowedRotations" value="Basic90"/>
+      <property name="CustomIcon" value="signTraderJoelExteriorLarge"/>
+      <property name="DescriptionKey" value="traderJoelPlaceableDesc"/>
+      <property name="Class" value="PlantGrowing" />
+      <property class="PlantGrowing">
+        <property name="IsGrowOnTopEnabled" value="false"/>
+        <property name="Next" value="spawnTraderJoel"/>
+        <property name="FertileLevel" value="0"/>
+        <property name="LightLevelGrow" value="0"/>
+        <property name="LightLevelStay" value="0"/>
+        <property name="IsRandom" value="false"/>
+        <property name="GrowthRate" value="0.02"/>
+      </property>
+    </block>
+
+    <block name="traderPlaceableVariantHelper">
+      <property name="Extends" value="traderJenPlaceable"/>  <!-- This becomes the default -->
+      <property name="CreativeMode" value="Player"/>
+      <property name="DescriptionKey" value="traderPlaceableVariantHelperDesc"/>
+      <property name="CustomIcon" value="cntCashRegister"/>
+      <property name="CustomIconTint" value="220,220,220"/>
+      <property name="ItemTypeIcon" value="all_blocks"/>
+      <property name="SelectAlternates" value="true"/>
+      <property name="PlaceAltBlockValue" value="traderRektPlaceable,traderJenPlaceable,traderBobPlaceable,traderHughPlaceable,traderJoelPlaceable"/>
+      <property name="SellableToTrader" value="false"/>
+      <property name="SortOrder1" value="U200"/>
+      <property name="SortOrder2" value="0000"/>
+      <property name="FilterTags" value="MC_playerBlocks,SC_playerHelpers"/>
+    </block>
+  </insertAfter>
+</config>

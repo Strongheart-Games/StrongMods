@@ -1,0 +1,8 @@
+﻿Key,Source,Type,english
+traderPlaceableVariantHelper,blocks,Block,Placeable Trader
+traderPlaceableVariantHelperDesc,blocks,Block,"A placeable trader.\n\nSelect which trader you'd like to place with the [ff0000]R[-] menu. A mannequin will appear to mark the placement and indicate the trader's facing direction. After placement, the mannequin will disappear and the selected trader will spawn in its place.\n\n[00ff00]The trader may take up to 30 seconds to appear[-] after the mannequin vanishes. This is normal behavior.\n\n[00ff00]This trader may not offer all--or any--quests[-] normally available from traders. This is intended behavior; personal traders are meant for trading only.\n\n[ff0000]Once placed, the trader cannot be moved.[-]"
+traderRektPlaceable,blocks,Block,Trader Rekt
+traderJenPlaceable,blocks,Block,Trader Jen
+traderBobPlaceable,blocks,Block,Trader Bob
+traderHughPlaceable,blocks,Block,Trader Hugh
+traderJoelPlaceable,blocks,Block,Trader Joel
