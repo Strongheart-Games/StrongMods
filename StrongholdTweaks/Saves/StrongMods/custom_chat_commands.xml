@@ -2,7 +2,7 @@
 <CustomChatCommands>
   <Command trigger="/horde" description="Teleport to the [ff6a02]Community Horde Base[-] in the Pine Forest" minAdminLevel="1000">
     <Execute>
-      <Action type="console">teleportplayertoprefab {EntityId} hades_s6_horde_base_community</Action>
+      <Action type="console">teleportplayertoprefab {EntityId} piddlys_hole</Action>
     </Execute>
   </Command>
 
@@ -15,7 +15,7 @@
     </Requirements>
 
     <Execute>
-      <Action type="console">teleportplayertoprefab {EntityId} hades_s6_stronghold</Action>
+      <Action type="console">teleportplayertoprefab {EntityId} stronghold_v_2_0</Action>
     </Execute>
   </Command>
 
