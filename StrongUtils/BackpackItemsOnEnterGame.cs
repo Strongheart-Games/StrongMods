@@ -16,7 +16,6 @@ namespace StrongUtils {
     private static void SetupStartingBackpackItems(ModEvents.SPlayerSpawnedInWorldData data) {
       if (GameManager.Instance.World.GetEntity(data.EntityId) is not EntityAlive player ||
           player.GetBackpackItemsOnEnterGame().Count == 0) {
-        Log.Out("[BackpackItemsOnEnterGame] No items configured to give");
         return;
       }
 
@@ -67,7 +66,6 @@ namespace StrongUtils {
         List<ItemStack> backpackItems = new();
         if (!entityClass.Properties.Classes.TryGetValue(PropBackpackItemsOnEnterGame,
               out DynamicProperties itemsByGameMode)) {
-          Log.Out("[BackpackItemsOnEnterGame] BackpackItemsOnEnterGame class not found");
           __instance.SetBackpackItemsOnEnterGame(backpackItems);
           return;
         }
@@ -89,7 +87,6 @@ namespace StrongUtils {
           backpackItems.Add(itemStack);
         }
 
-        Log.Out($"[BackpackItemsOnEnterGame] BackpackItemsOnEnterGame: {string.Join(",", backpackItems)}");
         __instance.SetBackpackItemsOnEnterGame(backpackItems);
       }
     }
