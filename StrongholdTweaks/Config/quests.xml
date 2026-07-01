@@ -1,17 +1,4 @@
 <config>
-  <!-- Remove the intro to buried supplies quest -->
-  <!-- TODO: check whether this is still needed in 3.0 -->
-  <!--
-  <remove xpath="//quests/quest_list/quest[@id='intro_buried_supplies']" />
-  <insertBefore xpath="/quests/quest[@id='quest_whiteRiverCitizen1']/reward">
-    <action type="SetCVar">
-      <property name="cvar" value="IntroComplete" />
-      <property name="value" value="1" />
-      <property name="on_complete" value="true" />
-    </action>
-  </insertBefore>
-  -->
-
   <!-- Stronghold intro quests -->
   <append xpath="/quests">
     <quest id="quest_find_stronghold">
@@ -21,7 +8,7 @@
       <property name="subtitle_key" value="quest_find_stronghold_subtitle" />
       <property name="statement_key" value="quest_find_stronghold_statement" />
       <property name="response_key" value="quest_find_stronghold_response" />
-      <property name="completion_key" value="quest_find_stronghold_completion"/>
+      <property name="completion_key" value="quest_find_stronghold_completion" />
       <property name="icon" value="ui_game_symbol_quest" />
       <property name="category_key" value="quest" />
       <property name="repeatable" value="true" />
@@ -42,8 +29,8 @@
       </objective>
 
       <action type="ShowMessageWindow">
-        <property name="message" value="quest_stronghold_found_description"/>
-        <property name="title" value="quest_stronghold_found_description_title"/>
+        <property name="message" value="quest_stronghold_found_description" />
+        <property name="title" value="quest_stronghold_found_description_title" />
         <property name="on_complete" value="true" />
       </action>
 
@@ -54,10 +41,15 @@
       </action>
 
       <reward type="Exp" value="500" />
-      <reward type="Item" id="ironDoorBlockVariantHelper" value="2"/>
-      <reward type="Item" id="cntSteelWritableCrate" value="5"/>
-      <reward type="Item" id="toolCookingPot" value="1"/>
-      <reward type="Item" id="meleeToolPaintToolAdmin" value="1"/>
+      <reward type="Item" id="aecIMTutorialBook" value="1" />
+      <reward type="Item" id="ironDoorBlockVariantHelper" value="1" />
+      <reward type="Item" id="ironHatchBlockVariantHelper" value="1" />
+      <reward type="Item" id="cntSteelWritableCrate" value="5" />
+      <reward type="Item" id="toolCookingPot" value="1" />
+      <reward type="Item" id="meleeToolPaintToolAdmin" value="1" />
     </quest>
+  </append>
+  <append xpath="/quests/quest[@id='quest_whiteRiverCitizen1']">
+    <reward type="Item" id="map_stronghold" value="1" />
   </append>
 </config>

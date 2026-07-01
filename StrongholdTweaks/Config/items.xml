@@ -21,8 +21,30 @@
   <csv xpath="/items/item[@name='meleeMasterTool']/property[@name='Tags']/@value" delim="," op="add">salvagingSkill,ImprovedParsing</csv>
        -->
 
-  <!-- Stronghold intro quest -->
+  <!-- Stronghold intro quests -->
   <append xpath="/items">
+    <item name="noteIntroToHades">
+      <property name="Extends" value="blankNoteMaster"/>
+      <property name="CreativeMode" value="Player"/>
+      <property name="DescriptionKey" value="readTheNote"/>
+      <property name="CustomIcon" value="challengeQuestMaster"/>
+      <property name="CustomIconTint" value="ff6a02" />
+      <property name="NoScrapping" value="true"/>
+      <property name="SoundPickup" value="map_grab"/>
+      <property name="SoundPlace" value="map_place"/>
+      <property class="Action0">
+        <property name="Class" value="Eat"/>
+        <property name="Delay" value="1.0"/>
+        <!-- <property name="UseAnimation" value="false"/> -->
+        <property name="Sound_start" value="read_mod"/>
+        <property name="Sound_in_head" value="true"/>
+        <property name="PromptTitle" value="noteIntroToHades"/>
+        <property name="PromptDescription" value="noteIntroToHadesDesc"/>
+      </property>
+      <effect_group tiered="false">
+        <triggered_effect trigger="onSelfPrimaryActionEnd" action="GiveExp" exp="100"/>
+      </effect_group>
+    </item>
     <item name="map_stronghold">
       <property name="Extends" value="questMaster" />
       <property name="CreativeMode" value="Player" />
