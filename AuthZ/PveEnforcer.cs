@@ -2,10 +2,11 @@
 
 namespace AuthZ {
   public class PveEnforcer {
-    private static bool IsAuthorizedDamage(int targetEntityId, ClientInfo client) {
+    private static bool IsAuthorizedEntityDamage(int targetEntityId, ClientInfo client) {
       Entity targetEntity = GameManager.Instance.World.GetEntity(targetEntityId);
       if (targetEntity is null) {
-        return false;
+        // If there's no entity to damage it's okay to process it as normal
+        return true;
       }
 
       if (targetEntity is EntityPlayer) {
@@ -31,6 +32,10 @@ namespace AuthZ {
         return !hasAttached && vehicle.GetOwner().Equals(client.PlatformId);
       }
 
+      // Things to add:
+      //   * drones
+      //   * robots
+
       return true;
     }
 
@@ -47,7 +52,7 @@ namespace AuthZ {
           return true;
         }
 
-        if (IsAuthorizedDamage(__instance.entityId, __instance.Sender)) {
+        if (IsAuthorizedEntityDamage(__instance.entityId, __instance.Sender)) {
           return true;
         }
 
