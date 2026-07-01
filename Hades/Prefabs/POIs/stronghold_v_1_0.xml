@@ -20,7 +20,7 @@
   <property name="POIMarkerPartToSpawn" value="" />
   <property name="POIMarkerPartRotations" value="2" />
   <property name="POIMarkerPartSpawnChance" value="1" />
-  <property name="Tags" value="wilderness" />
+  <property name="Tags" value="" />  <!-- remove wilderness tag so it doesn't spawn -->
   <property name="QuestTags" value="find_stronghold" />
   <property class="StrongZones">
     <property name="Tags" value="no_reset,no_hostiles,no_claims,buff" />
