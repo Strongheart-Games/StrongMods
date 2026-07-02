@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Valid placeholder variables: {Name} {EntityId} {PlatformId} {EOSId} -->
 <CustomChatCommands>
   <Command trigger="/horde" description="Teleport to the [ff6a02]Community Horde Base[-] in the Pine Forest" minAdminLevel="1000">
     <Execute>
@@ -30,6 +31,18 @@
 
     <Execute>
       <Action type="console">teleportplayertobed {EntityId}</Action>
+    </Execute>
+  </Command>
+
+  <Command trigger="/dronereset" description="Kicks you and wipes your drone data. Use only as a last resort." minAdminLevel="1000">
+    <Execute>
+      <Action type="console">rdd {EntityId}</Action>
+    </Execute>
+  </Command>
+
+  <Command trigger="/resetme" description="Kicks you and wipes your character and all your progression. You may log in again immediately to spawn in fresh." minAdminLevel="1000">
+    <Execute>
+      <Action type="console">rpd {EOSId}</Action>
     </Execute>
   </Command>
 </CustomChatCommands>
