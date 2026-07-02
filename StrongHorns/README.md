@@ -19,3 +19,11 @@ Horns open trader doors.
   * Deploy to host (in single-player this is your game)
   * EAC must be disabled
 * There are no configuration options for now
+
+## Changelog
+
+### 1.0.0
+
+* Initial public release
+* Only works against 7DtD v3.x
+* Compiled and tested against 7DtD v3.0.0 b259
