@@ -7,12 +7,15 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="**/*" Exclude="*.csproj" />
+    <Content Include="**/*" Exclude="*.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Target Name="Build">
+    <!-- TODO: Copy the copy-if-newer condition to all projects -->
     <Copy SourceFiles="@(Content)"
           DestinationFiles="@(Content->'$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
+          Condition="%(Filename)!='' AND (!Exists('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)').Ticks))" />
   </Target>
   <!-- Don't remove the directory as it will include un-version-controlled world files
   <Target Name="Clean">
