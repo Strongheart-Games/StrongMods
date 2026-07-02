@@ -45,6 +45,7 @@
       <reward type="Item" id="ironDoorBlockVariantHelper" value="1" />
       <reward type="Item" id="ironHatchBlockVariantHelper" value="1" />
       <reward type="Item" id="cntSteelWritableCrate" value="5" />
+      <reward type="Item" id="lanternDecorLightBlockVariantHelper" value="2" />
       <reward type="Item" id="cntVendingMachine" value="3" />
       <reward type="Item" id="toolCookingPot" value="1" />
       <reward type="Item" id="meleeToolPaintToolAdmin" value="1" />
