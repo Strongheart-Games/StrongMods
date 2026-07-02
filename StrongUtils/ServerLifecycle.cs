@@ -12,8 +12,9 @@ namespace StrongUtils {
       Log.Out("[StrongUtils] Initialized ConfigManager");
       ServerLifecycleCommands.Init();
       Log.Out("[StrongUtils] Initialized ServerLifecycleCommands");
-      KeyValueStore.KeyValueStore.Init(configDirectory);
-      Log.Out("[StrongUtils] Initialized KeyValueStore");
+      // Fast travel (the only client of KVStore) is disabled for Season 6
+      // KeyValueStore.KeyValueStore.Init(configDirectory);
+      // Log.Out("[StrongUtils] Initialized KeyValueStore");
     }
 
     public static void OnGameStartDone(ref ModEvents.SGameStartDoneData data) {
@@ -22,8 +23,9 @@ namespace StrongUtils {
       }
       StrongZones.Init();
       Log.Out("[StrongUtils] Initialized StrongZones");
-      FastTravel.Init();
-      Log.Out("[StrongUtils] Initialized FastTravel");
+      // Disable fast travel for Season 6
+      // FastTravel.Init();
+      // Log.Out("[StrongUtils] Initialized FastTravel");
       ServerLifecycleCommands.OnGameStartDone();
       Log.Out("[StrongUtils] Done running OnGameStartDone commands");
     }

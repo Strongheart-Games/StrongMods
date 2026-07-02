@@ -69,7 +69,7 @@
       <property name="CustomIcon" value="foodEgg" />
       <property name="CustomIconTint" value="ff6a02" />
       <property name="DescriptionKey" value="item_opal_of_ophelia_desc" />
-      <property name="CreativeMode" value="Dev" />
+      <property name="CreativeMode" value="None" />  <!-- Hide Opals for Season 6 -->
       <property name="EconomicValue" value="0" />
       <property class="Action0">
         <property name="Class" value="Eat" />

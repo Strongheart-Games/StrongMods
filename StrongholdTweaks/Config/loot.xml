@@ -7,6 +7,7 @@
     </if>
   </conditional>
 
+  <!-- Disable Opals of Ophelia for Season 6
   <append xpath="/lootcontainers/lootgroup[@name='groupZpackBoss']">
     <item name="item_opal_of_ophelia" count="1" loot_prob_template="med" force_prob="true" />
   </append>
@@ -40,4 +41,5 @@
   <append xpath="/lootcontainers/lootgroup[@name='groupBossCarrier']">
     <item name="item_opal_of_ophelia" count="3,10" loot_prob_template="guaranteed" force_prob="true" />
   </append>
+  -->
 </config>

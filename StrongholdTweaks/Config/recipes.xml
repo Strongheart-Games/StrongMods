@@ -12,6 +12,7 @@
       <ingredient name="carBattery" count="5" />
     </recipe>
 
+    <!-- Disable Opals of Ophelia for Season 6
     <conditional>
       <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
         <recipe name="item_opal_of_ophelia" count="1" craft_time="0.25">
@@ -19,6 +20,7 @@
         </recipe>
       </if>
     </conditional>
+    -->
 
     <conditional>
       <if cond="mod_loaded('PootPavillion') and (mod_loaded('ProjectZ') or mod_loaded('Z_Bosses'))">

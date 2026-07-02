@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Platform;
 
 namespace StrongUtils.Commands {
   public class FastTravelCommand : ConsoleCmdAbstract {
+
+    // Disable fast travel donations in Season 6
+    public override DeviceFlag AllowedDeviceTypes => DeviceFlag.None;
+    public override DeviceFlag AllowedDeviceTypesClient => DeviceFlag.None;
 
     public override string getDescription() {
       return "Manages fast travel settings and donation tier progress.";
