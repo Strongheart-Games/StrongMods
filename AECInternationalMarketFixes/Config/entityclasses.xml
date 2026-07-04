@@ -1,10 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <conditional>
-    <if cond="not(mod_loaded('StrongholdTweaks'))">
-      <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
-        aecIMTutorialBook
-      </csv>
+    <if cond="mod_loaded('AEC_InternationalMarket')">
+      <conditional>
+        <if cond="not(mod_loaded('StrongholdTweaks'))">
+          <csv xpath="/entity_classes/entity_class[@name='playerMale']/property[@class='ItemsOnEnterGame']/property/@value" delim="," op="add">
+            aecIMTutorialBook
+          </csv>
+        </if>
+      </conditional>
+
+      <!-- Make the air drops use the vanilla twitch template so that they behave better -->
+      <setattribute xpath="/entity_classes/entity_class[starts-with(@name,'airdrop_')]" name="extends">twitch_crate_template</setattribute>
+      <remove xpath="//entity_classes/entity_class[starts-with(@name,'airdrop_')]/property[not(@name='UserSpawnType' or @name='Mesh' or @name='LootList' or @name='LootListOnDeath')]" />
+      <remove xpath="//entity_classes/entity_class[starts-with(@name,'airdrop_')]/*[not(self::property)]" />  <!-- remove elements not named 'property' -->
     </if>
   </conditional>
 </config>

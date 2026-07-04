@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <setattribute xpath="/gameevents/action_sequence[starts-with(@name,'ActionGive_')]/action[@class='SpawnEntity' and property[@name='entity_names' and starts-with(@value,'airdrop_')]]/property[@name='min_distance']" name="value">4</setattribute>
+  <setattribute xpath="/gameevents/action_sequence[starts-with(@name,'ActionGive_')]/action[@class='SpawnEntity' and property[@name='entity_names' and starts-with(@value,'airdrop_')]]/property[@name='max_distance']" name="value">8</setattribute>
+  <setattribute xpath="/gameevents/action_sequence[starts-with(@name,'ActionGive_')]/action[@class='SpawnEntity' and property[@name='entity_names' and starts-with(@value,'airdrop_')]]" name="class">SpawnContainer</setattribute>
+</config>
