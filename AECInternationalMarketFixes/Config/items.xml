@@ -17,7 +17,7 @@
           </property>
         </item>
       </append>
-      <setattribute xpath="/items/item[@name='modelConnexionCard']/property[@name='EconomicValue']" name="value">300</setattribute>
+      <setattribute xpath="/items/item[@name='modelConnexionCard']/property[@name='EconomicValue']" name="value">500</setattribute>
       <setattribute xpath="/items/item[@name='modelConnexionCard']/property[@name='EconomicBundleSize']" name="value">1</setattribute>
     </if>
   </conditional>
