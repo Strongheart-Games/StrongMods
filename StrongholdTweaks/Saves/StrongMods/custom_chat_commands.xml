@@ -34,9 +34,9 @@
     </Execute>
   </Command>
 
-  <Command trigger="/dronereset" description="Kicks you and wipes your drone data. Use only as a last resort." minAdminLevel="1000">
+  <Command trigger="/resetdrone" aliases="/dronereset" description="Kicks you and wipes your drone data. Use only as a last resort." minAdminLevel="1000">
     <Execute>
-      <Action type="console">rdd {EntityId}</Action>
+      <Action type="console">jds clear "{Name}"</Action>
     </Execute>
   </Command>
 
