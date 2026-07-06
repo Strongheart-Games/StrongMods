@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- Massively buff lockpicking skill because who likes the minigame? -->
+  <setattribute xpath="/progression/perks/perk[@name='perkLockPicking']/effect_group/passive_effect[@name='LockPickTime']" name="value">.3,.9</setattribute>
+  <setattribute xpath="/progression/perks/perk[@name='perkLockPicking']/effect_group/passive_effect[@name='LockPickBreakChance']" name="value">.33,1</setattribute>
+</config>
