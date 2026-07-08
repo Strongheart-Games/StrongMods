@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloodRain.cs" />
+    <Compile Include="BloodRainChatCommand.cs" />
     <Compile Include="BloodRainConsoleCommand.cs" />
     <Compile Include="BloodRainChallenge.cs" />
     <Compile Include="BloodRainParty.cs" />

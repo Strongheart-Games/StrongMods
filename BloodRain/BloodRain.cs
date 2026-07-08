@@ -46,6 +46,14 @@ namespace BloodRain {
       return (float)((DateTime)_endTime - DateTime.Now).TotalSeconds;
     }
 
+    public static DateTime? GetBloodRainEndTime() {
+      return _endTime;
+    }
+
+    public static DateTime? GetNextScheduledBloodRainTime() {
+      return _schedule?.NextStartTime;
+    }
+
     public static void Update() {
       var worldTime = GameManager.Instance?.World?.worldTime;
       if (worldTime is null) {

@@ -59,6 +59,7 @@ namespace BloodRain {
       Harmony harmony = new(_modInstance.Name);
       harmony.PatchAll(Assembly.GetExecutingAssembly());
       ModEvents.GameAwake.RegisterHandler(BloodRain.OnGameAwake);
+      ModEvents.ChatMessage.RegisterHandler(BloodRainChatCommand.OnChatMessage);
     }
   }
 }
