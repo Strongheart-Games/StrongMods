@@ -2,7 +2,7 @@
 <config>
   <append xpath="/worldglobal/environment">
     <!--
-      blood_rain_schedule_irl takes a cron expression. Times are in the operating system's configured time zone.
+      schedule_irl takes a cron expression. Times are in the operating system's configured time zone.
 
                                              Allowed values    Allowed special characters   Comment
         ┌───────────── minute                0-59              * , - /
@@ -18,10 +18,13 @@
         */10 * * * *   Every 10 minutes (!!)
         0 12 * * 0,3   Every Wed and Sun @ noon
     -->
-    <property name="blood_rain_schedule_irl" value="0 8,20 * * *" /> <!-- daily at 8 AM and 8 PM -->
-    <property name="blood_rain_duration_irl_minutes" value="15" /> <!-- blood rain lasts for 15 minutes -->
-    <property name="blood_rain_countdown_irl_minutes" value="15" /> <!-- warning broadcast every minute for 15 minutes prior to the start of the blood rain -->
-    <property name="blood_rain_min_game_day" value="7" /> <!-- skip blood rain if countdown starts on day < 7 -->
-    <property name="blood_rain_second_warning_message" value="" /> <!-- sent to general after each message saying how many minutes until blood rain -->
+    <property class="blood_rain">
+      <property name="schedule_irl" value="0 20 * * *" /> <!-- daily at 8 PM -->
+      <property name="duration_irl_minutes" value="15" /> <!-- blood rain lasts for 15 minutes -->
+      <property name="countdown_irl_minutes" value="15" /> <!-- broadcast a warning in game every minute for 15 minutes prior to the start of the blood rain -->
+      <property name="min_game_day" value="7" /> <!-- skip blood rain if countdown starts on day < 7 -->
+      <property name="second_warning_message" value="" /> <!-- sent to general after each message saying how many minutes until blood rain -->
+      <property name="party_enemy_count_max" value="30" /> <!-- the max total enemies that can spawn on any "party" during the blood rain -->
+    </property>
   </append>
 </config>

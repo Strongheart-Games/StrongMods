@@ -1,63 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_schedule_irl']" name="value">
-    0 4,13,20 * * *
-  </setattribute>
-  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_duration_irl_minutes']" name="value">
-    20
-  </setattribute>
-  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_countdown_irl_minutes']" name="value">
-    15
-  </setattribute>
-  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_min_game_day']" name="value">
-    7
-  </setattribute>
-  <setattribute xpath="/worldglobal/environment/property[@name='blood_rain_second_warning_message']" name="value">
-    [00ff00]The chat command [ff0000]/horde[-] will teleport you to the community horde base.[-]
-  </setattribute>
+  <remove xpath="/worldglobal/environment/property[@class='blood_rain']" />
   <append xpath="/worldglobal/environment">
-    <!-- Change together: they must have the same value -->
-    <property name="strongsworn_cvar" value="strongsworn"/>
-    <property name="chat_command_helper_authorized_cvar" value="strongsworn"/>
-
-    <!-- TODO: Write our own /commands that links to the Survival Guide -->
-    <property name="chat_command_helper_hidden_commands" value="
-      commands,
-    " />
-    <!-- Pulled from /help, with /link and /store (an alias for /shop) added. -->
-    <property name="chat_command_helper_async_commands" value="
-      link,
-      store,
-      buyTicket,
-      help,
-      daily,
-      nextDraw,
-      ping,
-      vote,
-      transfer,
-      claim,
-      viewTickets,
-      grantCurrency,
-      shop,
-      confirmTransfer,
-      balance,
-      revokeCurrency,
-      wipe,
-      triviareset,
-      playerAnswer,
-      topCurrency,
-      triviaboard,
-      playtime,
-      wipecontinue,
-    " />
-
-    <property name="strong_commands_passphrase" value="I pledge to lead and protect Stronghold."/>
-    <property name="strong_commands_teleport_stronghold" value="teleportplayer {EntityId} -315 40 3376 s"/>
-    <property name="strong_commands_teleport_beginner_horde" value="teleportplayer {EntityId} 847 -1 4024 n"/>
-    <property name="strong_commands_teleport_advanced_horde" value="teleportplayer {EntityId} -3351 -1 2130 n"/>
-
-    <property name="strong_zones_protected_zones" value="(-393,3516);(-150,3178)|(-950,-430);(-887,-365)"/>
-
+    <property class="blood_rain">
+      <property name="schedule_irl" value="0 4,13,20 * * *" />
+      <property name="duration_irl_minutes" value="20" />
+      <property name="countdown_irl_minutes" value="15" />
+      <property name="min_game_day" value="15" />
+      <property name="second_warning_message" value="[00ff00]The chat command [ff0000]/horde[-] will teleport you to the community horde base.[-]" />
+      <property name="party_enemy_count_max" value="64" />
+    </property>
     <property class="strong_protected_difficulty_tiers_by_biome">
       <property name="default" value="1"/>
       <property name="pine_forest" value="1"/>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 
@@ -51,6 +52,26 @@ namespace BloodRain {
   public class EntityAlive_OnEntityDeath_Patch {
     private static void Postfix(EntityAlive __instance) {
       BloodRainChallenge.OnEntityDeath(__instance);
+    }
+  }
+
+  [HarmonyPatch(typeof(AIDirectorBloodMoonParty), nameof(AIDirectorBloodMoonParty.InitParty))]
+  public class AIDirectorBloodMoonParty_InitParty_Patch {
+    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+      CodeMatcher codeMatcher = new(instructions);
+      codeMatcher.MatchStartForward(
+          CodeMatch.LoadsConstant(30),
+          CodeMatch.LoadsLocal(),
+          CodeMatch.Calls(() => Utils.FastMin(-1, -1)),
+          CodeMatch.StoresField(typeof(AIDirectorBloodMoonParty).GetField(nameof(AIDirectorBloodMoonParty.enemyActiveMax)))
+        )
+        .ThrowIfInvalid("[StrongUtils] Could not find enemyMaxActive calculation")
+        .RemoveInstruction()
+        .Insert(
+          CodeInstruction.Call(() => BloodRain.GetPartyEnemyCountMax())
+        );
+      //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
+      return codeMatcher.Instructions();
     }
   }
 

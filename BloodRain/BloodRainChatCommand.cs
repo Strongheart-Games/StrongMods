@@ -13,15 +13,20 @@ namespace BloodRain {
       string message;
       DateTime? endTime = BloodRain.GetBloodRainEndTime();
       if (endTime is not null) {
-        TimeSpan endTimeSpan = (endTime - DateTime.Now).Value;
-        message = $"The Blood Rain will end in {endTimeSpan.ToDynamicReadableString()}.";
+          TimeSpan endTimeSpan = (endTime - DateTime.Now).Value;
+          message = $"The Blood Rain will end in {endTimeSpan.ToDynamicReadableString()}.";
       } else {
-        DateTime? nextTime = BloodRain.GetNextScheduledBloodRainTime();
-        if (nextTime is null) {
-          message = "No Blood Rain is active or scheduled.";
+        var minGameDay = BloodRain.GetMinGameDay();
+        if (GameManager.Instance.World.WorldDay < minGameDay) {
+          message = $"The first Blood Rain cannot occur before game day {minGameDay}.";
         } else {
-          TimeSpan nextTimeSpan = (nextTime - DateTime.Now).Value;
-          message = $"The next Blood Rain is in {nextTimeSpan.ToDynamicReadableString()}.";
+          DateTime? nextTime = BloodRain.GetNextScheduledBloodRainTime();
+          if (nextTime is null) {
+            message = "No Blood Rain is active or scheduled.";
+          } else {
+            TimeSpan nextTimeSpan = (nextTime - DateTime.Now).Value;
+            message = $"The next Blood Rain is in {nextTimeSpan.ToDynamicReadableString()}.";
+          }
         }
       }
 
