@@ -7,7 +7,7 @@ namespace StrongFill {
     private static void Prefix(string blockName, ref DynamicProperties properties) {
       if (properties.Contains("ServerClass")) {
         properties.Values["Class"] = properties.Values["ServerClass"];
-        Log.Out($"[ServerClass] Setting server class for {blockName} to {properties.Values["Class"]}");
+        Log.Out($"[ServerClass] Setting class for {blockName} to {properties.Values["Class"]}");
       }
     }
   }

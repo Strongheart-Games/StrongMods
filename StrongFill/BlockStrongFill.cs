@@ -1,36 +1,50 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 namespace StrongFill {
-  public class BlockStrongFill : BlockPlantGrowing {
+  public class BlockStrongFill : Block {
+    private const string PropFillRate = "FillRate";
+    private float _fillRate = 1;
 
     public override void LateInit() {
-      DynamicProperties plantGrowing = Properties.Classes["PlantGrowing"];
-      // Allow air to be explicitly used as the next block
-      if (plantGrowing.Values.ContainsKey("Next"))
-      {
-        var next = plantGrowing.Values["Next"];
-        if (BlockValue.Air.Block.blockName.Equals(next)) {
-          nextPlant = BlockValue.Air;
-          plantGrowing.Values.Remove("Next");
-        }
-      }
       base.LateInit();
+      if (!Properties.Values.ContainsKey(PropFillRate)) {
+        return;
+      }
+
+      _fillRate = StringParsers.ParseFloat(dynamicProperties.Values[PropFillRate]);
     }
 
-    public override bool UpdateTick(WorldBase _world, Vector3i _blockPos, BlockValue _blockValue, bool _bRandomTick, ulong _ticksIfLoaded, GameRandom _rnd) {
-      List<BlockChangeInfo> fillChanges = Fill(new Vector3i(_blockPos.x, _blockPos.y - 1, _blockPos.z));
+    public override ulong GetTickRate() {
+      return (ulong)(_fillRate * 20 * 60);
+    }
+
+    public override void OnBlockAdded(WorldBase _world, Chunk _chunk, Vector3i _blockPos, BlockValue _blockValue,
+      PlatformUserIdentifierAbs _addedByPlayer) {
+      Log.Out("[StrongFill] BlockStrongFill.OnBlockAdded()");
+      base.OnBlockAdded(_world, _chunk, _blockPos, _blockValue, _addedByPlayer);
+      if (_world.IsRemote()) {
+        return;
+      }
+
+      _world.GetWBT().AddScheduledBlockUpdate(_blockPos, blockID, GetTickRate());
+    }
+
+    public override bool UpdateTick(WorldBase _world, Vector3i _blockPos, BlockValue _blockValue, bool _bRandomTick,
+      ulong _ticksIfLoaded, GameRandom _rnd) {
+      Log.Out("[StrongFill] BlockStrongFill.UpdateTick()");
+      List<BlockChangeInfo> fillChanges = Fill(_world, new Vector3i(_blockPos.x, _blockPos.y - 1, _blockPos.z));
       if (fillChanges is null || fillChanges.Count == 0) {
         // If there's nothing to fill, leave the block there for the player to pick it up
         return true;
       }
 
-      GameManager.Instance.World.SetBlocksRPC(fillChanges);
+      _world.SetBlocksRPC(fillChanges);
+      _world.SetBlockRPC(_blockPos, BlockValue.Air);
       return base.UpdateTick(_world, _blockPos, _blockValue, _bRandomTick, _ticksIfLoaded, _rnd);
     }
 
-    private static List<BlockChangeInfo> Fill(Vector3i pos) {
-      World world = GameManager.Instance.World;
+
+    private static List<BlockChangeInfo> Fill(WorldBase world, Vector3i pos) {
       BlockValue b = world.GetBlock(pos);
       if (!b.isTerrain) {
         return null;
