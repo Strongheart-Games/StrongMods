@@ -97,6 +97,7 @@
     <Compile Include="KeyValueStore\XmlKeyValueStore.cs" />
     <Compile Include="PlayerDamage.cs" />
     <Compile Include="PlayerVendingMachineResetFix.cs" />
+    <Compile Include="Reload.cs" />
     <Compile Include="ServerLifecycleCommands.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerLifecycle.cs" />

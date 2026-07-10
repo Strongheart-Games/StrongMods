@@ -22,7 +22,7 @@ namespace StrongUtils.Commands {
       switch (subcommand) {
         case "xml":
           try {
-            WorldStaticData.ReloadAllXmlsSync();
+            Reload.ReloadXmlsSync();
           } catch (Exception e) {
             Log.Error("Error in ReloadCommand.Execute: " + e.Message);
           }
