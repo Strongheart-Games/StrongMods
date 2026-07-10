@@ -13,8 +13,8 @@ namespace BloodRain {
       string message;
       DateTime? endTime = BloodRain.GetBloodRainEndTime();
       if (endTime is not null) {
-          TimeSpan endTimeSpan = (endTime - DateTime.Now).Value;
-          message = $"The Blood Rain will end in {endTimeSpan.ToDynamicReadableString()}.";
+        TimeSpan endTimeSpan = (endTime - DateTime.Now).Value;
+        message = $"The Blood Rain will end in {endTimeSpan.ToDynamicReadableString()}.";
       } else {
         var minGameDay = BloodRain.GetMinGameDay();
         if (GameManager.Instance.World.WorldDay < minGameDay) {
@@ -30,8 +30,8 @@ namespace BloodRain {
         }
       }
 
-      GameManager.Instance.ChatMessageServer(data.ClientInfo, EChatType.Whisper, -1, message, null,
-        EMessageSender.None);
+      GameManager.Instance.ChatMessageServer(data.ClientInfo, EChatType.Whisper, -1, message,
+        new List<int> { data.SenderEntityId }, EMessageSender.None);
       return ModEvents.EModEventResult.StopHandlersAndVanilla;
     }
   }
