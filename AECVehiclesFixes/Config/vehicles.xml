@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- Give AEC vehicles a default horn sound if none is set -->
+  <setattribute xpath="/vehicles/vehicle[starts-with(@name,'AEC')]/property[@name='hornSound'][@value='']" name="value">bicycle_horn</setattribute>
+</config>
