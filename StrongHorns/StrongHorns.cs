@@ -24,10 +24,6 @@ namespace StrongHorns {
     public class Server_Play1_Patch {
       private static void Prefix(string soundGroupName, int entityId) {
         Entity entity = GameManager.Instance.World.GetEntity(entityId);
-        if (entity is not EntityVehicle vehicle) {
-          return;
-        }
-
         Server_Play2_Patch.Prefix(entity, soundGroupName);
       }
     }
