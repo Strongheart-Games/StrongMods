@@ -83,7 +83,6 @@
     <Compile Include="StrongHorns.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".template.config\template.json" />
     <Content Include="Config\blocks.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

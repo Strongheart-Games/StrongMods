@@ -1,4 +1,7 @@
-﻿namespace StrongHorns {
+﻿using Audio;
+using UnityEngine;
+
+namespace StrongHorns {
   public static class OpenDoors {
     private const string BlockCategoryName = "trader_doors";
     private const string HonkToOpenTag = "honk_to_open";
@@ -20,10 +23,14 @@
 
     private static void OnHonk(EntityVehicle vehicle) {
       Log.Out($"[StrongHorns] Honk from {vehicle.vehicle.vehicleName} at {vehicle.position}");
-      NearbyBlockFinder.ForeachNearbyBlock(BlockCategoryName, vehicle.GetBlockPosition(), MaxDistance, OpenDoor);
+      NearbyBlockFinder.ForeachNearbyBlock(
+        BlockCategoryName,
+        vehicle.GetBlockPosition(),
+        MaxDistance,
+        (b, p) => OpenDoor(b, p, vehicle));
     }
 
-    private static void OpenDoor(Block block, Vector3i pos) {
+    private static void OpenDoor(Block block, Vector3i pos, EntityVehicle vehicle) {
       TileEntity tileEntity = GameManager.Instance.World.GetTileEntity(pos);
       if (tileEntity is null) {
         Log.Out($"[StrongHorns] Can't open {block.blockName} at {pos}; it is not a Tile Entity.");
@@ -33,6 +40,18 @@
       if (!tileEntity.TryGetSelfOrFeature(out TEFeatureDoor door)) {
         Log.Out($"[StrongHorns] Can't open {block.blockName} at {pos}; it is not a door.");
         return;
+      }
+
+      if (door.lockFeature != null && door.lockFeature.IsLocked()) {
+        if (vehicle.attachedEntities?[0] is not EntityPlayer driver) {
+          return;
+        }
+
+        if (!door.lockFeature.IsUserAllowed(driver.PersistentPlayerData.PrimaryId)) {
+          // Not sure why we add 0.5f the unit vector, but it's what TEFeatureDoor does
+          Manager.BroadcastPlay(pos.ToVector3() + Vector3.one * 0.5f, door.lockedSound);
+          return;
+        }
       }
 
       var currentlyOpen = door.IsOpen();

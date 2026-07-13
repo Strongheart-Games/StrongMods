@@ -20,7 +20,8 @@ namespace StrongHorns {
       }
     }
 
-    [HarmonyPatch(typeof(Server), nameof(Server.Play), typeof(Vector3), typeof(string), typeof(float), typeof(int), typeof(float))]
+    [HarmonyPatch(typeof(Server), nameof(Server.Play), typeof(Vector3), typeof(string), typeof(float), typeof(int),
+      typeof(float))]
     public class Server_Play1_Patch {
       private static void Prefix(string soundGroupName, int entityId) {
         Entity entity = GameManager.Instance.World.GetEntity(entityId);
@@ -28,7 +29,8 @@ namespace StrongHorns {
       }
     }
 
-    [HarmonyPatch(typeof(Server), nameof(Server.Play), typeof(Entity), typeof(string), typeof(float), typeof(bool), typeof(float))]
+    [HarmonyPatch(typeof(Server), nameof(Server.Play), typeof(Entity), typeof(string), typeof(float), typeof(bool),
+      typeof(float))]
     public class Server_Play2_Patch {
       public static void Prefix(Entity playOnEntity, string soundGroupName) {
         if (playOnEntity is not EntityVehicle vehicle) {
