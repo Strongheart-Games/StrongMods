@@ -6,7 +6,7 @@ namespace StrongUtils.Commands {
     private const string Usage = @"Usage: reload";
 
     public override string getDescription() {
-      return "Reloads configuration.";
+      return "Reloads configuration. If this is a server, sends the updated XML to all clients.";
     }
 
     public override string getHelp() {
@@ -18,20 +18,16 @@ namespace StrongUtils.Commands {
     }
 
     public override void Execute(List<string> @params, CommandSenderInfo senderInfo) {
-      var subcommand = @params.Count > 0 ? @params[0].ToLower() : "xml";
-      switch (subcommand) {
-        case "xml":
-          try {
-            Reload.ReloadXmlsSync();
-          } catch (Exception e) {
-            Log.Error("Error in ReloadCommand.Execute: " + e.Message);
+      try {
+        WorldStaticData.ReloadAllXmlsSync();
+        if (ConnectionManager.Instance.IsServer) {
+          foreach (ClientInfo client in ConnectionManager.Instance.Clients.List) {
+            WorldStaticData.SendXmlsToClient(client);
           }
-          break;
-        case "strongzones":
-          StrongZones.UpdatePrefabZones();
-          break;
+        }
+      } catch (Exception e) {
+        Log.Error("Error in ReloadCommand.Execute: " + e.Message);
       }
-
     }
   }
 }
