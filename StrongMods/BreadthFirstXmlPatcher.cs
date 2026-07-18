@@ -10,22 +10,18 @@ namespace StrongMods {
   ///   Reorders XML config patching from file-major ("depth-first": every mod's patch for one XML
   ///   file is applied before moving to the next XML file) to mod-major ("breadth-first": every
   ///   XML file is patched by one mod before moving to the next mod).
-  ///
   ///   Within a single mod's pass, patches are still applied in the order the files appear in
   ///   WorldStaticData.xmlsToLoad. Mods are visited in the order returned by
   ///   ModManager.GetLoadedMods(), same as vanilla.
-  ///
   ///   Design: the mod loop lives inside XmlPatcher.LoadAndPatchConfig, which is called once per
   ///   file from WorldStaticData.loadSingleXml, so the depth-first ordering is baked into the
   ///   innermost layer. Rather than rewriting loadSingleXml (which also handles conditionals,
   ///   ConfigsDump, client caching, and the actual LoadMethod), this class:
-  ///
-  ///     Phase 1: Loads every eligible base XML into a cache (xmlsToLoad order).
-  ///     Phase 2: Applies patches mod-major: for each mod, for each file (xmlsToLoad order).
-  ///     Phase 3: Runs the untouched vanilla per-file pipeline (loadSingleXml). A prefix on
-  ///              LoadAndPatchConfig hands each file its pre-patched XmlFile from the cache
-  ///              instead of loading and patching it again.
-  ///
+  ///   Phase 1: Loads every eligible base XML into a cache (xmlsToLoad order).
+  ///   Phase 2: Applies patches mod-major: for each mod, for each file (xmlsToLoad order).
+  ///   Phase 3: Runs the untouched vanilla per-file pipeline (loadSingleXml). A prefix on
+  ///   LoadAndPatchConfig hands each file its pre-patched XmlFile from the cache
+  ///   instead of loading and patching it again.
   ///   Any LoadAndPatchConfig caller outside this pipeline (e.g. the client received-configs
   ///   path) misses the cache and falls through to vanilla behavior.
   /// </summary>
@@ -75,7 +71,7 @@ namespace StrongMods {
         var timer = new MicroStopwatch(true);
 
         // Phase 1: load all base XMLs, in xmlsToLoad order.
-        Log.Out($"[BreadthFirstXmlPatcher] Loading base XML");
+        Log.Out("[BreadthFirstXmlPatcher] Loading base XML");
         foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
           yield return LoadBaseXmlCo(loadInfo.XmlName);
           if (timer.ElapsedMilliseconds > Constants.cMaxLoadTimePerFrameMillis) {
@@ -90,6 +86,7 @@ namespace StrongMods {
           if (!mod.GameConfigMod) {
             continue;
           }
+
           Log.Out($"[BreadthFirstXmlPatcher] Applying XML patches from mod '{mod.Name}'");
           foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
             if (!s_patchedFiles.TryGetValue(loadInfo.XmlName, out XmlFile targetFile) || targetFile == null) {
