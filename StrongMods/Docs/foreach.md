@@ -22,7 +22,7 @@ Instead of forty near-identical items:
          xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]"
          as="lootContainer">
   <append xpath="/items">
-    <item name="AutoLoot_{lootContainer/@name}"> ... </item>
+    <item name="AutoLoot_{$lootContainer/@name}"> ... </item>
   </append>
 </foreach>
 ```
@@ -65,7 +65,7 @@ If you need to see another mod's content, load after it.
 | Attribute | Required | What it does |
 |---|---|---|
 | `xpath` | yes | Selects the nodes to loop over. Runs once, in document order. |
-| `as` | yes | Names the current node so the body can refer to it. Letters, digits, underscores; must not start with a digit. |
+| `as` | yes | Names the current node so expressions can refer to it as `$name`. Letters, digits, underscores; must not start with a digit. |
 | `source` | no | Which config file to select from, named **without the `.xml`** — `source="items"`, not `source="items.xml"`. Defaults to the file your patch is already targeting. |
 
 The body is **ordinary patch commands** — `append`, `set`, `setattribute`, `remove`, `insertBefore`,
@@ -78,23 +78,25 @@ change what your commands target.
 
 ```xml
 <foreach xpath="/items/item[starts-with(@name, 'strong_')]" as="item">
-  <append xpath="item">          <!-- WRONG: selects nothing -->
-  <append xpath="/items/item[@name='{item/@name}']">   <!-- right -->
+  <append xpath="$item">        <!-- WRONG: command xpaths are vanilla XPath, no variables -->
+  <append xpath="/items/item[@name='{$item/@name}']">   <!-- right -->
 ```
 
 Body XPaths are absolute against your target document, exactly as they are outside a loop. To aim a
-command at the node you're looping over, interpolate your way back to it.
+command at the node you're looping over, interpolate your way back to it with a `{...}` expression.
 
 Nesting works, and inner loops can read outer bindings. Reusing a name that's already in scope is an
 error, not a shadow.
 
 ## Filling in values
 
-Write `{binding}` to get the node's text, or `{binding/some/xpath}` to run a relative XPath from it:
+A `{...}` anywhere in the body is an **XPath expression**, and every name in scope is available as
+an XPath variable:
 
 ```xml
-value="{lootContainer/@name}"
-value="{lootContainer/property[@name='LootList']/@value}"
+value="{$lootContainer/@name}"
+value="{$lootContainer/property[@name='LootList']/@value}"
+value="{count($lootContainer/property)}"
 ```
 
 Interpolation works in four places: **attribute values**, **element text**, **body command XPaths**,
@@ -102,26 +104,35 @@ and element names. Element names need a workaround, since XML won't let you type
 use the reserved `foreach-name` attribute, and the tag renames itself:
 
 ```xml
-<placeholder foreach-name="{lootContainer/@name}_extra" />
+<placeholder foreach-name="{$lootContainer/@name}_extra" />
 ```
 
 For a literal brace, double it: `{{` and `}}`.
 
 ### Exactly one node, or the iteration is skipped
 
-Every `{...}` must resolve to **exactly one node**. Zero matches or two matches, and the patcher
-skips that iteration entirely — no half-written item — and logs a warning saying which node and
-which expression.
+Every `{...}` must resolve to **exactly one node**. Zero matches and the patcher skips that
+iteration entirely — no half-written item — and logs a warning saying which node and which
+expression. Two or more matches skips too: an ambiguous lookup should never guess.
 
 That's usually what you want: an entity class with no `LootList` shouldn't produce a broken item.
-When you'd rather have an empty string than a skip, wrap it in XPath's `string()`, which returns
-`""` instead of nothing:
+Scalar XPath results (`count()`, `string()`, `string-length()`, boolean tests) always produce
+exactly one value and never skip.
+
+### Defaults with `?:`
+
+When zero matches should mean "use a fallback" instead of "skip", write both sides:
 
 ```xml
-value="{lootContainer/string(property[@name='Tier']/@value)}"
+value="{$lootContainer/property[@name='Tier']/@value ?: $lootContainer/@name}"
 ```
 
-Scalar XPath functions like `count()` and `string-length()` work too — they always return one value.
+The right side only runs when the left selects **no nodes**. Both sides are ordinary expressions —
+there are no string literals in this language, so a fixed default lives in your data, where anyone
+can patch it (see `<bind>` below). Note the boundary cases: an attribute that exists but is empty
+(`tier=""`) is one node with the value `""` and does *not* fall through; two or more matches skip
+the iteration rather than falling through; and if both sides come up empty, the iteration skips.
+One `?:` per expression.
 
 ---
 
@@ -138,7 +149,7 @@ so `source` is omitted.
   </append>
 
   <foreach xpath="/items/item[starts-with(@name, 'example_item')]" as="item">
-    <append xpath="/items/item[@name='{item/@name}']">
+    <append xpath="/items/item[@name='{$item/@name}']">
       <property name="p1" value="v1" />
       <property name="p2" value="v2" />
       <property name="p3" value="v3" />
@@ -178,8 +189,8 @@ In `recipes.xml`, one loop builds every recipe:
            xpath="/items/item[property[@name='Extends'][@value='StrongTool_Base']]"
            as="tool">
     <append xpath="/recipes">
-      <recipe name="{tool/@name}" count="1" craft_area="workbench" tags="learnable">
-        <ingredient name="resourceForgedSteel" count="{tool/property[@name='StrongSteelCost']/@value}" />
+      <recipe name="{$tool/@name}" count="1" craft_area="workbench" tags="learnable">
+        <ingredient name="resourceForgedSteel" count="{$tool/property[@name='StrongSteelCost']/@value}" />
         <ingredient name="resourceDuctTape" count="2" />
       </recipe>
     </append>
@@ -187,31 +198,127 @@ In `recipes.xml`, one loop builds every recipe:
 </config>
 ```
 
-`source="items"` reads across files; `xpath` in the body still targets `/recipes` in the file
-this patch belongs to. A tool that forgets `StrongSteelCost` gets no recipe and a warning in the log,
+`source="items"` reads across files; `xpath` in the body still targets `/recipes` in the file this
+patch belongs to. A tool that forgets `StrongSteelCost` gets no recipe and a warning in the log,
 rather than a recipe costing nothing.
+
+---
+
+## Tables: `<bind>`
+
+A `<bind>` names extra data your expressions can use — most often a lookup table. It's a **direct
+child** of `<foreach>`, resolved **once** before the loop starts, and constant across iterations.
+The name joins the same scope as `as` names (collisions are errors) and appears in expressions as a
+`$variable`, exactly like the loop binding.
+
+Two forms:
+
+```xml
+<!-- Inline: the element children are the data. You choose the element names. -->
+<bind name="loot">
+  <row mesh="..." icon="..." tint="..." />
+  <row mesh="..." icon="..." tint="..." />
+</bind>
+
+<!-- Source: an xpath selects the data from any config file (again, no .xml suffix). -->
+<bind name="loot" source="loot_tables" xpath="/loot_tables/autoloot/row" />
+```
+
+One form or the other — inline children plus `source`/`xpath` on the same bind is an error.
+
+A bind holds a **set** of nodes, and that's the point: `$loot` *is* the rows. Look one up by
+filtering the variable with a predicate, then take the column you want:
+
+```xml
+value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon}"
+```
+
+The exactly-one rule applies at the lookup: no matching row skips the iteration (or coalesces, see
+below), and **two rows with the same key** skip it too — check the log if a table misbehaves.
+
+### The default row
+
+Combine `<bind>` with `?:` to give a table a fallback. Mark one row as the default and point the
+right side at it:
+
+```xml
+<bind name="loot">
+  <row mesh="@:Entities/LootContainers/duffle01Prefab.prefab" icon="cntDuffle01" tint="#FFFFFF" />
+  <row default="true" icon="cntSportsBag02White" tint="#4B5320" />
+</bind>
+
+value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $loot[@default='true']/@icon}"
+```
+
+The default row has no `mesh` attribute, so the key predicate can never match it — it's only
+reachable through the `?:` fallback. This is the idiom for "look it up, or use the default."
+
+## Example 3: AutoLoot — a generated item per loot container
+
+Everything above in one real patch: cross-file `source`, a `<bind>` table with a default row, and
+`?:` lookups. No C# anywhere.
+
+```xml
+<config>
+  <foreach source="entityclasses"
+           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]"
+           as="lootContainer">
+    <bind name="loot">
+      <row mesh="@:Entities/LootContainers/zpackPrefab.prefab"     icon="cntSportsBag02White" tint="#78783A" />
+      <row mesh="@:Entities/LootContainers/zpackBluePrefab.prefab" icon="cntSportsBag02White" tint="#276182" />
+      <row mesh="@:Entities/LootContainers/zpackRedPrefab.prefab"  icon="cntSportsBag02White" tint="#793B3E" />
+      <row mesh="@:Entities/LootContainers/zpackGoldPrefab.prefab" icon="cntSportsBag02White" tint="#D34B08" />
+      <row mesh="@:Entities/LootContainers/duffle01Prefab.prefab"  icon="cntDuffle01"         tint="#FFFFFF" />
+      <row default="true"                                          icon="cntSportsBag02White" tint="#4B5320" />
+    </bind>
+    <append xpath="/items">
+      <item name="AutoLoot_{$lootContainer/@name}">
+        <property name="Extends" value="AutoLoot_Base" />
+        <property name="CreativeMode" value="Player" />
+        <property name="AutoLootSubstituteFor" value="{$lootContainer/@name}" />
+        <property name="CustomIcon"
+                  value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $loot[@default='true']/@icon}" />
+        <property name="CustomIconTint"
+                  value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@tint ?: $loot[@default='true']/@tint}" />
+        <property class="Action0">
+          <property name="Class" value="OpenLootBundle" />
+          <property name="Delay" value="0" />
+          <property name="Sound_start" value="close_garbage" />
+          <property name="LootList" value="{$lootContainer/property[@name='LootList']/@value}" />
+        </property>
+      </item>
+    </append>
+  </foreach>
+</config>
+```
+
+Per loot container: a `Mesh` in the table uses that row's icon and tint; an unknown `Mesh` falls
+through `?:` to the default row; a container with no `LootList` at all skips with a warning — that
+expression has no fallback on purpose, because an auto-loot item that opens nothing is worse than no
+item.
 
 ---
 
 ## Custom functions
 
-**Requires a C# mod.** If your mod is XML-only, skip this section.
-
-Some values can't be computed in XPath. Declare a function, and call it like one:
+**Requires a C# mod.** If your mod is XML-only, skip this section — `<bind>` covers table lookups
+without code. Reach for a function when the *logic* can't be expressed in XPath: hashing, real
+string manipulation, reading game state.
 
 ```xml
 <foreach source="entityclasses" xpath="..." as="lootContainer">
-  <function name="tint" method="StrongAutoLoot.AutoLootIcons.Tint, StrongAutoLoot" />
+  <function name="tint" method="StrongAutoLoot.Tints.FromName, StrongAutoLoot" />
   <append xpath="/items">
     <item name="...">
-      <property name="CustomIconTint" value="{tint(lootContainer/@name)}" />
+      <property name="CustomIconTint" value="{tint($lootContainer/@name)}" />
     </item>
   </append>
 </foreach>
 ```
 
-`<function>` must be a **direct child** of `<foreach>`, and its name lives for that loop only.
-Function names and `as` names share one namespace — you can't have both called `tint`.
+`<function>` must be a **direct child** of `<foreach>`, and its name lives for that loop only, in
+the same scope as `as` names and binds. Arguments are ordinary XPath expressions — anything you
+could write inside `{...}`, minus `?:` and calls to other functions.
 
 ### The `method` reference
 
@@ -224,7 +331,7 @@ off and the game looks in `Assembly-CSharp`.
 
 | Reference | Resolves to |
 |---|---|
-| `StrongAutoLoot.AutoLootIcons.Tint, StrongAutoLoot` | `Tint` on `StrongAutoLoot.AutoLootIcons`, in mod `StrongAutoLoot` |
+| `StrongAutoLoot.Tints.FromName, StrongAutoLoot` | `FromName` on `StrongAutoLoot.Tints`, in mod `StrongAutoLoot` |
 | `MyMod.Helpers.Slug` | `Slug` on `MyMod.Helpers`, in `Assembly-CSharp` |
 
 ### Writing one
@@ -236,103 +343,19 @@ nothing in your assembly becomes XML-callable by accident.
 using StrongMods;
 
 namespace StrongAutoLoot {
-  public static class AutoLootIcons {
-    [XmlPatchFunction]
-    public static string Tint(string entityClassName) {
-      ...
-    }
-  }
-}
-```
-
-The contract:
-
-- `public static`, returns `string`, every parameter `string`. **Strings only** — no `XElement`, no
-  `int`, no `params`.
-- Not generic, not overloaded.
-- Return `null` to **skip the iteration**, exactly as a zero-match XPath would. Return `""` for a
-  legitimately empty value.
-- Be pure. Functions run once per matched node at startup, and the patcher promises nothing about
-  call count or order. Side effects won't show up in `ConfigDump/`.
-
-**v1 limits:** arguments are binding references only. No nested calls (`{a(b(x))}`), no string
-literals (`{a('foo')}`), no caching. Say the word if you hit a real need.
-
-## Example 3: AutoLoot
-
-Generate an auto-loot item for every loot container in the game, with an icon and tint chosen by
-code.
-
-```xml
-<config>
-  <foreach source="entityclasses"
-           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]"
-           as="lootContainer">
-    <function name="icon" method="StrongAutoLoot.AutoLootIcons.Icon, StrongAutoLoot" />
-    <function name="tint" method="StrongAutoLoot.AutoLootIcons.Tint, StrongAutoLoot" />
-    <append xpath="/items">
-      <item name="AutoLoot_{lootContainer/@name}">
-        <property name="Extends" value="AutoLoot_Base" />
-        <property name="CreativeMode" value="Player" />
-        <property name="AutoLootSubstituteFor" value="{lootContainer/@name}" />
-        <property name="CustomIcon" value="{icon(lootContainer/@name)}" />
-        <property name="CustomIconTint" value="{tint(lootContainer/property[@name='LootList']/@value)}" />
-        <property class="Action0">
-          <property name="Class" value="OpenLootBundle" />
-          <property name="Delay" value="0" />
-          <property name="Sound_start" value="close_garbage" />
-          <property name="LootList" value="{lootContainer/property[@name='LootList']/@value}" />
-        </property>
-      </item>
-    </append>
-  </foreach>
-</config>
-```
-
-The C# side — a lookup for icons, a hash for tints. *Icon names below are illustrative; use real
-atlas names.*
-
-```csharp
-using System;
-using System.Collections.Generic;
-using StrongMods;
-
-namespace StrongAutoLoot {
-  /// <summary>Icon and tint selection for generated AutoLoot items.</summary>
-  public static class AutoLootIcons {
-    private const string EntityPrefix = "EntityLootContainer";
-    private const string DefaultIcon = "bag";
-
-    private static readonly Dictionary<string, string> s_icons = new() {
-      ["Nurse"] = "medicalFirstAidBandage",
-      ["Soldier"] = "armorMilitaryHelmet",
-      ["Biker"] = "apparelBikerHelmet",
-    };
-
-    private static readonly string[] s_tints = {
-      "FF6B6B", "FFD166", "06D6A0", "118AB2", "C77DFF", "EF476F",
-    };
+  public static class Tints {
+    private static readonly string[] s_tints = { "FF6B6B", "FFD166", "06D6A0", "118AB2" };
 
     [XmlPatchFunction]
-    public static string Icon(string entityClassName) {
-      if (!entityClassName.StartsWith(EntityPrefix, StringComparison.Ordinal)) {
-        return DefaultIcon;
-      }
-
-      var suffix = entityClassName.Substring(EntityPrefix.Length);
-      return s_icons.TryGetValue(suffix, out var icon) ? icon : DefaultIcon;
-    }
-
-    [XmlPatchFunction]
-    public static string Tint(string lootList) {
-      if (string.IsNullOrEmpty(lootList)) {
+    public static string FromName(string name) {
+      if (string.IsNullOrEmpty(name)) {
         return null;
       }
 
       // FNV-1a, not string.GetHashCode(), which is not stable across processes.
       var hash = 2166136261u;
       unchecked {
-        foreach (var c in lootList) {
+        foreach (var c in name) {
           hash = (hash ^ c) * 16777619u;
         }
       }
@@ -343,33 +366,18 @@ namespace StrongAutoLoot {
 }
 ```
 
-Given three entity classes — Nurse (`zPackReg`), Soldier (`zPackSoldier`), and Decoy (no `LootList`
-at all) — you get:
+The contract:
 
-```xml
-<item name="AutoLoot_EntityLootContainerNurse">
-  ...
-  <property name="CustomIcon" value="medicalFirstAidBandage" />
-  <property name="CustomIconTint" value="C77DFF" />
-  <property class="Action0">
-    ...
-    <property name="LootList" value="zPackReg" />
-  </property>
-</item>
+- `public static`, returns `string`, every parameter `string`. **Strings only** — no `XElement`, no
+  `int`, no `params`.
+- Not generic, not overloaded.
+- Return `null` for "no value": the iteration skips, or — if the call sits on the left of a `?:` —
+  the fallback runs. Return `""` for a legitimately empty value.
+- Be pure. Functions run once per matched node at startup, and the patcher promises nothing about
+  call count or order. Side effects won't show up in `ConfigDump/`.
 
-<item name="AutoLoot_EntityLootContainerSoldier">
-  ...
-  <property name="CustomIcon" value="armorMilitaryHelmet" />
-  <property name="CustomIconTint" value="06D6A0" />
-  <property class="Action0">
-    ...
-    <property name="LootList" value="zPackSoldier" />
-  </property>
-</item>
-```
-
-Decoy is skipped at `{lootContainer/property[@name='LootList']/@value}`, before `Tint` is ever
-called. Its `null` guard is belt-and-braces.
+**v1 limits:** no nested calls (`{a(b(x))}`), no `?:` inside an argument list, a call must be a
+whole side of an expression (no `{tint($x) = 'y'}`). Say the word if you hit a real need.
 
 ---
 
@@ -385,15 +393,19 @@ node, so there's no point trying the other thirty-nine.
 
 | What happened | Result |
 |---|---|
-| `{...}` matched 0 or 2+ nodes | Skip |
-| Function returned `null` | Skip |
+| `{...}` matched 0 nodes, no `?:` | Skip |
+| `{...}` matched 0 nodes, `?:` present | Right side runs; if it's also empty → Skip |
+| 2+ nodes matched, on either side of `?:` | Skip — ambiguity never falls through to the default |
+| Function returned `null` (no `?:`) | Skip |
+| Function returned `null` (left of `?:`) | Right side runs |
 | Function threw | Skip |
 | Substituted element name isn't valid XML | Skip |
-| Unknown `source` file | Error |
+| Unknown `source` file, on `<foreach>` or `<bind>` | Error |
 | Bad `xpath`, missing `as`, name collision | Error |
-| `{...}` names something that isn't bound | Error |
-| Function won't resolve, isn't tagged, or has the wrong signature | Error |
-| Wrong number of arguments at a call site | Error |
+| `$name` that isn't bound; unknown function | Error |
+| Malformed expression: unbalanced brackets, unterminated quote, chained `?:` | Error |
+| `<bind>` with both inline content and `source`/`xpath`, or neither | Error |
+| Function won't resolve, isn't tagged, wrong signature, wrong argument count | Error |
 
 Skips are quiet by design — nothing crashes, you just get fewer items than you expected. **If your
 loop produced 12 things instead of 40, read the log.** Every skip names the file, the line, the
@@ -402,7 +414,7 @@ iteration, the node, and the expression that failed:
 ```
 WRN XML patch foreach (StrongAutoLoot, items.xml, line 3): iteration 3 of 3
     (<entity_class name="EntityLootContainerDecoy">) skipped —
-    {lootContainer/property[@name='LootList']/@value} matched 0 nodes, expected 1.
+    "$lootContainer/property[@name='LootList']/@value" matched 0 nodes, expected 1.
 ```
 
 To see what a loop actually produced, turn on the game's config dump and read `ConfigDump/`. Loops
@@ -418,12 +430,16 @@ covers everything, and widen the predicate if you need to:
 
 ```xml
 xpath="/entity_classes/entity_class[
-       property[@name='Class'][@value='EntityLootContainer']
-       or @extends='EntityLootContainer']"
+         property[@name='Class'][@value='EntityLootContainer']
+         or @extends='EntityLootContainer']"
 ```
 
-**Loops see a snapshot.** The `xpath` runs once, before the body does. If the body modifies the file
-it's looping over, the loop won't notice.
+**Loops and binds see a snapshot.** The `xpath` on a `<foreach>` runs once, before the body does; a
+`<bind>` resolves once, before the first iteration. If the body modifies the file either one read
+from, neither notices.
+
+**Duplicate table keys skip.** Two `<row>`s with the same key value make every lookup of that key
+ambiguous, and ambiguous lookups skip the iteration rather than guessing — even past a `?:`.
 
 **Mods after you are invisible.** See the table at the top.
 
@@ -439,6 +455,14 @@ it's looping over, the loop won't notice.
 | `as` | yes | — |
 | `source` | no | The patch's own target file. Named without `.xml` (`items`, not `items.xml`). |
 
+### `<bind>`
+
+| Attribute | Required | Notes |
+|---|---|---|
+| `name` | yes | Direct child of `<foreach>`; scoped to that loop; usable as `$name` |
+| `source` | no | Named without `.xml`; defaults to the patch's own target file |
+| `xpath` | with `source`, or alone | Selects the node-set; mutually exclusive with inline children |
+
 ### `<function>`
 
 | Attribute | Required | Notes |
@@ -446,15 +470,18 @@ it's looping over, the loop won't notice.
 | `name` | yes | Direct child of `<foreach>`; scoped to that loop |
 | `method` | yes | `[namespace.]Class.Method, [mod]` — mod optional, defaults to `Assembly-CSharp` |
 
-### Interpolation
+### Expressions
 
 | Syntax | Meaning |
 |---|---|
-| `{name}` | Text of the bound node |
-| `{name/xpath}` | Relative XPath from the bound node — must match exactly one node |
-| `{name/string(xpath)}` | Same, but empty instead of skipping |
-| `{fn(arg, arg)}` | Call a declared function |
+| `{$name}` | String-value of the bound node |
+| `{$name/xpath}` | Any XPath 1.0 over the bindings — must land on exactly one node |
+| `{$table[@key = $item/@k]/@col}` | Table lookup against a `<bind>` |
+| `{left ?: right}` | If `left` selects no nodes (or a call returns null), use `right` |
+| `{count($x/y)}` | XPath scalars are fine and never skip |
+| `{fn($arg, $arg)}` | Call a declared function; arguments are expressions |
 | `{{` `}}` | Literal `{` `}` |
 | `foreach-name="..."` | Sets the element's tag name |
 
-Valid in attribute values, element text, body command XPaths, and `foreach-name`.
+Valid in attribute values, element text, body command XPaths, and `foreach-name`. Body command
+`xpath` attributes themselves are vanilla XPath — variables only exist inside `{...}`.

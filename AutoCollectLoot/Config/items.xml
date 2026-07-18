@@ -19,22 +19,30 @@
     </item>
   </append>
   <foreach source="entityclasses"
-           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]"
+           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer'] and not(property[@name='LootList'][@value='cntDropBag'])]"
            as="lootContainer">
-    <function name="icon" method="AutoCollectLoot.LootItems.CustomIcon, AutoCollectLoot" />
-    <function name="tint" method="AutoCollectLoot.LootItems.CustomTint, AutoCollectLoot" />
+    <bind name="loot">
+      <row mesh="@:Entities/LootContainers/zpackPrefab.prefab"     icon="cntSportsBag02White" tint="#78783A" />
+      <row mesh="@:Entities/LootContainers/zpackBluePrefab.prefab" icon="cntSportsBag02White" tint="#276182" />
+      <row mesh="@:Entities/LootContainers/zpackRedPrefab.prefab"  icon="cntSportsBag02White" tint="#793B3E" />
+      <row mesh="@:Entities/LootContainers/zpackGoldPrefab.prefab" icon="cntSportsBag02White" tint="#D34B08" />
+      <row mesh="@:Entities/LootContainers/duffle01Prefab.prefab"  icon="cntDuffle01"         tint="#FFFFFF" />
+      <row default="true"                                          icon="cntSportsBag02White" tint="#4B5320" />
+    </bind>
     <append xpath="/items">
-      <item name="AutoLoot_{lootContainer/@name}">
+      <item name="AutoLoot_{$lootContainer/@name}">
         <property name="Extends" value="AutoLoot_Base" />
         <property name="CreativeMode" value="Player" />
-        <property name="AutoLootSubstituteFor" value="{lootContainer/@name}" />
-        <property name="CustomIcon" value="{icon(lootContainer/property[@name='Mesh']/@value)}" />
-        <property name="CustomIconTint" value="{tint(lootContainer/property[@name='Mesh']/@value)}" />
+        <property name="AutoLootSubstituteFor" value="{$lootContainer/@name}" />
+        <property name="CustomIcon"
+                  value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $loot[@default='true']/@icon}" />
+        <property name="CustomIconTint"
+                  value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@tint ?: $loot[@default='true']/@tint}" />
         <property class="Action0">
           <property name="Class" value="OpenLootBundle" />
           <property name="Delay" value="0" />
           <property name="Sound_start" value="close_garbage" />
-          <property name="LootList" value="{lootContainer/property[@name='LootList']/@value}" />
+          <property name="LootList" value="{$lootContainer/property[@name='LootList']/@value}" />
         </property>
       </item>
     </append>
