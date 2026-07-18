@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/buffs">
+    <!-- Marker buff indicating any loot dropped from the entity should be auto-collected if possible. -->
+    <!-- The buff name is reference by code; do not change. -->
+    <buff name="buff_auto_collect_loot" remove_on_death="false">
+      <duration value="0" /> <!-- infinite -->
+      <stack_type value="ignore" />
+    </buff>
+
+    <!-- Apply this buff if you want to ensure buff_auto_collect_loot expires after a while. Refresh this buff to refresh the timer. -->
+    <!-- The buff name is reference by code; do not change. -->
+    <buff name="buff_auto_collect_loot_timer" remove_on_death="false">
+      <duration value="300" /> <!-- 5 IRL minutes -->
+      <stack_type value="replace" />
+      <effect_group>
+        <triggered_effect trigger="onSelfBuffFinish" action="RemoveBuff" buff="buff_auto_collect_loot" />
+      </effect_group>
+    </buff>
+  </append>
+</config>

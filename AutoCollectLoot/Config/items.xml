@@ -1,13 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <append xpath="/items">
-    <item name="item_loot_container_base_strong">
+    <item name="AutoLoot_Base">
       <property name="CreativeMode" value="None" />
-      <property name="CustomIcon" value="cntSportsBag02White" />
-      <property name="ItemTypeIcon" value="bundle" />>
-      <property name="CustomIconTint" value="210,0,210" />
-      <property name="HoldType" value="45" />
+      <property name="CustomIcon" value="cntDuffle01" />
       <property name="Meshfile" value="@:Entities/LootContainers/zpackPrefab.prefab" />
+      <property name="ItemTypeIcon" value="bundle" />
+      <property name="HoldType" value="45" />
       <property name="Material" value="Mmetal" />
       <property name="Stacknumber" value="1000" />
       <property name="Weight" value="0" />
@@ -18,116 +17,26 @@
         <property name="Delay" value="0" />
       </property>
     </item>
-    <item name="item_loot_container_regular_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_regular_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackReg" />
-      </property>
-    </item>
-    <item name="item_loot_container_nurse_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_nurse_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackNurse" />
-      </property>
-    </item>
-    <item name="item_loot_container_lab_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_lab_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackLab" />
-      </property>
-    </item>
-    <item name="item_loot_container_utility_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_utility_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackUtility" />
-      </property>
-    </item>
-    <item name="item_loot_container_soldier_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_soldier_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackSoldier" />
-      </property>
-    </item>
-    <item name="item_loot_container_thug_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="DescriptionKey" value="item_loot_container_thug_desc_strong" />
-      <property name="CustomIconTint" value="78783A" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackThug" />
-      </property>
-    </item>
-    <item name="item_loot_container_strong_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="CustomIconTint" value="276182" />
-      <property name="DescriptionKey" value="item_loot_container_strong_desc_strong" />
-      <property name="Mesh" value="@:Entities/LootContainers/zpackBluePrefab.prefab" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackStrong" />
-      </property>
-    </item>
-    <item name="item_loot_container_boss_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="CustomIconTint" value="793B3E" />
-      <property name="DescriptionKey" value="item_loot_container_boss_desc_strong" />
-      <property name="Mesh" value="@:Entities/LootContainers/zpackRedPrefab.prefab" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackBoss" />
-      </property>
-    </item>
-    <item name="item_loot_container_plague_strong">
-      <property name="Extends" value="item_loot_container_base_strong" />
-      <property name="CreativeMode" value="Player" />
-      <property name="CustomIconTint" value="D34B08" />
-      <property name="DescriptionKey" value="item_loot_container_plague_desc_strong" />
-      <property name="Mesh" value="@:Entities/LootContainers/zpackGoldPrefab.prefab" />
-      <property class="Action0">
-        <property name="Class" value="OpenLootBundle" />
-        <property name="Delay" value="0" />
-        <property name="Sound_start" value="close_garbage" />
-        <property name="LootList" value="zPackPlague" />
-      </property>
-    </item>
   </append>
+  <foreach source="entityclasses"
+           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]"
+           as="lootContainer">
+    <function name="icon" method="AutoCollectLoot.LootItems.CustomIcon, AutoCollectLoot" />
+    <function name="tint" method="AutoCollectLoot.LootItems.CustomTint, AutoCollectLoot" />
+    <append xpath="/items">
+      <item name="AutoLoot_{lootContainer/@name}">
+        <property name="Extends" value="AutoLoot_Base" />
+        <property name="CreativeMode" value="Player" />
+        <property name="AutoLootSubstituteFor" value="{lootContainer/@name}" />
+        <property name="CustomIcon" value="{icon(lootContainer/property[@name='Mesh']/@value)}" />
+        <property name="CustomIconTint" value="{tint(lootContainer/property[@name='Mesh']/@value)}" />
+        <property class="Action0">
+          <property name="Class" value="OpenLootBundle" />
+          <property name="Delay" value="0" />
+          <property name="Sound_start" value="close_garbage" />
+          <property name="LootList" value="{lootContainer/property[@name='LootList']/@value}" />
+        </property>
+      </item>
+    </append>
+  </foreach>
 </config>

@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 
 namespace AutoCollectLoot.Commands {
-  public class AutoCollectConsoleCommand : ConsoleCmdAbstract {
+  public class AutoLootConsoleCommand : ConsoleCmdAbstract {
     private const string Usage = @"
 
 Usage:
 
-  1. autocollect
-  2. autocollect enable
-  3. autocollect disable
-  4. autocollect enableoutsidebloodmoon
-  5. autocollect disableoutsidebloodmoon
+  1. autoloot
+  2. autoloot enable
+  3. autoloot disable
+  4. autoloot enableoutsidebloodmoon
+  5. autoloot disableoutsidebloodmoon
 
 ";
 
@@ -24,14 +24,14 @@ Usage:
     }
 
     public override string[] getCommands() {
-      return new[] { "autocollect" };
+      return new[] { "autoloot" };
     }
 
     public override void Execute(List<string> @params, CommandSenderInfo senderInfo) {
       try {
         if (@params.Count < 1) {
           SdtdConsole.Instance.Output(
-            $"AutoCollectLoot current state:\n    Enabled: {AutoCollectLoot.Enabled}\n    EnabledOutsideBloodMoon: {AutoCollectLoot.EnabledOutsideBloodMoon}\n    LootItemNameProperty: {AutoCollectLoot.LootItemNameProperty}");
+            $"AutoCollectLoot current state:\n    Enabled: {AutoCollectLoot.Enabled}\n    EnabledOutsideBloodMoon: {AutoCollectLoot.EnabledOutsideBloodMoon}");
           return;
         }
 
@@ -54,7 +54,7 @@ Usage:
             break;
         }
       } catch (Exception e) {
-        Log.Error("Error in AutoCollectConsoleCommand.Execute: " + e.Message);
+        Log.Error("Error in AutoLootConsoleCommand.Execute: " + e.Message);
       }
     }
   }

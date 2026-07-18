@@ -73,21 +73,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoCollectLoot.cs" />
-    <Compile Include="Commands\AutoCollectConsoleCommand.cs" />
-    <Compile Include="Patches\EntityAliveDropItemOnDeathPatch.cs" />
-    <Compile Include="Patches\Initializer.cs" />
+    <Compile Include="BuffManager.cs" />
+    <Compile Include="Commands\AutoLootConsoleCommand.cs" />
+    <Compile Include="ConfigManager.cs" />
+    <Compile Include="LootItems.cs" />
+    <Compile Include="LootLottery.cs" />
+    <Compile Include="ModApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\entityclasses.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Config\buffs.xml" />
     <Content Include="Config\items.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Config\worldglobal.xml" />
     <Content Include="ModInfo.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StrongMods\StrongMods.csproj">
+      <Project>{74f67ce9-f5c2-4714-9ac1-5abe2c44a4c3}</Project>
+      <Name>StrongMods</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
