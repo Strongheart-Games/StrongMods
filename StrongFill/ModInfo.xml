@@ -3,7 +3,7 @@
   <Name value="StrongFill" />
   <Version value="1.0.0" />
   <DisplayName value="StrongFill" />
-  <Description value="StrongFill" />
+  <Description value="Fill gaps between your builds and the surrounding terrain. Just craft and place on the adjacent terrain block." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/str0ngh34rt/StrongMods" />
 </ModInfo>
