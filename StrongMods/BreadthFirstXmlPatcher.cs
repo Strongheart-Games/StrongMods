@@ -47,7 +47,9 @@ namespace StrongMods {
       // Mirror the vanilla eligibility filters up front so phases 1 and 2 only touch files
       // that phase 3 will actually consume.
       var eligible = new List<WorldStaticData.XmlLoadInfo>();
-      foreach (WorldStaticData.XmlLoadInfo loadInfo in WorldStaticData.xmlsToLoad) {
+      // ReSharper disable once ForCanBeConvertedToForeach
+      for (var index = 0; index < WorldStaticData.xmlsToLoad.Length; index++) {
+        WorldStaticData.XmlLoadInfo loadInfo = WorldStaticData.xmlsToLoad[index];
         if (onlyXmls != null && !onlyXmls.ContainsCaseInsensitive(loadInfo.XmlName)) {
           continue;
         }
@@ -72,7 +74,9 @@ namespace StrongMods {
 
         // Phase 1: load all base XMLs, in xmlsToLoad order.
         Log.Out("[BreadthFirstXmlPatcher] Loading base XML");
-        foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var index = 0; index < eligible.Count; index++) {
+          WorldStaticData.XmlLoadInfo loadInfo = eligible[index];
           yield return LoadBaseXmlCo(loadInfo.XmlName);
           if (timer.ElapsedMilliseconds > Constants.cMaxLoadTimePerFrameMillis) {
             yield return null;
@@ -80,26 +84,26 @@ namespace StrongMods {
           }
         }
 
-        // Phase 2: apply patches breadth-first — all of one mod's patches (in xmlsToLoad
-        // order) before moving on to the next mod.
-        foreach (Mod mod in ModManager.GetLoadedMods()) {
+        // Phase 2: apply patches breadth-first — all of one mod's patches (in xmlsToLoad order) before moving on to
+        // the next mod.
+        List<Mod> mods = ModManager.GetLoadedMods();
+        // ReSharper disable once LoopCanBeConvertedToQuery ForCanBeConvertedToForeach
+        for (var index = 0; index < mods.Count; index++) {
+          Mod mod = mods[index];
           if (!mod.GameConfigMod) {
             continue;
           }
 
-          if (mod.HasInvalidModInfo()) {
-            Log.Error($"[BreadthFirstXmlPatcher] Skipping XML patches from mod '{mod.Name}'");
-            continue;
-          }
-
           Log.Out($"[BreadthFirstXmlPatcher] Applying XML patches from mod '{mod.Name}'");
-          foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
+          // ReSharper disable once ForCanBeConvertedToForeach
+          for (var i = 0; i < eligible.Count; i++) {
+            WorldStaticData.XmlLoadInfo loadInfo = eligible[i];
             if (!s_patchedFiles.TryGetValue(loadInfo.XmlName, out XmlFile targetFile) || targetFile == null) {
               continue; // Base load failed; already logged in phase 1.
             }
 
             var patchFilePath = $"{mod.Path}/Config/{loadInfo.XmlName}.xml";
-            if (!SdFile.Exists(patchFilePath)) {
+            if (!CaseSensitiveFilesystem.Exists(patchFilePath)) {
               continue;
             }
 
@@ -123,7 +127,9 @@ namespace StrongMods {
         // Phase 3: the vanilla per-file pipeline. loadSingleXml runs unmodified (conditionals,
         // ConfigsDump, client cache compression, LoadMethod, ExecuteAfterLoad); its call to
         // LoadAndPatchConfig is intercepted by our prefix and served from the cache.
-        foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var index = 0; index < eligible.Count; index++) {
+          WorldStaticData.XmlLoadInfo loadInfo = eligible[index];
           if (progressDelegate != null && loadInfo.LoadStepLocalizationKey != null) {
             progressDelegate(Localization.Get(loadInfo.LoadStepLocalizationKey), 0.0f);
           }
@@ -170,6 +176,7 @@ namespace StrongMods {
       return configName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase) ? configName[..^4] : configName;
     }
 
+    [HarmonyPatchCategory("BreadthFirstXmlPatcher")]
     [HarmonyPatch(typeof(WorldStaticData), nameof(WorldStaticData.LoadAllXmlsCo))]
     public static class WorldStaticDataLoadAllXmlsCoPatch {
       // Parameter names must match the original method's exactly; Harmony binds by name.
@@ -183,6 +190,7 @@ namespace StrongMods {
       }
     }
 
+    [HarmonyPatchCategory("BreadthFirstXmlPatcher")]
     [HarmonyPatch(typeof(XmlPatcher), nameof(XmlPatcher.LoadAndPatchConfig))]
     public static class XmlPatcherLoadAndPatchConfigPatch {
       public static bool Prefix(

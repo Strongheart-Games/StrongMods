@@ -45,11 +45,11 @@ outside and mods on the inside: it finishes `items.xml` for every mod before it 
 The breadth-first patcher inverts the loops. It finishes **every file for one mod** before starting
 the next mod in load order. So when your `<foreach>` runs:
 
-| | State when your loop runs |
-|---|---|
-| Vanilla XML | Fully loaded |
-| Mods **before** you in load order | Fully applied, every file |
-| Mods **after** you in load order | Not applied — invisible to your loop |
+|                                   | State when your loop runs            |
+|-----------------------------------|--------------------------------------|
+| Vanilla XML                       | Fully loaded                         |
+| Mods **before** you in load order | Fully applied, every file            |
+| Mods **after** you in load order  | Not applied — invisible to your loop |
 
 That last row is not a bug, it's arithmetic: a mod that hasn't run yet hasn't added anything to see.
 If you need to see another mod's content, load after it.
@@ -62,11 +62,11 @@ If you need to see another mod's content, load after it.
 </foreach>
 ```
 
-| Attribute | Required | What it does |
-|---|---|---|
-| `xpath` | yes | Selects the nodes to loop over. Runs once, in document order. |
-| `as` | yes | Names the current node so expressions can refer to it as `$name`. Letters, digits, underscores; must not start with a digit. |
-| `source` | no | Which config file to select from, named **without the `.xml`** — `source="items"`, not `source="items.xml"`. Defaults to the file your patch is already targeting. |
+| Attribute | Required | What it does                                                                                                                                                       |
+|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `xpath`   | yes      | Selects the nodes to loop over. Runs once, in document order.                                                                                                      |
+| `as`      | yes      | Names the current node so expressions can refer to it as `$name`. Letters, digits, underscores; must not start with a digit.                                       |
+| `source`  | no       | Which config file to select from, named **without the `.xml`** — `source="items"`, not `source="items.xml"`. Defaults to the file your patch is already targeting. |
 
 The body is **ordinary patch commands** — `append`, `set`, `setattribute`, `remove`, `insertBefore`,
 `insertAfter`, and `<foreach>` itself. Anything you can write in a patch file, you can write here.
@@ -329,10 +329,10 @@ could write inside `{...}`, minus `?:` and calls to other functions.
 Same shape as `ServerClass` and friends, plus the method on the end. The mod is optional; leave it
 off and the game looks in `Assembly-CSharp`.
 
-| Reference | Resolves to |
-|---|---|
+| Reference                                       | Resolves to                                                   |
+|-------------------------------------------------|---------------------------------------------------------------|
 | `StrongAutoLoot.Tints.FromName, StrongAutoLoot` | `FromName` on `StrongAutoLoot.Tints`, in mod `StrongAutoLoot` |
-| `MyMod.Helpers.Slug` | `Slug` on `MyMod.Helpers`, in `Assembly-CSharp` |
+| `MyMod.Helpers.Slug`                            | `Slug` on `MyMod.Helpers`, in `Assembly-CSharp`               |
 
 ### Writing one
 
@@ -391,21 +391,21 @@ a node that didn't have what your template needed.
 **Errors** kill the whole loop. These are mod bugs — something that would fail identically for every
 node, so there's no point trying the other thirty-nine.
 
-| What happened | Result |
-|---|---|
-| `{...}` matched 0 nodes, no `?:` | Skip |
-| `{...}` matched 0 nodes, `?:` present | Right side runs; if it's also empty → Skip |
-| 2+ nodes matched, on either side of `?:` | Skip — ambiguity never falls through to the default |
-| Function returned `null` (no `?:`) | Skip |
-| Function returned `null` (left of `?:`) | Right side runs |
-| Function threw | Skip |
-| Substituted element name isn't valid XML | Skip |
-| Unknown `source` file, on `<foreach>` or `<bind>` | Error |
-| Bad `xpath`, missing `as`, name collision | Error |
-| `$name` that isn't bound; unknown function | Error |
-| Malformed expression: unbalanced brackets, unterminated quote, chained `?:` | Error |
-| `<bind>` with both inline content and `source`/`xpath`, or neither | Error |
-| Function won't resolve, isn't tagged, wrong signature, wrong argument count | Error |
+| What happened                                                               | Result                                              |
+|-----------------------------------------------------------------------------|-----------------------------------------------------|
+| `{...}` matched 0 nodes, no `?:`                                            | Skip                                                |
+| `{...}` matched 0 nodes, `?:` present                                       | Right side runs; if it's also empty → Skip          |
+| 2+ nodes matched, on either side of `?:`                                    | Skip — ambiguity never falls through to the default |
+| Function returned `null` (no `?:`)                                          | Skip                                                |
+| Function returned `null` (left of `?:`)                                     | Right side runs                                     |
+| Function threw                                                              | Skip                                                |
+| Substituted element name isn't valid XML                                    | Skip                                                |
+| Unknown `source` file, on `<foreach>` or `<bind>`                           | Error                                               |
+| Bad `xpath`, missing `as`, name collision                                   | Error                                               |
+| `$name` that isn't bound; unknown function                                  | Error                                               |
+| Malformed expression: unbalanced brackets, unterminated quote, chained `?:` | Error                                               |
+| `<bind>` with both inline content and `source`/`xpath`, or neither          | Error                                               |
+| Function won't resolve, isn't tagged, wrong signature, wrong argument count | Error                                               |
 
 Skips are quiet by design — nothing crashes, you just get fewer items than you expected. **If your
 loop produced 12 things instead of 40, read the log.** Every skip names the file, the line, the
@@ -449,39 +449,39 @@ ambiguous, and ambiguous lookups skip the iteration rather than guessing — eve
 
 ### `<foreach>`
 
-| Attribute | Required | Default |
-|---|---|---|
-| `xpath` | yes | — |
-| `as` | yes | — |
-| `source` | no | The patch's own target file. Named without `.xml` (`items`, not `items.xml`). |
+| Attribute | Required | Default                                                                       |
+|-----------|----------|-------------------------------------------------------------------------------|
+| `xpath`   | yes      | —                                                                             |
+| `as`      | yes      | —                                                                             |
+| `source`  | no       | The patch's own target file. Named without `.xml` (`items`, not `items.xml`). |
 
 ### `<bind>`
 
-| Attribute | Required | Notes |
-|---|---|---|
-| `name` | yes | Direct child of `<foreach>`; scoped to that loop; usable as `$name` |
-| `source` | no | Named without `.xml`; defaults to the patch's own target file |
-| `xpath` | with `source`, or alone | Selects the node-set; mutually exclusive with inline children |
+| Attribute | Required                | Notes                                                               |
+|-----------|-------------------------|---------------------------------------------------------------------|
+| `name`    | yes                     | Direct child of `<foreach>`; scoped to that loop; usable as `$name` |
+| `source`  | no                      | Named without `.xml`; defaults to the patch's own target file       |
+| `xpath`   | with `source`, or alone | Selects the node-set; mutually exclusive with inline children       |
 
 ### `<function>`
 
-| Attribute | Required | Notes |
-|---|---|---|
-| `name` | yes | Direct child of `<foreach>`; scoped to that loop |
-| `method` | yes | `[namespace.]Class.Method, [mod]` — mod optional, defaults to `Assembly-CSharp` |
+| Attribute | Required | Notes                                                                           |
+|-----------|----------|---------------------------------------------------------------------------------|
+| `name`    | yes      | Direct child of `<foreach>`; scoped to that loop                                |
+| `method`  | yes      | `[namespace.]Class.Method, [mod]` — mod optional, defaults to `Assembly-CSharp` |
 
 ### Expressions
 
-| Syntax | Meaning |
-|---|---|
-| `{$name}` | String-value of the bound node |
-| `{$name/xpath}` | Any XPath 1.0 over the bindings — must land on exactly one node |
-| `{$table[@key = $item/@k]/@col}` | Table lookup against a `<bind>` |
-| `{left ?: right}` | If `left` selects no nodes (or a call returns null), use `right` |
-| `{count($x/y)}` | XPath scalars are fine and never skip |
-| `{fn($arg, $arg)}` | Call a declared function; arguments are expressions |
-| `{{` `}}` | Literal `{` `}` |
-| `foreach-name="..."` | Sets the element's tag name |
+| Syntax                           | Meaning                                                          |
+|----------------------------------|------------------------------------------------------------------|
+| `{$name}`                        | String-value of the bound node                                   |
+| `{$name/xpath}`                  | Any XPath 1.0 over the bindings — must land on exactly one node  |
+| `{$table[@key = $item/@k]/@col}` | Table lookup against a `<bind>`                                  |
+| `{left ?: right}`                | If `left` selects no nodes (or a call returns null), use `right` |
+| `{count($x/y)}`                  | XPath scalars are fine and never skip                            |
+| `{fn($arg, $arg)}`               | Call a declared function; arguments are expressions              |
+| `{{` `}}`                        | Literal `{` `}`                                                  |
+| `foreach-name="..."`             | Sets the element's tag name                                      |
 
 Valid in attribute values, element text, body command XPaths, and `foreach-name`. Body command
 `xpath` attributes themselves are vanilla XPath — variables only exist inside `{...}`.

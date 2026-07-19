@@ -84,8 +84,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BreadthFirstXmlPatcher.cs" />
-    <Compile Include="FilenameCaseSensitivity.cs" />
+    <Compile Include="CaseSensitiveFilesystem.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="ModApi.cs" />
+    <Compile Include="ModExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XmlPatchFunctionAttribute.cs" />
     <Compile Include="XmlPatchMethodForeach.cs" />

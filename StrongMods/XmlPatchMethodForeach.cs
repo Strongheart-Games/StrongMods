@@ -36,7 +36,6 @@ namespace StrongMods {
   ///   Because XML forbids '{' in tag names, dynamic element names use the reserved
   ///   <see cref="DynamicNameAttribute" /> attribute instead; see its doc comment.
   /// </summary>
-  [XmlPatchMethodsClass]
   public static class XmlPatchMethodForeach {
     /// <summary>
     ///   XML cannot represent '{' in a tag name, so dynamic element names are expressed with this
@@ -61,7 +60,6 @@ namespace StrongMods {
     private static readonly List<ScopeFrame> s_scope = new();
     private static XPathNavigator s_contextNavigator;
 
-    [XmlPatchMethod("foreach")]
     public static int Foreach(
       XmlFile targetFile,
       string xpath,
@@ -301,7 +299,8 @@ namespace StrongMods {
             result.Add(childClone);
             break;
           }
-          case XCData cdata: {  // Must precede XText: XCData derives from it.
+          case XCData cdata: {
+            // Must precede XText: XCData derives from it.
             if (!TrySubstitute(cdata.Value, out var text, out failure)) {
               return false;
             }
@@ -518,13 +517,6 @@ namespace StrongMods {
       }
 
       return true;
-    }
-
-    /// <summary>The three outcomes of one side of an expression: a value, coalescable emptiness, or failure.</summary>
-    private enum OperandResult {
-      Success,
-      Empty,
-      Failed
     }
 
     /// <summary>
@@ -1174,6 +1166,13 @@ namespace StrongMods {
         default:
           return match.NodeType.ToString();
       }
+    }
+
+    /// <summary>The three outcomes of one side of an expression: a value, coalescable emptiness, or failure.</summary>
+    private enum OperandResult {
+      Success,
+      Empty,
+      Failed
     }
 
     /// <summary>
