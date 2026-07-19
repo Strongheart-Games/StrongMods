@@ -87,6 +87,11 @@ namespace StrongMods {
             continue;
           }
 
+          if (mod.HasInvalidModInfo()) {
+            Log.Error($"[BreadthFirstXmlPatcher] Skipping XML patches from mod '{mod.Name}'");
+            continue;
+          }
+
           Log.Out($"[BreadthFirstXmlPatcher] Applying XML patches from mod '{mod.Name}'");
           foreach (WorldStaticData.XmlLoadInfo loadInfo in eligible) {
             if (!s_patchedFiles.TryGetValue(loadInfo.XmlName, out XmlFile targetFile) || targetFile == null) {
