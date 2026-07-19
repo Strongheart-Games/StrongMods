@@ -95,6 +95,8 @@
     <ProjectReference Include="..\StrongMods\StrongMods.csproj">
       <Project>{74f67ce9-f5c2-4714-9ac1-5abe2c44a4c3}</Project>
       <Name>StrongMods</Name>
+      <Private>false</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
