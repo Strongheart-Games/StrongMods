@@ -3,7 +3,7 @@
   <foreach source="entityclasses"
            xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer'] and not(property[@name='LootList'][@value='cntDropBag'])]"
            as="lootContainer">
-    <bind name="loot">
+    <bind name="icons">
       <row mesh="@:Entities/LootContainers/zpackPrefab.prefab"     icon="cntSportsBag02White" tint="#78783A" />
       <row mesh="@:Entities/LootContainers/zpackBluePrefab.prefab" icon="cntSportsBag02White" tint="#276182" />
       <row mesh="@:Entities/LootContainers/zpackRedPrefab.prefab"  icon="cntSportsBag02White" tint="#793B3E" />
@@ -14,8 +14,9 @@
     <append xpath="/items">
       <item name="AutoLoot_{$lootContainer/@name}">
         <property name="CreativeMode" value="Player" />
-        <property name="CustomIcon" value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $loot[@default='true']/@icon}" />
-        <property name="CustomIconTint" value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@tint ?: $loot[@default='true']/@tint}" />
+        <property name="Meshfile" value="{$lootContainer/property[@name='Mesh']/@value}" />
+        <property name="CustomIcon" value="{$icons[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $icons[@default='true']/@icon}" />
+        <property name="CustomIconTint" value="{$icons[@mesh = $lootContainer/property[@name='Mesh']/@value]/@tint ?: $icons[@default='true']/@tint}" />
         <property name="ItemTypeIcon" value="bundle" />
         <property name="HoldType" value="45" />
         <property name="Material" value="Mmetal" />
