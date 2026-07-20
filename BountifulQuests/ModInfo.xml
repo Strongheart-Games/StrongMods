@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ModInfo>
   <Name value="BountifulQuests" />
   <Version value="2.0.0" />
   <DisplayName value="Bountiful Quests" />
   <Description value="Players can take more than one quest from a trader and can reset the list of offered quests at any time." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/BountifulQuests" />
 </ModInfo>

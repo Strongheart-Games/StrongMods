@@ -5,5 +5,5 @@
   <DisplayName value="DisableLAN" />
   <Description value="Prevents the LAN announcer from binding to port 11000 and taking up resources." />
   <Author value="str0ngh34rt" />
-  <Website value="" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/DisableLAN" />
 </ModInfo>

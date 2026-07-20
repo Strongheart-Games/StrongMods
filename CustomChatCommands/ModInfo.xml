@@ -5,5 +5,5 @@
   <DisplayName value="CustomChatCommands" />
   <Description value="Define custom chat commands in XML, with permission gating and hot reload." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/CustomChatCommands" />
 </ModInfo>

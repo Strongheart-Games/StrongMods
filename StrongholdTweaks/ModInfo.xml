@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ModInfo>
   <Name value="StrongholdTweaks" />
   <Version value="13.0.0" />
   <DisplayName value="Stronghold Tweaks" />
   <Description value="Stronghold-specific game tweaks." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongholdTweaks" />
 </ModInfo>

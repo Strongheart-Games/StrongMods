@@ -5,5 +5,5 @@
   <DisplayName value="Dynamic Land Claim Count" />
   <Description value="Set Land Claim Count, which is normally global, on a per-player basis." />
   <Author value="str0ngh34rt" />
-  <Website value="" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/DynamicLandClaimCount" />
 </ModInfo>

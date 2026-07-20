@@ -5,5 +5,5 @@
   <DisplayName value="QuestUnlockFixes" />
   <Description value="Fix UnlockQuestPOI() that prevents players from fully logging out." />
   <Author value="str0ngh34rt" />
-  <Website value="" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/QuestUnlockFixes" />
 </ModInfo>
