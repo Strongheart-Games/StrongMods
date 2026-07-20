@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="LootDiagnostics" />
+  <Version value="0.0.1" />
+  <DisplayName value="LootDiagnostics" />
+  <Description value="One sentence describing what this mod does." />
+  <Author value="str0ngh34rt" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/LootDiagnostics" />
+</ModInfo>

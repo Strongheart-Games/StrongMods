@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AECVehiclesFixes", "AECVehi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMods", "StrongMods\StrongMods.csproj", "{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LootDiagnostics", "LootDiagnostics\LootDiagnostics.csproj", "{DD41E183-5878-4873-8645-B73E6C229833}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,5 +170,9 @@ Global
 		{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD41E183-5878-4873-8645-B73E6C229833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD41E183-5878-4873-8645-B73E6C229833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD41E183-5878-4873-8645-B73E6C229833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD41E183-5878-4873-8645-B73E6C229833}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
