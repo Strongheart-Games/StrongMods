@@ -17,39 +17,9 @@
   <conditional>
     <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
       <!-- The mini-boss loot container is super hard to see, so change it to a red z-pack -->
-      <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">@:Entities/LootContainers/zpackRedPrefab.prefab
+      <setattribute xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']/property[@name='Mesh']" name="value">
+        @:Entities/LootContainers/zpackRedPrefab.prefab
       </setattribute>
-
-      <append xpath="/entity_classes/entity_class[@name='ChargedEliteLootContainer']">
-        <property name="loot_item_name_strong" value="item_loot_container_charged_elite_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='InfernalEliteLootContainer']">
-        <property name="loot_item_name_strong" value="item_loot_container_infernal_elite_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='smallMiniBossLootContainer']">
-        <property name="loot_item_name_strong" value="item_loot_container_small_mini_boss_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='MiniBossLootContainer']">
-        <property name="loot_item_name_strong" value="item_loot_container_mini_boss_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerShocker']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_shocker_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerMutantHog']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_mutant_hog_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerBull']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_bull_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerVeteran']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_veteran_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerAncientYeti']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_ancient_yeti_strong" />
-      </append>
-      <append xpath="/entity_classes/entity_class[@name='BossLootContainerCarrier']">
-        <property name="loot_item_name_strong" value="item_loot_container_boss_carrier_strong" />
-      </append>
     </if>
   </conditional>
 
