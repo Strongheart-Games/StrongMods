@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="ProgressiveBiomes" />
+  <Version value="1.0.0" />
+  <DisplayName value="Progressive Biomes" />
+  <Description value="Progressive Biomes rebalances wandering zombie spawns to make each biome feel like a meaningful step up in difficulty." />
+  <Author value="str0ngh34rt" />
+  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/ProgressiveBiomes" />
+</ModInfo>

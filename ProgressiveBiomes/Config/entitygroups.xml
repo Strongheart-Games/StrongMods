@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <conditional>
+    <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
+      <!-- ANIMALS -->
+      <remove xpath="/entitygroups/entitygroup[@name='WildGameForestNight']/e[contains(@n,'Boss')]" />
+      <remove xpath="/entitygroups/entitygroup[@name='EnemyAnimalsForest']/e[contains(@n,'Boss')]" />
+      <remove xpath="/entitygroups/entitygroup[starts-with(@name, 'EnemyAnimals')]/e[starts-with(@n,'boss')]" />
+
+      <!-- FOREST, BURNT, DESERT, SNOW -->
+      <remove xpath="/entitygroups/entitygroup[@name = 'ZombiesBurntForestNight']/e[starts-with(@n,'boss')]" />
+      <remove xpath="/entitygroups/entitygroup[@name = 'ZombiesDesertNight']/e[starts-with(@n,'boss')]" />
+      <remove xpath="/entitygroups/entitygroup[@name = 'ZombiesSnowNight']/e[starts-with(@n,'boss')]" />
+      <append xpath="/entitygroups">
+        <entitygroup name="BossesForestNight">
+          <e n="animalBossGrace" p=".25" />
+          <e n="BossMutantHog" p=".15" />
+          <e n="none" p="80" />
+        </entitygroup>
+        <entitygroup name="BossesBurntForestNight">
+          <e n="bossBurningFlesh" p="1" />
+          <e n="bossDevourer" p="2" />
+          <e n="bossBiba" p=".5" />
+          <e n="bossAlex" p=".5" />
+          <e n="none" p="40" />
+        </entitygroup>
+        <entitygroup name="BossesDesertNight">
+          <e n="bossBurningFlesh" p="1" />
+          <e n="bossGargul" p="1" />
+          <e n="bossBiba" p=".5" />
+          <e n="bossAlex" p=".5" />
+          <e n="none" p="20" />
+        </entitygroup>
+        <entitygroup name="BossesSnowNight">
+          <e n="bossBearDaddy" p="1.5" />
+          <e n="bossBitch" p="1.5" />
+          <e n="bossAncientYeti" p=".1" />
+          <e n="bossBiba" p=".5" />
+          <e n="none" p="10" />
+        </entitygroup>
+      </append>
+
+      <!-- WASTELAND -->
+      <remove xpath="/entitygroups/entitygroup[starts-with(@name, 'ZombiesWasteland')]/e[starts-with(@n,'boss')]" />
+      <append xpath="/entitygroups">
+        <entitygroup name="BossesWasteland">
+          <e n="bossCholera" p=".09" />
+          <e n="bossBurningFlesh" p=".09" />
+          <e n="bossBitch" p=".09" />
+          <e n="bossDevourer" p=".09" />
+          <e n="bossGargul" p=".12" />
+          <e n="bossBearDaddy" p=".09" />
+          <e n="bossBull" p=".08" />
+          <e n="bossShocker" p=".08" />
+          <e n="bossVeteran" p=".08" />
+          <e n="bossBiba" p=".03" />
+          <e n="bossAlex" p=".03" />
+          <e n="none" p="5" />
+        </entitygroup>
+        <entitygroup name="BossesWastelandNight">
+          <e n="bossCholera" p=".25" />
+          <e n="bossBurningFlesh" p=".25" />
+          <e n="bossBitch" p=".25" />
+          <e n="bossDevourer" p=".25" />
+          <e n="bossBearDaddy" p=".25" />
+          <e n="bossGargul" p=".25" />
+          <e n="bossBull" p=".12" />
+          <e n="bossShocker" p=".12" />
+          <e n="bossVeteran" p=".12" />
+          <e n="bossCarrier" p=".06" />
+          <e n="bossBiba" p=".04" />
+          <e n="bossAlex" p=".04" />
+          <e n="none" p="10" />
+        </entitygroup>
+      </append>
+    </if>
+  </conditional>
+</config>

@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <append xpath="/sandbox_overrides">
+    <sandbox_override option="BiomeZombieRespawn" />
+    <sandbox_override option="BiomeAnimalRespawn" />
+    <sandbox_override option="BiomeEnemyDensity" />
+  </append>
+</config>
