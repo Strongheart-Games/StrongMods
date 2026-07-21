@@ -23,7 +23,12 @@ with the Wasteland earning its reputation as the deadliest region in the game.
 * Copy the `ZZ_ProgressiveBiomes/` directory into `Mods/`
 * Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/ZZ_ProgressiveBiomes/ModInfo.xml`, otherwise
   the mod won't be loaded
+* Make sure these sandbox options are set to `Default` or this mod will be ignored:
+  * `BiomeZombieRespawn`
+  * `BiomeAnimalRespawn`
+  * `BiomeEnemyDensity`
 
+Other installation notes:
 * Server-side only
 * EAC friendly
 * No configuration options for now
