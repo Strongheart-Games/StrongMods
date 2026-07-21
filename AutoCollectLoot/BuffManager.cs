@@ -16,7 +16,7 @@ namespace AutoCollectLoot {
       }
 
       entity.Buffs.AddBuff(BuffAutoCollectLoot);
-      if (!isHordeZombie) {
+      if (!AutoCollectLoot.EnabledOutsideBloodMoon || !isHordeZombie) {
         // TODO: Refresh this buff periodically during horde night
         entity.Buffs.AddBuff(BuffAutoCollectLootTimer);
       }
@@ -33,11 +33,15 @@ namespace AutoCollectLoot {
   [HarmonyPatch(typeof(Entity), nameof(Entity.DropBagServer))]
   public static class Entity_DropBagServer_Patch {
     public static bool Prefix(Entity __instance) {
-      if (__instance is EntityAlive entity && entity.Buffs.HasBuff(BuffManager.BuffAutoCollectLoot)) {
-        return !AutoCollectLoot.TryCollect(entity);
+      if (__instance is not EntityAlive entity || !entity.Buffs.HasBuff(BuffManager.BuffAutoCollectLoot)) {
+        return true;
       }
 
-      return true;
+      var collected = AutoCollectLoot.TryCollect(entity);
+      Log.Out(collected
+        ? $"[AutoCollectLoot] {entity.EntityName} collected loot"
+        : $"[AutoCollectLoot] Dropping loot for {entity.EntityName}; collecting failed.");
+      return !collected;
     }
   }
 }

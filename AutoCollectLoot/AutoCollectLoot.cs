@@ -12,19 +12,13 @@ namespace AutoCollectLoot {
         return false;
       }
 
-      Log.Out($"[AutoCollectLoot] Collecting loot for {entity.EntityName}");
-
       ItemClass lootItem = GetLootItem(entity);
       if (lootItem is null) {
         return false;
       }
 
       EntityPlayer player = ChooseRecipient(entity);
-      if (player is null) {
-        return false;
-      }
-
-      return TryGiveLoot(lootItem, player);
+      return player is not null && TryGiveLoot(lootItem, player);
     }
 
     public static bool IsEnabledNow() {
@@ -56,7 +50,6 @@ namespace AutoCollectLoot {
       }
 
       if (LootItems.TryGetLootItem(dropped.entityClassName, out ItemClass item)) {
-        Log.Out($"[AutoCollectLoot] Found loot item {item.Name} for {entity.entityName}");
         return item;
       }
 
@@ -77,7 +70,12 @@ namespace AutoCollectLoot {
       var itemStack = new ItemStack(new ItemValue(item.Id), 1);
 
       if (!player.isEntityRemote) {
-        return player.bag.AddItem(itemStack);
+        if (!player.bag.AddItem(itemStack)) {
+          return false;
+        }
+
+        Log.Out($"[AutoCollectLoot] {player.PlayerDisplayName} collected {item.Name}");
+        return true;
       }
 
       ClientInfo client = ConnectionManager.Instance.Clients.ForEntityId(player.entityId);
@@ -98,6 +96,7 @@ namespace AutoCollectLoot {
       world.SpawnEntityInWorld(loot);
       client.SendPackage(NetPackageManager.GetPackage<NetPackageEntityCollect>().Setup(loot.entityId, client.entityId));
       world.RemoveEntity(loot.entityId, EnumRemoveEntityReason.Despawned);
+      Log.Out($"[AutoCollectLoot] {player.PlayerDisplayName} collected {item.Name}");
       return true;
     }
   }
