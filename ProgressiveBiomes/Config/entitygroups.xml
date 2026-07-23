@@ -3,9 +3,7 @@
   <conditional>
     <if cond="mod_loaded('ProjectZ') or mod_loaded('Z_Bosses')">
       <!-- ANIMALS -->
-      <remove xpath="/entitygroups/entitygroup[@name='WildGameForestNight']/e[contains(@n,'Boss')]" />
       <remove xpath="/entitygroups/entitygroup[@name='EnemyAnimalsForest']/e[contains(@n,'Boss')]" />
-      <remove xpath="/entitygroups/entitygroup[starts-with(@name, 'EnemyAnimals')]/e[starts-with(@n,'boss')]" />
 
       <!-- FOREST, BURNT, DESERT, SNOW -->
       <remove xpath="/entitygroups/entitygroup[@name = 'ZombiesBurntForestNight']/e[starts-with(@n,'boss')]" />
