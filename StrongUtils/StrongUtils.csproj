@@ -82,6 +82,7 @@
     <Compile Include="Commands\DenyAllCommand.cs" />
     <Compile Include="Commands\FastTravelCommand.cs" />
     <Compile Include="Commands\GracefulShutdownCommand.cs" />
+    <Compile Include="Commands\LootCommandPatch.cs" />
     <Compile Include="Commands\OnGameStartDoneCommand.cs" />
     <Compile Include="Commands\ReloadCommand.cs" />
     <Compile Include="Commands\ResetPoisCommand.cs" />
