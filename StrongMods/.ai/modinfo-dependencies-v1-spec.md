@@ -221,7 +221,7 @@ and MUST fall back to reporting for anything they cannot reach.
 
 *Load order guidance.* Because blocking only reaches mods that load after the validator, the validator's folder MUST
 sort first for the mechanism to give full coverage. The reference implementation, StrongMods, installs into a folder
-named `00000-StrongMods` for exactly this reason. Server administrators MUST NOT rename this folder, and mod authors
+named `000000-StrongMods` for exactly this reason. Server administrators MUST NOT rename this folder, and mod authors
 MUST NOT name their own mod folders to sort before the validator: a mod that "wins" the sort race gains nothing except
 exemption from the checks that protect its own users, and its violations degrade from blocked to merely reported. A
 validator SHOULD detect mods sorting ahead of it and note in its report that those mods were outside blocking coverage,
@@ -244,4 +244,4 @@ not contain a `ModInfo` child element); that each `name` exactly matches the tar
 case; that every bare version constraint is genuinely intended as a minimum — write `[1.2]` if you mean exactly 1.2;
 that ranges use brackets and parentheses correctly (square = inclusive, round = exclusive); that optional integrations
 are marked `optional="true"` so their absence is not reported as an error; and that your mod's folder name does not sort
-before the validator's (`00000-StrongMods`) — sorting earlier only removes your mod from blocking coverage.
+before the validator's (`000000-StrongMods`) — sorting earlier only removes your mod from blocking coverage.

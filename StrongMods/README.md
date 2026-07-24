@@ -23,10 +23,10 @@ Modding tools from Strongheart.
 ## Installation
 
 * Copy the `StrongMods/` directory into `Mods/`, renamed so it sorts first — the build deploys it as
-  `Mods/0000_StrongMods`
-* Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/0000_StrongMods/ModInfo.xml`, otherwise the
+  `Mods/000000-StrongMods`
+* Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/000000-StrongMods/ModInfo.xml`, otherwise the
   mod won't be loaded
-* **It must load before every mod that uses it**, because it replaces the XML patcher; the `0000_` prefix is what
+* **It must load before every mod that uses it**, because it replaces the XML patcher; the `000000-` prefix is what
   guarantees that
 * Dedicated servers:
   * Server-side only
