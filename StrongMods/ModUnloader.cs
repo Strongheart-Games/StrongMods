@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
 
@@ -6,8 +7,9 @@ namespace StrongMods {
   ///   Central mod-unloading machinery. Features that detect a fatal problem with a mod (invalid ModInfo casing,
   ///   unsatisfied dependencies, ...) report it via <see cref="MarkForUnload" />. The mod can't be removed immediately —
   ///   detection happens inside a foreach over the loaded-mod list — so it is marked and suppressed in the meantime:
-  ///   code initialization and localization are skipped via Harmony prefixes, and the actual unload runs at GameAwake,
-  ///   before XML patches and other passive content are applied, so a doomed mod never half-loads.
+  ///   code initialization and localization are skipped via Harmony prefixes, its assemblies are emptied out of the
+  ///   game's type-discovery list, and the actual unload runs at GameAwake, before XML patches and other passive
+  ///   content are applied, so a doomed mod never half-loads.
   /// </summary>
   public static class ModUnloader {
     public const string Category = "ModUnloader";
@@ -32,6 +34,20 @@ namespace StrongMods {
       StrongBox<string> box = s_unloadReasons.GetOrCreateValue(mod);
       // First reported reason wins; it's the root cause
       box.Value ??= reason;
+      DropAssemblies(mod);
+    }
+
+    private static void DropAssemblies(Mod mod) {
+      if (mod.allAssemblies.Count == 0) {
+        return;
+      }
+
+      var names = string.Join(", ", mod.allAssemblies.Select(assembly => assembly.GetName().Name));
+      // A loaded assembly can't be removed from a Mono AppDomain, but the game discovers mod types exclusively by
+      // aggregating this list (ModManager.GetLoadedAssemblies, rebuilt on every call), so emptying it makes the
+      // assemblies undiscoverable. The DLL stays mapped but inert: InitModCode is suppressed, so no code ever runs.
+      mod.allAssemblies.Clear();
+      Log.Error($"[ModUnloader] Dropped assemblies of mod '{mod.Name}' marked for unloading: {names}");
     }
 
     public static bool IsMarkedForUnload(Mod mod) {
