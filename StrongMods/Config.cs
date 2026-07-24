@@ -3,6 +3,7 @@ using System.IO;
 
 namespace StrongMods {
   public static class Config {
+    public static bool ServerOnlyClassEnabled => true;
     public static bool BreadthFirstXmlPatcherEnabled => true;
     public static bool XmlPatchMethodForeachEnabled => true; // requires BreadthFirstXmlPatcherEnabled
     public static bool CaseSensitiveFilesystemEnabled => IsFilesystemCaseInsensitive();

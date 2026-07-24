@@ -6,9 +6,18 @@ namespace StrongMods {
     public void InitMod(Mod mod) {
       Harmony harmony = new(mod.Name);
       harmony.PatchAllUncategorized(Assembly.GetExecutingAssembly());
+      InitServerOnlyClass(mod, harmony);
       InitBreadthFirstXmlPatcher(mod, harmony);
       InitXmlPatchMethodForeach(mod, harmony);
       InitCaseSensitiveFilesystem(mod, harmony);
+    }
+
+    private static void InitServerOnlyClass(Mod mod, Harmony harmony) {
+      if (!Config.ServerOnlyClassEnabled) {
+        return;
+      }
+
+      harmony.PatchCategory(ServerOnlyClass.ServerOnlyClassCategory);
     }
 
     private static void InitBreadthFirstXmlPatcher(Mod mod, Harmony harmony) {

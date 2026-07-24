@@ -9,7 +9,7 @@
       <property name="Shape" value="ModelEntity" />
       <property name="Model" value="@:Entities/Industrial/palletBagSandSingleFlatPrefab.prefab" />
       <property name="OnlySimpleRotations" value="true" />
-      <property name="ServerClass" value="StrongFill.StrongFill, StrongFill" />
+      <property name="ServerOnlyClass" value="StrongFill.StrongFill, StrongFill" />
       <property name="FillRate" value="0.06" />
       <property name="CanPickup" value="true" />
       <property name="PlaceEverywhere" value="true" />
