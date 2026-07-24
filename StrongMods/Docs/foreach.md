@@ -1,8 +1,8 @@
 ﻿# Looping in XML patches: `<foreach>`
 
-`<foreach>` runs a block of patch commands once for every node an XPath expression matches. It turns
-repetitive patches into a template, and it lets you generate content from XML you didn't write —
-including XML in a different config file, added by a different mod.
+`<foreach>` runs a block of patch commands once for every node an XPath expression matches. It turns repetitive patches
+into a template, and it lets you generate content from XML you didn't write — including XML in a different config file,
+added by a different mod.
 
 Instead of forty near-identical items:
 
@@ -27,23 +27,22 @@ Instead of forty near-identical items:
 </foreach>
 ```
 
-This guide assumes you already write vanilla XPath patches — `append`, `set`, `xpath="/items/item[@name='x']"`.
-It only covers what's new.
+This guide assumes you already write vanilla XPath patches — `append`, `set`, `xpath="/items/item[@name='x']"`. It only
+covers what's new.
 
 ## Requirements
 
-Your mod needs **StrongMods** loaded. Add it to your `ModInfo.xml` dependencies. Without it the game
-doesn't recognize `<foreach>`, logs a warning, and skips the whole block — your mod loads, it just
-does nothing.
+Your mod needs **StrongMods** loaded. Add it to your `ModInfo.xml` dependencies. Without it the game doesn't recognize
+`<foreach>`, logs a warning, and skips the whole block — your mod loads, it just does nothing.
 
 ### Why `source` can be trusted
 
-StrongMods replaces the vanilla patcher with a **breadth-first** one. Vanilla walks files on the
-outside and mods on the inside: it finishes `items.xml` for every mod before it starts
+StrongMods replaces the vanilla patcher with a **breadth-first** one. Vanilla walks files on the outside and mods on the
+inside: it finishes `items.xml` for every mod before it starts
 `entityclasses.xml` for any mod. That makes cross-file reads a coin flip.
 
-The breadth-first patcher inverts the loops. It finishes **every file for one mod** before starting
-the next mod in load order. So when your `<foreach>` runs:
+The breadth-first patcher inverts the loops. It finishes **every file for one mod** before starting the next mod in load
+order. So when your `<foreach>` runs:
 
 |                                   | State when your loop runs            |
 |-----------------------------------|--------------------------------------|
@@ -51,8 +50,8 @@ the next mod in load order. So when your `<foreach>` runs:
 | Mods **before** you in load order | Fully applied, every file            |
 | Mods **after** you in load order  | Not applied — invisible to your loop |
 
-That last row is not a bug, it's arithmetic: a mod that hasn't run yet hasn't added anything to see.
-If you need to see another mod's content, load after it.
+That last row is not a bug, it's arithmetic: a mod that hasn't run yet hasn't added anything to see. If you need to see
+another mod's content, load after it.
 
 ## Writing a loop
 
@@ -73,8 +72,8 @@ The body is **ordinary patch commands** — `append`, `set`, `setattribute`, `re
 
 ### Body XPaths target the file, not the node
 
-This is the one that trips everyone. `as` binds a node for *reading values out of*. It does not
-change what your commands target.
+This is the one that trips everyone. `as` binds a node for *reading values out of*. It does not change what your
+commands target.
 
 ```xml
 <foreach xpath="/items/item[starts-with(@name, 'strong_')]" as="item">
@@ -82,16 +81,15 @@ change what your commands target.
   <append xpath="/items/item[@name='{$item/@name}']">   <!-- right -->
 ```
 
-Body XPaths are absolute against your target document, exactly as they are outside a loop. To aim a
-command at the node you're looping over, interpolate your way back to it with a `{...}` expression.
+Body XPaths are absolute against your target document, exactly as they are outside a loop. To aim a command at the node
+you're looping over, interpolate your way back to it with a `{...}` expression.
 
-Nesting works, and inner loops can read outer bindings. Reusing a name that's already in scope is an
-error, not a shadow.
+Nesting works, and inner loops can read outer bindings. Reusing a name that's already in scope is an error, not a
+shadow.
 
 ## Filling in values
 
-A `{...}` anywhere in the body is an **XPath expression**, and every name in scope is available as
-an XPath variable:
+A `{...}` anywhere in the body is an **XPath expression**, and every name in scope is available as an XPath variable:
 
 ```xml
 value="{$lootContainer/@name}"
@@ -99,9 +97,9 @@ value="{$lootContainer/property[@name='LootList']/@value}"
 value="{count($lootContainer/property)}"
 ```
 
-Interpolation works in four places: **attribute values**, **element text**, **body command XPaths**,
-and element names. Element names need a workaround, since XML won't let you type `{` in a tag —
-use the reserved `foreach-name` attribute, and the tag renames itself:
+Interpolation works in four places: **attribute values**, **element text**, **body command XPaths**, and element names.
+Element names need a workaround, since XML won't let you type `{` in a tag — use the reserved `foreach-name` attribute,
+and the tag renames itself:
 
 ```xml
 <placeholder foreach-name="{$lootContainer/@name}_extra" />
@@ -111,13 +109,12 @@ For a literal brace, double it: `{{` and `}}`.
 
 ### Exactly one node, or the iteration is skipped
 
-Every `{...}` must resolve to **exactly one node**. Zero matches and the patcher skips that
-iteration entirely — no half-written item — and logs a warning saying which node and which
-expression. Two or more matches skips too: an ambiguous lookup should never guess.
+Every `{...}` must resolve to **exactly one node**. Zero matches and the patcher skips that iteration entirely — no
+half-written item — and logs a warning saying which node and which expression. Two or more matches skips too: an
+ambiguous lookup should never guess.
 
-That's usually what you want: an entity class with no `LootList` shouldn't produce a broken item.
-Scalar XPath results (`count()`, `string()`, `string-length()`, boolean tests) always produce
-exactly one value and never skip.
+That's usually what you want: an entity class with no `LootList` shouldn't produce a broken item. Scalar XPath results
+(`count()`, `string()`, `string-length()`, boolean tests) always produce exactly one value and never skip.
 
 ### Defaults with `?:`
 
@@ -127,19 +124,18 @@ When zero matches should mean "use a fallback" instead of "skip", write both sid
 value="{$lootContainer/property[@name='Tier']/@value ?: $lootContainer/@name}"
 ```
 
-The right side only runs when the left selects **no nodes**. Both sides are ordinary expressions —
-there are no string literals in this language, so a fixed default lives in your data, where anyone
-can patch it (see `<bind>` below). Note the boundary cases: an attribute that exists but is empty
-(`tier=""`) is one node with the value `""` and does *not* fall through; two or more matches skip
-the iteration rather than falling through; and if both sides come up empty, the iteration skips.
-One `?:` per expression.
+The right side only runs when the left selects **no nodes**. Both sides are ordinary expressions — there are no string
+literals in this language, so a fixed default lives in your data, where anyone can patch it (see `<bind>` below). Note
+the boundary cases: an attribute that exists but is empty (`tier=""`) is one node with the value `""` and does *not*
+fall through; two or more matches skip the iteration rather than falling through; and if both sides come up empty, the
+iteration skips. One `?:` per expression.
 
 ---
 
 ## Example 1: kill the boilerplate
 
-Six properties on two items, without typing them twice. Nothing here reaches outside `items.xml`,
-so `source` is omitted.
+Six properties on two items, without typing them twice. Nothing here reaches outside `items.xml`, so `source` is
+omitted.
 
 ```xml
 <config>
@@ -161,16 +157,15 @@ so `source` is omitted.
 </config>
 ```
 
-Patch commands run top to bottom, so both items exist by the time the loop selects them. A loop with
-no `source` reads the file as it stands *right now*, mid-patch — including things you added four
-lines ago.
+Patch commands run top to bottom, so both items exist by the time the loop selects them. A loop with no `source` reads
+the file as it stands *right now*, mid-patch — including things you added four lines ago.
 
 Add `example_item_3` to the `<append>` and it gets all six properties for free.
 
 ## Example 2: generate one file from another
 
-Items describe themselves; recipes derive from them. Put the cost on the item, and let the recipe
-file read it — one source of truth, no drift.
+Items describe themselves; recipes derive from them. Put the cost on the item, and let the recipe file read it — one
+source of truth, no drift.
 
 In `items.xml`, your tools declare what they cost:
 
@@ -198,17 +193,16 @@ In `recipes.xml`, one loop builds every recipe:
 </config>
 ```
 
-`source="items"` reads across files; `xpath` in the body still targets `/recipes` in the file this
-patch belongs to. A tool that forgets `StrongSteelCost` gets no recipe and a warning in the log,
-rather than a recipe costing nothing.
+`source="items"` reads across files; `xpath` in the body still targets `/recipes` in the file this patch belongs to. A
+tool that forgets `StrongSteelCost` gets no recipe and a warning in the log, rather than a recipe costing nothing.
 
 ---
 
 ## Tables: `<bind>`
 
-A `<bind>` names extra data your expressions can use — most often a lookup table. It's a **direct
-child** of `<foreach>`, resolved **once** before the loop starts, and constant across iterations.
-The name joins the same scope as `as` names (collisions are errors) and appears in expressions as a
+A `<bind>` names extra data your expressions can use — most often a lookup table. It's a **direct child** of
+`<foreach>`, resolved **once** before the loop starts, and constant across iterations. The name joins the same scope as
+`as` names (collisions are errors) and appears in expressions as a
 `$variable`, exactly like the loop binding.
 
 Two forms:
@@ -226,20 +220,19 @@ Two forms:
 
 One form or the other — inline children plus `source`/`xpath` on the same bind is an error.
 
-A bind holds a **set** of nodes, and that's the point: `$loot` *is* the rows. Look one up by
-filtering the variable with a predicate, then take the column you want:
+A bind holds a **set** of nodes, and that's the point: `$loot` *is* the rows. Look one up by filtering the variable with
+a predicate, then take the column you want:
 
 ```xml
 value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon}"
 ```
 
-The exactly-one rule applies at the lookup: no matching row skips the iteration (or coalesces, see
-below), and **two rows with the same key** skip it too — check the log if a table misbehaves.
+The exactly-one rule applies at the lookup: no matching row skips the iteration (or coalesces, see below), and **two
+rows with the same key** skip it too — check the log if a table misbehaves.
 
 ### The default row
 
-Combine `<bind>` with `?:` to give a table a fallback. Mark one row as the default and point the
-right side at it:
+Combine `<bind>` with `?:` to give a table a fallback. Mark one row as the default and point the right side at it:
 
 ```xml
 <bind name="loot">
@@ -250,8 +243,8 @@ right side at it:
 value="{$loot[@mesh = $lootContainer/property[@name='Mesh']/@value]/@icon ?: $loot[@default='true']/@icon}"
 ```
 
-The default row has no `mesh` attribute, so the key predicate can never match it — it's only
-reachable through the `?:` fallback. This is the idiom for "look it up, or use the default."
+The default row has no `mesh` attribute, so the key predicate can never match it — it's only reachable through the `?:`
+fallback. This is the idiom for "look it up, or use the default."
 
 ## Example 3: AutoLoot — a generated item per loot container
 
@@ -292,18 +285,16 @@ Everything above in one real patch: cross-file `source`, a `<bind>` table with a
 </config>
 ```
 
-Per loot container: a `Mesh` in the table uses that row's icon and tint; an unknown `Mesh` falls
-through `?:` to the default row; a container with no `LootList` at all skips with a warning — that
-expression has no fallback on purpose, because an auto-loot item that opens nothing is worse than no
-item.
+Per loot container: a `Mesh` in the table uses that row's icon and tint; an unknown `Mesh` falls through `?:` to the
+default row; a container with no `LootList` at all skips with a warning — that expression has no fallback on purpose,
+because an auto-loot item that opens nothing is worse than no item.
 
 ---
 
 ## Custom functions
 
-**Requires a C# mod.** If your mod is XML-only, skip this section — `<bind>` covers table lookups
-without code. Reach for a function when the *logic* can't be expressed in XPath: hashing, real
-string manipulation, reading game state.
+**Requires a C# mod.** If your mod is XML-only, skip this section — `<bind>` covers table lookups without code. Reach
+for a function when the *logic* can't be expressed in XPath: hashing, real string manipulation, reading game state.
 
 ```xml
 <foreach source="entityclasses" xpath="..." as="lootContainer">
@@ -316,9 +307,9 @@ string manipulation, reading game state.
 </foreach>
 ```
 
-`<function>` must be a **direct child** of `<foreach>`, and its name lives for that loop only, in
-the same scope as `as` names and binds. Arguments are ordinary XPath expressions — anything you
-could write inside `{...}`, minus `?:` and calls to other functions.
+`<function>` must be a **direct child** of `<foreach>`, and its name lives for that loop only, in the same scope as `as`
+names and binds. Arguments are ordinary XPath expressions — anything you could write inside `{...}`, minus `?:` and
+calls to other functions.
 
 ### The `method` reference
 
@@ -326,8 +317,8 @@ could write inside `{...}`, minus `?:` and calls to other functions.
 [namespace.]Class.Method, [mod]
 ```
 
-Same shape as `ServerClass` and friends, plus the method on the end. The mod is optional; leave it
-off and the game looks in `Assembly-CSharp`.
+Same shape as `ServerClass` and friends, plus the method on the end. The mod is optional; leave it off and the game
+looks in `Assembly-CSharp`.
 
 | Reference                                       | Resolves to                                                   |
 |-------------------------------------------------|---------------------------------------------------------------|
@@ -336,8 +327,8 @@ off and the game looks in `Assembly-CSharp`.
 
 ### Writing one
 
-Tag it. An untagged method is rejected even if the signature is perfect — that's deliberate, so
-nothing in your assembly becomes XML-callable by accident.
+Tag it. An untagged method is rejected even if the signature is perfect — that's deliberate, so nothing in your assembly
+becomes XML-callable by accident.
 
 ```csharp
 using StrongMods;
@@ -371,13 +362,13 @@ The contract:
 - `public static`, returns `string`, every parameter `string`. **Strings only** — no `XElement`, no
   `int`, no `params`.
 - Not generic, not overloaded.
-- Return `null` for "no value": the iteration skips, or — if the call sits on the left of a `?:` —
-  the fallback runs. Return `""` for a legitimately empty value.
-- Be pure. Functions run once per matched node at startup, and the patcher promises nothing about
-  call count or order. Side effects won't show up in `ConfigDump/`.
+- Return `null` for "no value": the iteration skips, or — if the call sits on the left of a `?:` — the fallback runs.
+  Return `""` for a legitimately empty value.
+- Be pure. Functions run once per matched node at startup, and the patcher promises nothing about call count or order.
+  Side effects won't show up in `ConfigDump/`.
 
-**v1 limits:** no nested calls (`{a(b(x))}`), no `?:` inside an argument list, a call must be a
-whole side of an expression (no `{tint($x) = 'y'}`). Say the word if you hit a real need.
+**v1 limits:** no nested calls (`{a(b(x))}`), no `?:` inside an argument list, a call must be a whole side of an
+expression (no `{tint($x) = 'y'}`). Say the word if you hit a real need.
 
 ---
 
@@ -385,11 +376,11 @@ whole side of an expression (no `{tint($x) = 'y'}`). Say the word if you hit a r
 
 Two kinds of failure, and they behave differently.
 
-**Skips** are per-node. One iteration is abandoned, the rest carry on. These are data conditions —
-a node that didn't have what your template needed.
+**Skips** are per-node. One iteration is abandoned, the rest carry on. These are data conditions — a node that didn't
+have what your template needed.
 
-**Errors** kill the whole loop. These are mod bugs — something that would fail identically for every
-node, so there's no point trying the other thirty-nine.
+**Errors** kill the whole loop. These are mod bugs — something that would fail identically for every node, so there's no
+point trying the other thirty-nine.
 
 | What happened                                                               | Result                                              |
 |-----------------------------------------------------------------------------|-----------------------------------------------------|
@@ -407,9 +398,9 @@ node, so there's no point trying the other thirty-nine.
 | `<bind>` with both inline content and `source`/`xpath`, or neither          | Error                                               |
 | Function won't resolve, isn't tagged, wrong signature, wrong argument count | Error                                               |
 
-Skips are quiet by design — nothing crashes, you just get fewer items than you expected. **If your
-loop produced 12 things instead of 40, read the log.** Every skip names the file, the line, the
-iteration, the node, and the expression that failed:
+Skips are quiet by design — nothing crashes, you just get fewer items than you expected. **If your loop produced 12
+things instead of 40, read the log.** Every skip names the file, the line, the iteration, the node, and the expression
+that failed:
 
 ```
 WRN XML patch foreach (StrongAutoLoot, items.xml, line 3): iteration 3 of 3
@@ -417,16 +408,15 @@ WRN XML patch foreach (StrongAutoLoot, items.xml, line 3): iteration 3 of 3
     "$lootContainer/property[@name='LootList']/@value" matched 0 nodes, expected 1.
 ```
 
-To see what a loop actually produced, turn on the game's config dump and read `ConfigDump/`. Loops
-are expanded before the patch is applied, so the dump shows the finished XML — every generated
-item, exactly as the game sees it.
+To see what a loop actually produced, turn on the game's config dump and read `ConfigDump/`. Loops are expanded before
+the patch is applied, so the dump shows the finished XML — every generated item, exactly as the game sees it.
 
 ## Gotchas
 
-**`Extends` is not resolved.** `property[@name='Class']` matches a property written *on that element*.
-If an entity class inherits `Class` from a parent via `Extends`, your predicate won't match it — the
-same way vanilla XPath patches behave. Check what's really in the file before assuming your loop
-covers everything, and widen the predicate if you need to:
+**`Extends` is not resolved.** `property[@name='Class']` matches a property written *on that element*. If an entity
+class inherits `Class` from a parent via `Extends`, your predicate won't match it — the same way vanilla XPath patches
+behave. Check what's really in the file before assuming your loop covers everything, and widen the predicate if you need
+to:
 
 ```xml
 xpath="/entity_classes/entity_class[
@@ -435,11 +425,10 @@ xpath="/entity_classes/entity_class[
 ```
 
 **Loops and binds see a snapshot.** The `xpath` on a `<foreach>` runs once, before the body does; a
-`<bind>` resolves once, before the first iteration. If the body modifies the file either one read
-from, neither notices.
+`<bind>` resolves once, before the first iteration. If the body modifies the file either one read from, neither notices.
 
-**Duplicate table keys skip.** Two `<row>`s with the same key value make every lookup of that key
-ambiguous, and ambiguous lookups skip the iteration rather than guessing — even past a `?:`.
+**Duplicate table keys skip.** Two `<row>`s with the same key value make every lookup of that key ambiguous, and
+ambiguous lookups skip the iteration rather than guessing — even past a `?:`.
 
 **Mods after you are invisible.** See the table at the top.
 

@@ -6,4 +6,8 @@
   <Description value="A collection of modding and administration tools." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongUtils" />
+  <Dependencies>
+    <Game version="[3,4)" />
+    <Mod name="StrongMods" version="1.0" />
+  </Dependencies>
 </ModInfo>

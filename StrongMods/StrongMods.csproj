@@ -87,14 +87,22 @@
     <Compile Include="BreadthFirstXmlPatcher.cs" />
     <Compile Include="CaseSensitiveFilesystem.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="DependencyEvaluator.cs" />
+    <Compile Include="DependencyValidator.cs" />
     <Compile Include="ModApi.cs" />
-    <Compile Include="ModExtensions.cs" />
+    <Compile Include="ModUnloader.cs" />
+    <Compile Include="ModDependencies.cs" />
+    <Compile Include="ModVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerOnlyClass.cs" />
+    <Compile Include="VersionConstraint.cs" />
     <Compile Include="XmlPatchFunctionAttribute.cs" />
     <Compile Include="XmlPatchMethodForeach.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Docs\dependencies.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Docs\foreach.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

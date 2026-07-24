@@ -14,6 +14,12 @@ Modding tools from Strongheart.
 * On case-insensitive filesystems (Windows) it enforces the case-sensitivity rules a Linux server would apply, logging
   path-casing mismatches and unloading mods whose `ModInfo.xml` casing is wrong — so a mod that would break on a Linux
   dedicated server breaks the same way locally.
+* Validates the `<Dependencies>` extension to `ModInfo.xml`: mods can declare the game versions and other mods
+  (with NuGet-style version ranges like `[1.2,2.0)`) they require, and StrongMods unloads any mod whose requirements
+  are not met — completely, before its code, XML patches, or localization take effect — with a clear log message like
+  `SomeMod requires StrongUI [1.2,2.0), found 1.1`. Unloading cascades to dependents. Mods whose folders sort before
+  `000000-StrongMods` load too early to be unloaded; their violations are still reported. See
+  [`Docs/dependencies.md`](Docs/dependencies.md) for how to declare dependencies in your mod.
 * Exposes `[XmlPatchFunction]` for C# helpers callable from patch files (must be `public static`, return
   `string`, and take only `string` parameters).
 * Adds a `ServerOnlyClass` property to `blocks.xml` that lets modders specify a custom server-side block class. The
@@ -34,11 +40,18 @@ Modding tools from Strongheart.
 * All other deployments:
   * Deploy to host (in single-player this is your game)
   * EAC must be disabled
-* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, case-sensitivity checks)
-  is toggled in code and all are on by default, except the case-sensitivity checks which only activate on a
-  case-insensitive filesystem
+* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, case-sensitivity
+  checks, dependency validation) is toggled in code and all are on by default, except the case-sensitivity checks
+  which only activate on a case-insensitive filesystem
 
 ## Changelog
+
+### 1.0.0
+
+* Added `<Dependencies>` validation: mods can declare required game versions and mods in `ModInfo.xml`; violators are
+  unloaded (or reported, when they load before StrongMods). See `.ai/modinfo-dependencies-v1-spec.md` for the spec.
+* Extracted the mod-unloading machinery (`ModUnloader`) shared by the case-sensitivity checks and dependency
+  validation; unload log messages now include the reason
 
 ### 0.0.1
 

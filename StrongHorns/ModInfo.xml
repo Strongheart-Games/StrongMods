@@ -6,4 +6,8 @@
   <Description value="Horns open trader doors." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongHorns" />
+  <Dependencies>
+    <Game version="[3,4)" />
+    <Mod name="StrongMods" version="1.0" />
+  </Dependencies>
 </ModInfo>

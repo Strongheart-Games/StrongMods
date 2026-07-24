@@ -6,4 +6,8 @@
   <Description value="Server-side authorization checks that detect griefing, such as unauthorized damage to other players and their vehicles." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/AuthZ" />
+  <Dependencies>
+    <Game version="[3,4)" />
+    <Mod name="StrongMods" version="1.0" />
+  </Dependencies>
 </ModInfo>

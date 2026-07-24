@@ -34,7 +34,7 @@ dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug   # one mod
 
 There is no test project or linter step in this repo. Verification is done by running the game/server.
 
-**StrongMods loads first.** Its Debug `OutputPath` is `Mods\0000_StrongMods` — the `0000_` prefix forces it
+**StrongMods loads first.** Its Debug `OutputPath` is `Mods\000000-StrongMods` — the `000000-` prefix forces it
 ahead of other mods in load order, which matters because it replaces the XML patcher (see below).
 
 ## Architecture

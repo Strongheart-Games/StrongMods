@@ -79,21 +79,11 @@ namespace StrongMods {
     public static void ValidateModInfos() {
       for (var index = 0; index < ModManager.loadedMods.Count; ++index) {
         Mod mod = ModManager.loadedMods.list[index];
-        var valid = Exists(Path.Combine(mod.Path, ModInfoFilename));
-        mod.SetInvalidModInfo(!valid);
-      }
-    }
-
-    public static void UnloadInvalidModInfos() {
-      for (var index = 0; index < ModManager.loadedMods.Count; ++index) {
-        Mod mod = ModManager.loadedMods.list[index];
-        if (!mod.HasInvalidModInfo()) {
+        if (Exists(Path.Combine(mod.Path, ModInfoFilename))) {
           continue;
         }
 
-        Log.Error($"[MODS] Unloading invalid mod '{mod.Name}'.");
-        ModManager.loadedMods.Remove(mod.Name);
-        ModManager.failedMods.Add(mod);
+        ModUnloader.MarkForUnload(mod, $"its {ModInfoFilename} could not be found using case-sensitive path matching");
       }
     }
 
@@ -169,33 +159,6 @@ namespace StrongMods {
       }
 
       return codes.AsEnumerable();
-    }
-
-    [HarmonyPatchCategory("CaseSensitiveFilesystem")]
-    [HarmonyPatch(typeof(Mod), nameof(Mod.InitModCode))]
-    public class Mod_InitModCode_Patch {
-      private static bool Prefix(Mod __instance) {
-        if (!__instance.HasInvalidModInfo()) {
-          return true;
-        }
-
-        Log.Error($"[MODS]   Skipping initialization of invalid mod {__instance.Name}");
-        return false;
-      }
-    }
-
-    [HarmonyPatchCategory("CaseSensitiveFilesystem")]
-    [HarmonyPatch(typeof(Localization), nameof(Localization.LoadPatchDictionaries))]
-    public class Localization_LoadPatchDictionaries_Patch {
-      private static bool Prefix(string _modName) {
-        Mod mod = ModManager.GetMod(_modName);
-        if (mod is null || !mod.HasInvalidModInfo()) {
-          return true;
-        }
-
-        Log.Error($"[MODS] Skipping localization from invalid mod: {mod.Name}");
-        return false;
-      }
     }
   }
 }

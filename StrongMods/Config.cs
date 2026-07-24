@@ -7,6 +7,7 @@ namespace StrongMods {
     public static bool BreadthFirstXmlPatcherEnabled => true;
     public static bool XmlPatchMethodForeachEnabled => true; // requires BreadthFirstXmlPatcherEnabled
     public static bool CaseSensitiveFilesystemEnabled => IsFilesystemCaseInsensitive();
+    public static bool ModInfoDependenciesEnabled => true;
 
     private static bool IsFilesystemCaseInsensitive() {
       var directoryPath = GameIO.GetGamePath();

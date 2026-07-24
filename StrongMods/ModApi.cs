@@ -10,6 +10,7 @@ namespace StrongMods {
       InitBreadthFirstXmlPatcher(mod, harmony);
       InitXmlPatchMethodForeach(mod, harmony);
       InitCaseSensitiveFilesystem(mod, harmony);
+      InitModInfoDependencies(mod, harmony);
     }
 
     private static void InitServerOnlyClass(Mod mod, Harmony harmony) {
@@ -44,15 +45,19 @@ namespace StrongMods {
         return;
       }
 
-      harmony.PatchCategory("CaseSensitiveFilesystem");
+      ModUnloader.Init(harmony);
       CaseSensitiveFilesystem.ApplyExistsPatches(harmony);
       CaseSensitiveFilesystem.ValidateModInfos();
-      // Can't unload now because it's called within a foreach over the mod list we want to modify
-      ModEvents.GameAwake.RegisterHandler(UnloadInvalidModInfos);
     }
 
-    private static void UnloadInvalidModInfos(ref ModEvents.SGameAwakeData data) {
-      CaseSensitiveFilesystem.UnloadInvalidModInfos();
+    // Must run after InitCaseSensitiveFilesystem so dependency evaluation sees mods it marked for unloading as absent
+    private static void InitModInfoDependencies(Mod mod, Harmony harmony) {
+      if (!Config.ModInfoDependenciesEnabled) {
+        return;
+      }
+
+      ModUnloader.Init(harmony);
+      DependencyValidator.Validate(mod);
     }
   }
 }
