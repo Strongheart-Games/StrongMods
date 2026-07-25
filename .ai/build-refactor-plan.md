@@ -48,14 +48,14 @@ build/
   Mod.props           # code-mod defaults (properties)
   Mod.targets         # code-mod references + computed OutputPath
   Modlet.targets      # the shared copy Build/Clean targets
-Directory.Build.props # auto-imported by the 21 code mods -> imports GamePaths + Mod.props
-Directory.Build.targets # auto-imported -> imports Mod.targets
-Directory.Build.user.props  # optional, gitignored, per-machine game path override
+Local.props           # optional, gitignored, per-machine overrides
+Local.props.sample    # tracked; copy it to Local.props
 ```
+There is deliberately **no** `Directory.Build.props` and **no** `Directory.Build.targets` in this repo — nothing is
+auto-imported. See "No auto-import" below.
 
-Why this split rather than only `Directory.Build.props`: the modlets are bare `<Project>` files with no
-`Microsoft.Common.props` import, so **MSBuild's auto-import does not reach them**. They need one explicit
-`<Import>`, and `build/GamePaths.props` gives both shapes a single source of truth for the install path.
+`GamePaths.props` is never imported by a project directly — `Mod.props` and `Modlet.targets` pull it in, so a project
+imports exactly one entry point for its shape.
 
 ### `build/GamePaths.props`
 ```xml
@@ -88,7 +88,7 @@ Why this split rather than only `Directory.Build.props`: the modlets are bare `<
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(ModsDir)\0_TFP_Harmony\0Harmony.dll</HintPath>
+      <HintPath>$(SdtdHarmonyDir)\0Harmony.dll</HintPath>   <!-- from $(SdtdDir), NOT $(ModsDir) -->
       <Private>False</Private>
     </Reference>
     <Content Include="ModInfo.xml;README.md" Condition="Exists(...)">
@@ -105,23 +105,84 @@ The `GameAssembly` item list means an outlier adds **one line** in its own cspro
 (`<GameAssembly Include="Noemax.GZip" />`), and it also fixes the mislabeled `System`→`mscorlib.dll` duplicate.
 The `VerifyGameInstall` target turns a missing install from ~200 `CS0246` errors into one readable message.
 
-### After: a typical code mod
+### No auto-import — everything is imported explicitly
+
+**The constraint that forced this; it cost a failed build to find.**
+
+`Microsoft.Common.CurrentVersion.targets` derives `OutDir`, `TargetDir` and `TargetPath` from `$(OutputPath)` *during
+evaluation*, at the point it is imported. `Directory.Build.targets` is imported by `Microsoft.Common.targets` **after**
+that. So setting `OutputPath` from a `Directory.Build.targets`:
+
+- leaves `OutDir` latched to the `bin\$(Configuration)\` fallback → the assembly is written to `bin\Debug\` instead of
+  the game folder, **even though `$(OutputPath)` itself reads back correct**;
+- fails the build outright with `error : The BaseOutputPath/OutputPath property is not set for project ...`.
+
+The general problem is that auto-import fixes the *position*, and one of the two positions is wrong for what we need.
+So this repo uses no auto-imported files at all. A code mod imports a props file before its body and a targets file
+after it:
+
 ```xml
+<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
+<Import Project="..\build\Mod.props" />      <!-- defaults; the body overrides them -->
+  ...ProjectGuid, Compile items, any ModLoadPrefix / ModsDir / GameAssembly...
+<Import Project="..\build\Mod.targets" />    <!-- consumes the body; sets OutputPath -->
+<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+```
+
+Consequences, all of them wanted:
+- Both project shapes use the **same mechanism**. Previously code mods would have been configured by auto-import and
+  modlets by explicit import, purely because modlets don't import `Microsoft.Common.props`.
+- The import **is** the opt-in, so unconverted projects are untouched — that is what lets the migration go a few
+  projects at a time without silently retargeting the deploy folder of `StrongMods` (`000000-`),
+  `AutoCollectLoot`/`ChatCommandHelper` (`ZZZZZZZZZZ_`) or `PrismaCoreFixes` (dedicated server) into a live install.
+- It **survives the SDK-style migration**: `Directory.Build.props` lands before the body there too, so it still
+  couldn't see a project-level `ModLoadPrefix`. The explicit sandwich works unchanged in both formats.
+- A project's entire build story is readable from the project file.
+
+The cost: a new project that forgets the imports gets nothing rather than everything. `Mod.targets` therefore fails
+with a named error if `Mod.props` wasn't imported (verified, §4), and Phase 5 puts the imports in both templates.
+
+**Corollary for verification: querying `$(OutputPath)` is not sufficient. Always query `$(OutDir)`/`$(TargetDir)`.**
+
+### Per-machine overrides: `Local.props`
+
+There is no MSBuild standard for a gitignored per-machine override file. MSBuild auto-discovers exactly three
+per-directory files — `Directory.Build.props`, `Directory.Build.targets`, `Directory.Build.rsp` — and none is meant
+for this. `Directory.Build.rsp` is the closest first-class fit (it would apply `-p:SdtdDir=...` automatically) but
+**response files are an `MSBuild.exe` command-line feature that IDEs building in-process do not read**, so it can't
+carry a setting the IDE needs.
+
+So: a plain `Local.props` in the repo root, gitignored, imported by `GamePaths.props` behind an `Exists()` guard,
+with a tracked `Local.props.sample` next to it. Root rather than `build/` because `build/` is tracked infrastructure
+while this is the one file a human hand-creates per machine; it should be where they'll see it. It is deliberately
+**not** named `Directory.Build.user.props` — that prefix implies MSBuild finds it automatically, which is exactly the
+false implicitness this design is avoiding.
+
+Precedence, highest first: `-p:SdtdDir=` (a global property, always wins) → `Local.props` → `SDTD_HOME` → the default
+in `GamePaths.props`. All four verified in §4.
+
+### After: a typical code mod — the real `StrongHorns.csproj`, 104 lines → 17
+```xml
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <ProjectGuid>{...}</ProjectGuid>
-    <RootNamespace>StrongHorns</RootNamespace>
-    <AssemblyName>StrongHorns</AssemblyName>
+    <ProjectGuid>{6539557B-0DA2-4767-9ADB-31210C1364BD}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..." />   <!-- unchanged -->
+    <Compile Include="ModApi.cs" />
+    <!-- ... unchanged ... -->
   </ItemGroup>
+  <Import Project="..\build\Mod.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
 ```
-~95 lines → ~15. `StrongMods` adds `<ModLoadPrefix>000000-</ModLoadPrefix>` + one `GameAssembly` line;
-`PrismaCoreFixes` adds `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` + `<PlatformTarget>x86</PlatformTarget>`.
+`RootNamespace`/`AssemblyName` are gone — they equal `$(MSBuildProjectName)` in all 21 projects, which `Mod.props`
+now defaults. `ProjectGuid` stays (the `.sln` references it). `StrongMods` will add
+`<ModLoadPrefix>000000-</ModLoadPrefix>` + `<GameAssembly Include="Noemax.GZip" />`; `PrismaCoreFixes` will add
+`<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` + `<PlatformTarget>x86</PlatformTarget>` — all above the import.
 
 ### After: a typical modlet
 ```xml
@@ -145,7 +206,7 @@ sliced into batches. Each phase ends at a reviewable stopping point.
 | # | Work | Files | Approx Δ lines |
 | --- | --- | --- | --- |
 | 0 | Capture a **property/item baseline**: for each project, record evaluated `OutputPath`, `DefineConstants`, `LangVersion`, `TargetFrameworkVersion` and the resolved `Reference` set to a text file in the scratchpad. This is the regression oracle for every later phase. | none (script only) | 0 |
-| 1 | Add `build/*.props|targets`, `Directory.Build.props|targets`, gitignore `Directory.Build.user.props`. Convert **one** pilot code mod (`StrongHorns` — no outlier traits) and **one** pilot modlet (`StrongMining`). Re-run the baseline; diff must be empty except intended fixes. | ~6 new, 2 edited | +150 / −170 |
+| 1 | ✅ **DONE** — added `build/{GamePaths.props,Mod.props,Mod.targets,Modlet.targets}` + `Local.props.sample`, gitignored `/Local.props`, converted pilots `StrongHorns` (104→18 lines) and `StrongMining` (20→4). No auto-imported files. Both **build clean**; see §4. | 5 new, 3 edited | +215 / −103 |
 | 2 | Convert remaining plain code mods in batches of ~5: (a) `AutoCloseDoors`, `StrongBoxes`, `StrongFill`, `StrongLocks`, `LootDiagnostics` (b) `AuthZ`, `BountifulQuests`, `CustomChatCommands`, `StrongUtils`, `DisableLAN` (c) `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`, `AutoCollectLoot`. Diff the baseline after each batch. | 15 | −80/batch |
 | 3 | Convert the 4 outliers one at a time: `StrongMods` (load prefix + Noemax + `.ai` exclude), `BloodRain` (Cronos), `PrismaCoreFixes` (x86 + server path + **gains `LangVersion` 9**, so it recompiles — verify separately), `Template7DtDMod`. | 4 | −80 |
 | 4 | Convert the 9 remaining modlets + `Template7DtDModlet`. | 10 | −150 |
@@ -163,19 +224,61 @@ Optional follow-ups, **not** in this plan — call them out now so they don't ge
 
 ## 4. Verification
 
-There is no test suite, and **no .NET SDK, MSBuild, or Rider install is reachable from the agent shell on this
-machine** (`dotnet`, `msbuild`, `%ProgramFiles%\dotnet`, VS 2022, and JetBrains Toolbox all absent from PATH//disk
-as far as the agent can see) — so compilation must be verified by the user in Rider, or by pointing me at the
-MSBuild path.
+There is no test suite, no .NET SDK, and no Visual Studio on this machine — but **Rider bundles MSBuild 18.7** at:
 
-Two-tier verification:
-1. **No-compile diff (agent-runnable, if MSBuild is reachable).** `msbuild <proj> -preprocess:out.xml` and
-   `-getProperty:` / `-getItem:Reference` produce the fully-evaluated project without building. Compare against the
-   Phase-0 baseline; a correct refactor is a **no-op** at this level. This catches every path/property/reference
-   regression without touching the live game folder.
-2. **Compile check that does not deploy.** Because Debug output is now `$(ModsDir)\...`, a build can be redirected
-   with `-p:ModsDir=<scratchpad>` — so compilation can be verified without writing into the live `Mods\` folder or
-   colliding with a running server. Per standing preference I will **ask before running any build**.
+```
+%LOCALAPPDATA%\JetBrains\Installations\Rider253_000\tools\MSBuild\Current\Bin\MSBuild.exe
+```
+
+That supports `-getProperty:` / `-getItem:`, which **evaluate** a project and print the result as JSON *without
+running any target* — no compile, no copy, nothing written to the live game folder. This is the regression oracle,
+and it makes each phase checkable without a build.
+
+Method used in Phase 1, repeat for every later batch:
+1. `git worktree add --detach <scratch>/baseline HEAD` — a pristine pre-change tree. (MSBuild's
+   `Directory.Build.props` discovery walks up from the project directory, and the scratchpad has none above it, so
+   the baseline evaluates exactly as the repo did before the refactor.)
+2. Evaluate before and after for: `OutputPath, LangVersion, DefineConstants, AssemblyName, RootNamespace,
+   TargetFrameworkVersion, OutputType, DebugType, Optimize, DebugSymbols, PlatformTarget, WarningLevel, ErrorReport,
+   FileAlignment, AppDesignerFolder` and items `Reference, Compile, Content`.
+3. Diff. Also evaluate one **unconverted** project each round to prove the shared files stay inert for projects that
+   have not opted in yet.
+
+### Phase 1 results
+
+| Check | Result |
+| --- | --- |
+| `StrongHorns` — 18 properties incl. `OutDir`/`TargetDir`/`TargetPath` | **all identical** to baseline |
+| `StrongHorns` — `Compile` (5), `Content` (3) | **identical sets** — the `Config\**\*.xml` glob reproduced the explicit list exactly |
+| `StrongHorns` — `Reference` | same 10 assemblies, same HintPaths, same `Private=False`; **one intended change**: the item labelled `System` that pointed at `mscorlib.dll` is now labelled `mscorlib` |
+| `StrongLocks` (unconverted) | **byte-identical** evaluation before vs after |
+| `StrongMining` — `Content` | 9 items, matching a clean checkout |
+| **`StrongHorns` compile** | ✅ `-t:Rebuild` **exit 0**, redirected via `-p:ModsDir=C:\Temp\sdtd-verify`; output is exactly `StrongHorns.dll`, `.pdb`, `ModInfo.xml`, `README.md`, `Config\blocks.xml` |
+| **`StrongMining` copy build** | ✅ exit 0, redirected; exactly the 9 correct files, no `bin\` leakage |
+| `Local.props` override | ✅ `SdtdDir` and `ModsDir` both picked up; `git status` confirms it is ignored |
+| `Local.props` precedence | ✅ `-p:ModsDir=` on the command line overrides `Local.props` |
+| Missing-import guardrail | ✅ a project importing `Mod.targets` without `Mod.props` fails with the named error, not a wrong output folder |
+
+This also confirms the `<Reference Include="@(GameAssembly)">` + `%(Identity)` metadata transform resolves correctly,
+which was the one construct in the design that could not be checked by reading alone.
+
+### Three bugs found while verifying
+
+1. **`OutDir` latching** — see §2. Caught by the first real build; evaluation alone had reported `OutputPath` correct
+   and would have shipped a design that wrote every DLL to `bin\Debug\`. Fixed by importing `Mod.targets` explicitly
+   before `Microsoft.CSharp.targets`, and `Directory.Build.targets` was deleted.
+2. **0Harmony resolved from `$(ModsDir)`** (pre-existing conflation, introduced into the shared file by me). Harmony
+   belongs to the *game install*, not the *deploy destination*. With `-p:ModsDir=` redirected it broke immediately
+   (`CS0246: HarmonyLib`), and it would have broken `PrismaCoreFixes`, which deploys to the dedicated server but
+   compiles against the client's Harmony. Now `$(SdtdHarmonyDir)`, derived from `$(SdtdDir)`.
+3. **Modlets shipped their own `bin\`** — the old glob `Include="**/*" Exclude="*.csproj"` matched **27** items in
+   `StrongMining`, **18** of them stale build output, all copied into the live `Mods\StrongMining` on every build.
+   The tell was `bin\Release\bin\Release\...` in that project: each Release build re-copying its own output one level
+   deeper. `Modlet.targets` excludes `bin\**\*;obj\**\*;.ai\**\*` → the correct 9. Applies to all 10 modlets.
+
+Also fixed incidentally: the old modlet condition `'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'` yields an **empty
+`OutputPath`** when `Platform` isn't passed (building a modlet's `.csproj` directly rather than via the `.sln`). The
+shared version defaults `Configuration` and does not depend on `Platform`.
 
 ## 5. Decisions — settled 2026-07-25
 
@@ -187,8 +290,9 @@ Two-tier verification:
 3. **SDK-style migration** — **deferred to a separate pass.** This plan is its prerequisite. Rationale: this refactor
    is verifiable by evaluated-property diff alone; SDK-style changes assembly-info generation and output-path shape,
    so it needs real compile verification, which is not currently runnable from the agent shell (see §4).
-4. **Game path** — **`Directory.Build.user.props` + `SDTD_HOME` env var**, defaulting to the current hardcoded path.
-   Adds `Directory.Build.user.props` to `.gitignore` in Phase 1.
+4. **Game path** — per-machine override + `SDTD_HOME` env var, defaulting to the current hardcoded path.
+   *Revised during Phase 1:* the override file is `Local.props`, not `Directory.Build.user.props` — see §2. Decided
+   alongside dropping auto-import entirely.
 5. **Stale index entries** — resolved; see §6.
 
 ## 6. Stale index entries — resolved 2026-07-25

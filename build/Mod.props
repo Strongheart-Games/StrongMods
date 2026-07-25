@@ -1,0 +1,46 @@
+<Project>
+
+  <!--
+    Defaults for code-mod projects. A project imports this explicitly, immediately after Microsoft.Common.props and
+    BEFORE its own property groups, so anything the project sets in its body wins:
+
+      <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
+      <Import Project="..\build\Mod.props" />
+      ...project body...
+      <Import Project="..\build\Mod.targets" />
+      <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+    Nothing here is auto-imported; there is deliberately no Directory.Build.props in this repo. See the header of
+    Mod.targets for why the import positions are explicit.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+</Project>

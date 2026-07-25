@@ -1,0 +1,30 @@
+<Project>
+
+  <!--
+    Per-machine build overrides.
+
+    To use: copy this file to Local.props in the repo root and edit. Local.props is gitignored, so your local paths
+    never reach the repo. It is picked up by build\GamePaths.props, which every project reaches through either
+    build\Mod.props (code mods) or build\Modlet.targets (modlets).
+
+    Precedence for the install path, highest first:
+      1. -p:SdtdDir=...              on the MSBuild command line
+      2. <SdtdDir> in Local.props    this file
+      3. the SDTD_HOME environment variable
+      4. the default in build\GamePaths.props
+  -->
+
+  <PropertyGroup>
+
+    <!-- Where the game is installed. Everything else is derived from this. -->
+    <!-- <SdtdDir>D:\Games\steamapps\common\7 Days To Die</SdtdDir> -->
+
+    <!-- Only needed if the dedicated server is not at "<SdtdDir> Dedicated Server". -->
+    <!-- <SdtdServerDir>D:\Games\steamapps\common\7 Days To Die Dedicated Server</SdtdServerDir> -->
+
+    <!-- Build without deploying: send Debug output somewhere other than the live game's Mods folder. -->
+    <!-- <ModsDir>C:\Temp\sdtd-verify</ModsDir> -->
+
+  </PropertyGroup>
+
+</Project>

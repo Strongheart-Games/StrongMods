@@ -1,0 +1,88 @@
+<Project>
+
+  <!--
+    Shared build logic for code-mod projects. A project imports this explicitly, AFTER its own property/item groups
+    but BEFORE Microsoft.CSharp.targets:
+
+      <Import Project="..\build\Mod.targets" />
+      <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+    That position matters and is not negotiable. Microsoft.Common.CurrentVersion.targets derives OutDir, TargetDir
+    and TargetPath from $(OutputPath) *during evaluation*, at the point it is imported. Setting OutputPath any later
+    — e.g. from a Directory.Build.targets, which Microsoft.Common.targets imports at the end — leaves OutDir latched
+    to the bin\$(Configuration)\ fallback, so the assembly is written to bin\Debug\ instead of the game folder, and
+    the build fails with "The BaseOutputPath/OutputPath property is not set". Querying $(OutputPath) alone does not
+    reveal this; it looks correct. Verify $(OutDir) and $(TargetDir).
+
+    This is why the repo has no Directory.Build.props/.targets at all: their import positions are fixed by MSBuild
+    and one of them is wrong for this. Every import here is explicit and positioned deliberately, and both project
+    shapes (code mods, modlets) use the same mechanism.
+
+    Importing this file IS the opt-in: a project that does not import it is unaffected, which is what lets the
+    migration proceed a few projects at a time.
+
+    A project may set $(ModLoadPrefix), override $(ModsDir), or add <GameAssembly Include="..." /> items above the
+    import.
+  -->
+
+  <PropertyGroup>
+    <LangVersion>9</LangVersion>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.ai\**</DefaultItemExcludes>
+
+    <!-- Deploy folder name under Mods\. $(ModLoadPrefix) forces load order (e.g. 000000-, ZZ_). -->
+    <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
+
+    <!-- Debug deploys straight into the live game; override -p:ModsDir=... to build without deploying. -->
+    <OutputPath Condition="'$(Configuration)' == 'Debug'">$(ModsDir)\$(ModDeployName)\</OutputPath>
+    <OutputPath Condition="'$(Configuration)' != 'Debug'">bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Assemblies resolved from the game's Managed folder. Add project-specific ones with
+         <GameAssembly Include="Noemax.GZip" /> in the project body, above the import. -->
+    <GameAssembly Include="mscorlib" />
+    <GameAssembly Include="System" />
+    <GameAssembly Include="System.Xml" />
+    <GameAssembly Include="System.Xml.Linq" />
+    <GameAssembly Include="Assembly-CSharp" />
+    <GameAssembly Include="LogLibrary" />
+    <GameAssembly Include="UnityEngine" />
+    <GameAssembly Include="UnityEngine.CoreModule" />
+    <GameAssembly Include="UnityEngine.AudioModule" />
+
+    <Reference Include="@(GameAssembly)">
+      <HintPath>$(SdtdManagedDir)\%(Identity).dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="0Harmony">
+      <HintPath>$(SdtdHarmonyDir)\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ModInfo.xml" Condition="Exists('$(MSBuildProjectDirectory)\ModInfo.xml')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="README.md" Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\**\*.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Docs\**\*.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Turn a missing/moved game install, or a forgotten Mod.props import, into one readable error instead of
+       ~200 CS0246s or a silently wrong output folder. -->
+  <Target Name="VerifyGameInstall" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(ModsDir)' == ''"
+           Text="build\Mod.props was not imported by $(MSBuildProjectFile). Add &lt;Import Project=&quot;..\build\Mod.props&quot; /&gt; immediately after the Microsoft.Common.props import." />
+    <Error Condition="!Exists('$(SdtdManagedDir)\Assembly-CSharp.dll')"
+           Text="7 Days To Die was not found at '$(SdtdDir)'. Set SdtdDir in Local.props (copy Local.props.sample), set the SDTD_HOME environment variable, or pass -p:SdtdDir=..." />
+  </Target>
+
+</Project>

@@ -1,0 +1,46 @@
+<Project>
+
+  <!--
+    Shared build logic for XML-only modlets: there is nothing to compile, so Build is a content copy and Clean
+    removes the deployed folder.
+
+    A modlet project imports this explicitly (modlets have no Microsoft.Common.props import, so MSBuild's
+    Directory.Build.props auto-import does not reach them). Extension points a project may set before the import:
+      <ModLoadPrefix>ZZ_</ModLoadPrefix>            deploy as Mods\ZZ_<ProjectName>
+      <ModsDir>...</ModsDir>                        deploy somewhere other than the client install
+      <ModletContentExclude>Saves\**\*</ModletContentExclude>   extra Exclude globs
+      <ModletCleanEnabled>false</ModletCleanEnabled>            keep Clean from deleting un-versioned files
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
+    <ModletCleanEnabled Condition="'$(ModletCleanEnabled)' == ''">true</ModletCleanEnabled>
+    <OutputPath Condition="'$(Configuration)' == 'Debug'">$(ModsDir)\$(ModDeployName)</OutputPath>
+    <OutputPath Condition="'$(Configuration)' != 'Debug'">bin\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- bin/obj are excluded so a Release build does not re-copy its own output on the next run, and so build
+         leftovers are never deployed into the game. .ai holds agent planning docs, which are not shipped. -->
+    <Content Include="**\*"
+             Exclude="*.csproj;bin\**\*;obj\**\*;.ai\**\*;$(ModletContentExclude)" />
+  </ItemGroup>
+
+  <Target Name="Build">
+    <!-- Copy-if-newer rather than SkipUnchangedFiles: previously duplicated by hand in Hades and
+         RefugeHordeBaseS11, which carried a TODO to propagate it everywhere. This is that propagation. -->
+    <Copy SourceFiles="@(Content)"
+          DestinationFiles="@(Content->'$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          Condition="%(Filename) != '' AND (!Exists('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)').Ticks))" />
+  </Target>
+
+  <Target Name="Clean" Condition="'$(ModletCleanEnabled)' == 'true'">
+    <RemoveDir Directories="$(OutputPath)" Condition="Exists('$(OutputPath)')" />
+  </Target>
+
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+</Project>

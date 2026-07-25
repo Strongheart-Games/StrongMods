@@ -1,0 +1,33 @@
+<Project>
+
+  <!--
+    The single source of truth for the 7 Days To Die install location.
+
+    Not imported directly by projects. It is pulled in by build\Mod.props (code mods) and build\Modlet.targets
+    (modlets), which are the two entry points a project imports.
+
+    Override the install path, in precedence order:
+      1. -p:SdtdDir=... on the command line (a global property; always wins)
+      2. Local.props in the repo root (gitignored, per-machine — copy Local.props.sample)
+      3. the SDTD_HOME environment variable
+      4. the default below
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)..\Local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\Local.props')" />
+
+  <PropertyGroup>
+    <SdtdDir Condition="'$(SdtdDir)' == '' AND '$(SDTD_HOME)' != ''">$(SDTD_HOME)</SdtdDir>
+    <SdtdDir Condition="'$(SdtdDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die</SdtdDir>
+    <SdtdServerDir Condition="'$(SdtdServerDir)' == ''">$(SdtdDir) Dedicated Server</SdtdServerDir>
+    <SdtdManagedDir Condition="'$(SdtdManagedDir)' == ''">$(SdtdDir)\7DaysToDie_Data\Managed</SdtdManagedDir>
+    <!-- Where 0Harmony.dll is read from. Deliberately derived from $(SdtdDir), NOT from $(ModsDir): Harmony is part
+         of the game install, whereas $(ModsDir) is the deploy destination and may be redirected (-p:ModsDir=... to
+         build without deploying) or overridden per project (PrismaCoreFixes deploys to the dedicated server but
+         still compiles against the client's Harmony). -->
+    <SdtdHarmonyDir Condition="'$(SdtdHarmonyDir)' == ''">$(SdtdDir)\Mods\0_TFP_Harmony</SdtdHarmonyDir>
+    <!-- Deploy root. A project targeting the dedicated server overrides this with $(SdtdServerDir)\Mods. -->
+    <ModsDir Condition="'$(ModsDir)' == ''">$(SdtdDir)\Mods</ModsDir>
+  </PropertyGroup>
+
+</Project>
