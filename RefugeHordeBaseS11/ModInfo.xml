@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModInfo>
+  <Name value="RefugeHordeBaseS11" />
+  <Version value="2.0.0" />
+  <DisplayName value="Refuge Horde Base S11" />
+  <Description value="Refuge Horde Base for Season 11 - v3 Project Z" />
+  <Author value="Refuge Gaming" />
+  <Website value="" />
+  <Dependencies>
+    <Game version="[3,4)" />
+  </Dependencies>
+</ModInfo>

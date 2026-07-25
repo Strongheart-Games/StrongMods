@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LootDiagnostics", "LootDiag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgressiveBiomes", "ProgressiveBiomes\ProgressiveBiomes.csproj", "{1C7B533A-7150-4518-9E81-9A5F5AD4CA7A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefugeHordeBaseS11", "RefugeHordeBaseS11\RefugeHordeBaseS11.csproj", "{372B4B05-8DDC-4244-918D-E9766F9D1D8A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,5 +182,9 @@ Global
 		{1C7B533A-7150-4518-9E81-9A5F5AD4CA7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C7B533A-7150-4518-9E81-9A5F5AD4CA7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C7B533A-7150-4518-9E81-9A5F5AD4CA7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{372B4B05-8DDC-4244-918D-E9766F9D1D8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{372B4B05-8DDC-4244-918D-E9766F9D1D8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{372B4B05-8DDC-4244-918D-E9766F9D1D8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{372B4B05-8DDC-4244-918D-E9766F9D1D8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
