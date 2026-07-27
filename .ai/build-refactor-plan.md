@@ -220,7 +220,7 @@ like the other 15 — that was the open risk in standardising the reference list
 still unconverted and therefore ignores `-p:ModsDir` — a plain redirected build of AutoCollectLoot would rebuild
 StrongMods straight into the live `Mods\000000-StrongMods\`. Verified the live DLL's timestamp was untouched.
 | 3 | ✅ **DONE** — `StrongMods`, `BloodRain`, `PrismaCoreFixes` (`Template7DtDMod` was handled with the templates). All evaluate identically to baseline except the `mscorlib` change and PrismaCoreFixes' `LangVersion`; all build clean. | 3 | −250 |
-| 4 | Convert the 9 remaining modlets + `Template7DtDModlet`. | 10 | −150 |
+| 4 | ✅ **DONE** — the 8 remaining modlets (`Template7DtDModlet` went with the templates). All evaluate identically except three losing inert `CopyToOutputDirectory` metadata; all build clean. | 8 | −130 |
 | — | ✅ **DONE (pulled forward from Phase 5)** — both `dotnet new` templates converted to the shared build and made **non-deploying**. See "Templates" below. | 4 | −100 |
 | 5 | Update `CLAUDE.md` ("Building" and "Adding a new mod" sections). Templates already done. | 1 | +40 |
 
@@ -377,6 +377,29 @@ appeared under `C:\Temp\sdtd-verify\000000-StrongMods\` and the live copy's time
 **Watch the shell quoting.** In bash, `-p:ModsDir=C:\\Temp\\sdtd-verify` loses its backslashes and MSBuild reads it
 as a *relative* path, silently writing output into `<Project>\Tempsdtd-verify\` instead of the scratch folder — the
 build still reports success. Use forward slashes and quote the whole switch: `"-p:ModsDir=C:/Temp/sdtd-verify"`.
+
+### Phase 4 findings
+
+Five modlets collapsed to a single `<Import>` line. The three with special needs kept them locally:
+
+- `Hades` — `<ModletCleanEnabled>false</ModletCleanEnabled>`, replacing a commented-out `Clean` target. Verified
+  both directions against a redirected copy: `-t:Clean` on Hades leaves all 23 files intact, while the same target
+  on `PootPavillion` removes its folder as before. That protects the un-versioned `Worlds\` data.
+- `StrongholdTweaks` — the only modlet that installs somewhere other than `Mods\`. It keeps its own `CopySaves`
+  target (`AfterTargets="Build"`) plus `<ModletContentExclude>Saves\**\*</ModletContentExclude>`, rather than
+  complicating `Modlet.targets` for one case. `SavesOutputPath` is now overridable, so it can be tested without
+  writing into the player's real saves folder — verified the live `%APPDATA%\7DaysToDie\Saves` was untouched.
+- `AECVehiclesFixes`, `ProgressiveBiomes` and `Hades` each lost a `<Content Update="...">` setting
+  `CopyToOutputDirectory=PreserveNewest`. **That metadata was always inert**: the modlet `Copy` task copies
+  `@(Content)` wholesale and never reads it. It is the only difference the evaluation diff reports for those three,
+  and the deployed file sets are unchanged.
+
+Deployed file counts match the evaluated `Content` counts exactly for all eight (7/7, 3/3, 23/23, 4/4, 7/7, 5/5, 9/9,
+19/19), which also confirms the copy-if-newer condition — now used by every modlet, where six previously used
+`SkipUnchangedFiles` — copies a full tree correctly. No `bin\`/`obj\` and no `.template.config` leaked into any
+deploy.
+
+**Every project in the repo is now on the shared build.**
 
 ### Gap in this plan: `ProjectZFixes`
 
