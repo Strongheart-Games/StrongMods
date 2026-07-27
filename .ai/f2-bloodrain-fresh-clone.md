@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | ✅ **approach agreed** (2026-07-27) — nothing implemented yet |
+| Status | 🔨 **Phase 0 done** (2026-07-27) — baseline captured, defect reproduced. Phase 1 not started; no repo files changed |
 | Parent | `.ai/build-refactor-plan.md` §0, follow-on **F2** |
 | Scope | `BloodRain` only, plus repo-root docs/config. No C# changes. No other project touched. |
 | Approach | **Option 2** — convert `BloodRain` to `PackageReference`, keeping the non-SDK csproj. Option 1 (vendor the DLL) **ruled out**: repo policy is no binaries in git. |
@@ -21,9 +21,11 @@
    `Mods\BloodRain\` holds `Cronos.dll` (50,424 bytes) and `Cronos.xml` (10,861 bytes).
 3. `packages/` is **ignored** by `.gitignore:21` (`[Pp]ackages/`), and `git ls-files packages` returns nothing.
 
-So after `git clone`, `..\packages\` does not exist. The failure is also *badly signposted*: an unresolvable
-`<Reference>` is MSBuild warning **MSB3245**, not an error, so the build continues and dies in a wall of `CS0246`
-errors about the `Cronos` namespace. The one actionable line is a warning scrolled off the top.
+So after `git clone`, `..\packages\` does not exist. **Reproduced in Phase 0** — see §5. The failure is also badly
+signposted, and measurably worse than first written here: an unresolvable `<Reference>` is MSBuild warning
+**MSB3245**, not an error, so the build continues and dies with `1 Warning(s), 4 Error(s)` — four `CS0246`s about the
+`Cronos` namespace. The single actionable line is the warning, and **at `-v:m` (minimal) verbosity MSBuild does not
+print it at all**, so a scripted or CI invocation sees only the `CS0246`s and no hint of the real cause.
 
 There is no `nuget.config` anywhere in the repo, and because this is `packages.config` rather than `PackageReference`,
 restoring it needs **`nuget.exe`** — a tool that ships with neither the .NET SDK nor MSBuild and must be downloaded by
@@ -160,6 +162,32 @@ tracked depends on which one.
    AssemblyName, RootNamespace, TargetFrameworkVersion, OutputType, DebugType, Optimize, DebugSymbols, PlatformTarget,
    WarningLevel, ErrorReport, FileAlignment, AppDesignerFolder` and items `Reference, Compile, Content, None`.
    `build/tools/compare-eval.py` does the diff.
+
+### Phase 0 results — ✅ **done 2026-07-27**
+
+Baseline taken against `HEAD` = `f698eee`. `BloodRain` is unmodified in the working tree, so the two evaluate the
+same; `compare-eval.py` reports **IDENTICAL** for both `BloodRain` (`Compile 7, Content 7, None 1, Reference 11`) and
+`StrongHorns` (`Compile 5, Content 3, None 0, Reference 10`), which validates the harness before anything changes.
+
+| Oracle | Captured value |
+| --- | --- |
+| Deployed set, `Mods\BloodRain\` | 11 files: `BloodRain.dll` (24,064), `BloodRain.pdb` (48,640), `Cronos.dll` (**50,424**), `Cronos.xml` (10,861), `ModInfo.xml`, `README.md`, `Config\` ×5. SHA-256 recorded for each |
+| `Cronos.dll` provenance | 50,424 bytes = `lib\net45`, not `lib\netstandard2.0` (53,496). This is the V2 discriminator, now anchored to an observed value |
+| `OutDir` = `TargetDir` | `…\7 Days To Die\Mods\BloodRain\` |
+| `TargetPath` | `…\Mods\BloodRain\BloodRain.dll` |
+| `Reference` (11) | 9 game assemblies + `0Harmony` (all `Private=False`) + `Cronos` with **`Private` unset** — confirming copy-local default is what ships `Cronos.dll` *and* `Cronos.xml` |
+| `None` (1) | `packages.config` |
+| `Content` (7) | `ModInfo.xml`, `README.md`, `Config\{biomes,buffs,challenges,worldglobal}.xml`, `Config\Localization.csv` |
+
+7 `Content` + `.dll` + `.pdb` + the two Cronos files = the 11 deployed files, so the deploy set is fully accounted
+for and V4 has an exact expectation to check against.
+
+**The defect reproduces.** The baseline worktree carries no untracked `packages/`, making it a faithful fresh clone.
+A redirected build of it (`-p:ModsDir=<scratch>`) exits **1** with the warning-plus-`CS0246` pattern described in §1.
+This is the "before" that V5 and V6 are measured against, and it means the premise of this plan is observed rather
+than inferred.
+
+The worktree is kept at `<scratch>/f2/baseline` for Phases 1–2; it is disposable (`git worktree remove`).
 
 ### Phase 1 — The change (~12 lines)
 
