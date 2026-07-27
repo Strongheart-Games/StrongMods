@@ -207,10 +207,52 @@ sliced into batches. Each phase ends at a reviewable stopping point.
 | --- | --- | --- | --- |
 | 0 | Capture a **property/item baseline**: for each project, record evaluated `OutputPath`, `DefineConstants`, `LangVersion`, `TargetFrameworkVersion` and the resolved `Reference` set to a text file in the scratchpad. This is the regression oracle for every later phase. | none (script only) | 0 |
 | 1 | ✅ **DONE** — added `build/{GamePaths.props,Mod.props,Mod.targets,Modlet.targets}` + `Local.props.sample`, gitignored `/Local.props`, converted pilots `StrongHorns` (104→18 lines) and `StrongMining` (20→4). No auto-imported files. Both **build clean**; see §4. | 5 new, 3 edited | +215 / −103 |
-| 2 | Convert remaining plain code mods in batches of ~5: (a) `AutoCloseDoors`, `StrongBoxes`, `StrongFill`, `StrongLocks`, `LootDiagnostics` (b) `AuthZ`, `BountifulQuests`, `CustomChatCommands`, `StrongUtils`, `DisableLAN` (c) `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`, `AutoCollectLoot`. Diff the baseline after each batch. | 15 | −80/batch |
+| 2a | ✅ **DONE** — `AutoCloseDoors`, `StrongBoxes`, `StrongFill`, `StrongLocks`, `LootDiagnostics`. All 5 evaluate identically to baseline except the intended `System`→`mscorlib` relabel; all 5 **build clean**. `Config\**\*.xml` widened to `Config\**\*` for `Localization.csv`. | 5 | −430 |
+| 2b | ✅ **DONE** — `AuthZ`, `BountifulQuests`, `CustomChatCommands`, `StrongUtils`, `DisableLAN`. | 5 | −430 |
+| 2c | ✅ **DONE** — `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`, `AutoCollectLoot`. Both `ZZZZZZZZZZ_` prefixes reproduced via `ModLoadPrefix`; AutoCollectLoot's `ProjectReference` preserved. | 5 | −430 |
+
+All 15 evaluate identically to baseline except the `mscorlib` change, and all 15 **build clean**. Six of them
+(`DisableLAN`, `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`,
+`AutoCollectLoot`) previously had **no** `mscorlib` reference and now compile against the game's Unity `mscorlib`
+like the other 15 — that was the open risk in standardising the reference list, and their clean builds settle it.
+
+**Build AutoCollectLoot with `-p:BuildProjectReferences=false` until Phase 3.** It references `StrongMods`, which is
+still unconverted and therefore ignores `-p:ModsDir` — a plain redirected build of AutoCollectLoot would rebuild
+StrongMods straight into the live `Mods\000000-StrongMods\`. Verified the live DLL's timestamp was untouched.
 | 3 | Convert the 4 outliers one at a time: `StrongMods` (load prefix + Noemax + `.ai` exclude), `BloodRain` (Cronos), `PrismaCoreFixes` (x86 + server path + **gains `LangVersion` 9**, so it recompiles — verify separately), `Template7DtDMod`. | 4 | −80 |
 | 4 | Convert the 9 remaining modlets + `Template7DtDModlet`. | 10 | −150 |
-| 5 | Update `CLAUDE.md` ("Building" and "Adding a new mod" sections) and the two `dotnet new` templates so scaffolding produces the short form. | 3 | +40 |
+| — | ✅ **DONE (pulled forward from Phase 5)** — both `dotnet new` templates converted to the shared build and made **non-deploying**. See "Templates" below. | 4 | −100 |
+| 5 | Update `CLAUDE.md` ("Building" and "Adding a new mod" sections). Templates already done. | 1 | +40 |
+
+### Templates: build to `bin` only
+
+The template projects were installing themselves into the live game, because their Debug `OutputPath` pointed at
+`Mods\` exactly like a real mod — so building the solution deployed scaffolding as a playable mod.
+
+The fix could not just be "hardcode `bin`": `template.json` uses `sourceName`, so the csproj **is** the scaffolding
+source and any change propagates into every generated project. Instead:
+
+1. `Mod.targets` and `Modlet.targets` gained a first-class switch — `<ModDeploy>false</ModDeploy>` makes Debug behave
+   like Release and write to `bin\$(Configuration)\`. This is also a small step toward separating build from deploy.
+2. Each template sets `ModDeploy=false` inside a `dotnet new` conditional:
+   ```xml
+   <!--#if (IsTemplate) -->
+       <ModDeploy>false</ModDeploy>
+   <!--#endif -->
+   ```
+   MSBuild treats those markers as ordinary XML comments, so the property is live in the template project itself;
+   the template engine strips the whole block when scaffolding, so **generated mods deploy normally**.
+3. Both `template.json` files declare the `IsTemplate` bool symbol, defaulting to `false`.
+4. `Modlet.targets` now also excludes `.template.config\**\*` from `Content`, so template metadata is never shipped.
+
+Verified: templates evaluate to `bin\Debug`, a stripped-conditional copy of each (simulating `dotnet new` output)
+evaluates to the game `Mods\` folder, both templates build with exit 0 into `bin\Debug` only, the live `Mods\` folder
+count is unchanged, and `template.json` is not copied to output. The stale empty `Mods\Template7DtDMod\` folder left
+by earlier builds was removed.
+
+**Not verified: `dotnet new` itself.** There is no .NET SDK on this machine (see §4), so the template engine could
+not be exercised end-to-end — the conditional-block syntax and `symbols` block are unrun. Worth one real
+`dotnet new 7dtdmod` on a machine that has the SDK.
 
 Optional follow-ups, **not** in this plan — call them out now so they don't get smuggled in:
 - **SDK-style migration** (`<Project Sdk="Microsoft.NET.Sdk">`, `net481`) — would delete the `Compile` lists and
@@ -279,6 +321,50 @@ which was the one construct in the design that could not be checked by reading a
 Also fixed incidentally: the old modlet condition `'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'` yields an **empty
 `OutputPath`** when `Platform` isn't passed (building a modlet's `.csproj` directly rather than via the `.sln`). The
 shared version defaults `Configuration` and does not depend on `Platform`.
+
+### Phase 2a findings
+
+**`BountifulQuests` is the one code mod that used a glob for `Content`:**
+`<Content Include="**\*.xml;**\*.csv;**\*.md">`. That is why `Config\dialogs.xml` never appears as a literal
+`Content` entry — it was shipped by the glob all along. *(An earlier pass here reported it as "missing from the
+csproj and not shipped"; that was a false positive from a survey grep that only matched `Config\...` literals.
+Corrected.)*
+
+The real problem with that glob is the same one the modlets have: `**\*.xml` also matches `bin\` and `obj\`, which
+is why the live `Mods\BountifulQuests\` contains a `bin\Release\bin\Release\` tree. Converting it to the shared
+`ModInfo.xml` + `README.md` + `Config\**\*` set preserves the same three files in a clean tree — verified identical
+against the baseline — and stops the leak.
+
+**The bin-leak reached the live install.** ✅ **Cleaned up 2026-07-25.** Eight deployed mod folders held stray `bin\`
+trees — `Hades` (46 files), `ZZZZZZZZZZ_StrongholdTweaks` (42), `StrongMining` (18), `AECInternationalMarketFixes`
+(14), `PootPavillion` (14), `PlayerSpawnedTraders` (8), `BountifulQuests` (6), `Z_AECVehiclesFixes` (6): 154 files,
+~35 MB. Removed, along with the stale `ProjectZFixes.dll`/`.pdb`. Phase 2/4 stop new ones appearing.
+
+Checks run before deleting: no game or server process running; scope restricted to this repo's own 29 deployed mod
+folders (the live `Mods\` also holds ~55 third-party mods — none had `bin\`/`obj\`, so none were touched); and every
+file in every `bin\` tree was confirmed to be a duplicate of repo source. Two exceptions surfaced and were run down:
+`StrongholdTweaks`'s stale tree still held `Config\entitygroups.xml` and
+`Config\spawning_progressive_biome_difficulty.xml`, deleted from that project in commit `845d932` when they moved to
+`ProgressiveBiomes`. The game reads `Config\` only at a mod's root, never inside `bin\`, so they were inert.
+`Hades\Worlds\` — the un-versioned world data its disabled `Clean` target protects — sits at the mod root, outside
+`bin\`, and is intact (16 files).
+
+### Gap in this plan: `ProjectZFixes`
+
+`ProjectZFixes` was missed when the phases were drafted — the repo has **21** code-mod-shaped projects and the
+phase table only accounts for 20. It is a hybrid: a code-mod csproj (`Microsoft.Common.props` +
+`Microsoft.CSharp.targets`, `OutputType=Library`, deploys to `Mods\ZZ_ProjectZFixes`) with **no `.cs` files, no
+`<Compile>` items and no `<Reference>` items at all** — XML-only content that nonetheless emits an empty 3.5 KB
+`ProjectZFixes.dll` into the live install. It also lacks `LangVersion`, like `PrismaCoreFixes`.
+
+✅ **Resolved — converted to a modlet** (decided 2026-07-25), since that is what it actually is. Now 8 lines with
+`<ModLoadPrefix>ZZ_</ModLoadPrefix>`. Deploys the same 7 files as before (`ModInfo.xml`, `README.md`, 5 under
+`Config\`) and no longer emits the empty assembly; build verified redirected. **Manual cleanup needed:** the stale
+`ProjectZFixes.dll` and `.pdb` in the live `Mods\ZZ_ProjectZFixes\` must be deleted by hand, otherwise the game
+keeps loading a do-nothing assembly.
+
+That brings the repo to 19 code mods + 12 modlets (was 21 + 10; `ProjectZFixes` moved, and `StrongMining` was a
+modlet all along).
 
 ## 5. Decisions — settled 2026-07-25
 

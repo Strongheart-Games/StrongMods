@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "str0ngh34rt",
   "name": "7DtD Mod",
   "description": "A project for building a 7 Days to Die mod.",
@@ -11,5 +11,13 @@
   "sourceName": "Template7DtDMod",
   "guids": [
     "48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0"
-  ]
+  ],
+  "symbols": {
+    "IsTemplate": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Internal. Only true in the template source itself, which keeps the template project from installing into the game. Leave false so generated projects deploy normally."
+    }
+  }
 }

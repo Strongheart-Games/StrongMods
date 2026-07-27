@@ -18,15 +18,19 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
     <ModletCleanEnabled Condition="'$(ModletCleanEnabled)' == ''">true</ModletCleanEnabled>
-    <OutputPath Condition="'$(Configuration)' == 'Debug'">$(ModsDir)\$(ModDeployName)</OutputPath>
-    <OutputPath Condition="'$(Configuration)' != 'Debug'">bin\$(Configuration)</OutputPath>
+
+    <!-- Set <ModDeploy>false</ModDeploy> in a project that must never install into the game — the dotnet new
+         template does this. Debug then behaves like Release and writes to bin\. -->
+    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(ModDeploy)' == 'true'">$(ModsDir)\$(ModDeployName)</OutputPath>
+    <OutputPath Condition="'$(Configuration)' != 'Debug' OR '$(ModDeploy)' != 'true'">bin\$(Configuration)</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- bin/obj are excluded so a Release build does not re-copy its own output on the next run, and so build
          leftovers are never deployed into the game. .ai holds agent planning docs, which are not shipped. -->
     <Content Include="**\*"
-             Exclude="*.csproj;bin\**\*;obj\**\*;.ai\**\*;$(ModletContentExclude)" />
+             Exclude="*.csproj;bin\**\*;obj\**\*;.ai\**\*;.template.config\**\*;$(ModletContentExclude)" />
   </ItemGroup>
 
   <Target Name="Build">

@@ -32,9 +32,13 @@
     <!-- Deploy folder name under Mods\. $(ModLoadPrefix) forces load order (e.g. 000000-, ZZ_). -->
     <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
 
+    <!-- Set <ModDeploy>false</ModDeploy> in a project that must never install into the game — the dotnet new
+         template does this. Debug then behaves like Release and writes to bin\. -->
+    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+
     <!-- Debug deploys straight into the live game; override -p:ModsDir=... to build without deploying. -->
-    <OutputPath Condition="'$(Configuration)' == 'Debug'">$(ModsDir)\$(ModDeployName)\</OutputPath>
-    <OutputPath Condition="'$(Configuration)' != 'Debug'">bin\$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(ModDeploy)' == 'true'">$(ModsDir)\$(ModDeployName)\</OutputPath>
+    <OutputPath Condition="'$(Configuration)' != 'Debug' OR '$(ModDeploy)' != 'true'">bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,10 +72,12 @@
     <Content Include="README.md" Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\**\*.xml">
+    <!-- Not restricted to *.xml: Config folders also hold Localization.csv. Verified against every project that
+         each file already on disk under Config\ and Docs\ is one the project already shipped. -->
+    <Content Include="Config\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Docs\**\*.md">
+    <Content Include="Docs\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
