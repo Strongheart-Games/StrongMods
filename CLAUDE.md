@@ -56,9 +56,25 @@ Game assemblies resolve from `$(SdtdManagedDir)`, and `0Harmony.dll` from `$(Sdt
 NuGet restore for these**; the game must be installed for a build to resolve references, and `build/Mod.targets`
 raises one readable error if it is not. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
 
-`packages/` holds the one real NuGet dep (Cronos, used only by `BloodRain`). Note that `packages/` is gitignored
-while `BloodRain/packages.config` is tracked, so **a fresh clone cannot build `BloodRain` until NuGet restores it** —
-and being `packages.config` rather than `PackageReference`, that needs `nuget.exe restore`, not `dotnet restore`.
+`BloodRain` has the repo's one real NuGet dependency (Cronos). It is a `PackageReference`, so **any standard
+toolchain restores it** — `dotnet build` restores implicitly, `msbuild -restore` does it in one invocation, and IDEs
+restore on load. No `nuget.exe`, no `packages.config`, and a fresh clone builds. The gitignored `packages/` folder is
+a leftover from the old `packages.config` mechanism; nothing reads it, and it will not exist on a fresh clone.
+
+The reference is deliberately routed through `GeneratePathProperty` plus an explicit `<Reference>`:
+
+```xml
+<PackageReference Include="Cronos" Version="0.11.0" GeneratePathProperty="true" ExcludeAssets="all" />
+<Reference Include="Cronos">
+  <HintPath>$(PkgCronos)\lib\net45\Cronos.dll</HintPath>
+</Reference>
+```
+
+**Do not simplify that to a bare `<PackageReference>` while the project is non-SDK.** A legacy project turns restored
+assets into references via `ResolveNuGetPackageAssets`, which ships with full MSBuild but **not** with the .NET SDK.
+A bare `PackageReference` therefore builds fine under `msbuild.exe` and fails with `CS0246` under `dotnet build` —
+which restores the package correctly and then ignores it. Routing through a `HintPath` works under both, and keeps
+`Cronos.dll`/`Cronos.xml` copying into the mod folder. The SDK-style migration will remove the need for this shape.
 
 ### Deploying
 

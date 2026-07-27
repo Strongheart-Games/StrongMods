@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | 🔨 **Phases 0–2 done** (2026-07-27) — **F2 is closed**: a fresh clone builds under both toolchains, deploy set byte-identical to baseline. Phase 3 (docs) outstanding |
+| Status | ✅ **COMPLETE** (2026-07-27) — all phases done. A fresh clone builds under both toolchains; deploy set byte-identical to baseline |
 | Parent | `.ai/build-refactor-plan.md` §0, follow-on **F2** |
 | Scope | `BloodRain` only, plus repo-root docs/config. No C# changes. No other project touched. |
 | Approach | **Option 2** — convert `BloodRain` to `PackageReference`, keeping the non-SDK csproj. Option 1 (vendor the DLL) **ruled out**: repo policy is no binaries in git. |
@@ -340,6 +340,22 @@ Command forms to document — deliberately covering the three styles, none of th
 | Any IDE | Restores on solution load or first build; no manual step |
 
 No Rider path, no VS path, and no "install X" appears in any tracked file.
+
+### Phase 3 results — ✅ **done 2026-07-27**
+
+- **`CLAUDE.md`** — the *References* paragraph was rewritten. It no longer claims a fresh clone needs `nuget.exe`, and
+  it now carries the `dotnet` trap as a **do-not-simplify** warning next to the actual XML, since the failure is
+  silent under one toolchain and invisible under the other. Same spirit as the existing `OutDir`-latching note: the
+  thing that cost a failed build to find is written down where someone would otherwise "clean it up".
+- **`BloodRain/README.md`** — new *Building* section: Cronos (MIT), restored from nuget.org, network needed once, no
+  separate tool required, and `Cronos.dll` must ship beside `BloodRain.dll`. That last point is for users following
+  *Installation*, not just developers.
+- **`.ai/build-refactor-plan.md`** — F2 marked done with a pointer here, plus the two wrong claims in the original
+  note corrected. F1's row also updated: its `BloodRain` benefit is now collapsing this workaround, not introducing
+  `PackageReference`.
+
+`README.md` is a deployed `Content` item, so its text changes in the mod folder — the file *set* is unchanged at 11.
+The `.md` files are not compiled, so no rebuild verification applies beyond confirming the deploy set held.
 
 ## 6. Open questions and risks
 

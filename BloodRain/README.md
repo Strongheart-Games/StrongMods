@@ -39,6 +39,16 @@ Blood Rains are like Blood Moons, but they trigger based on IRL time, for the co
   * `second_warning_message` — optional extra message broadcast after each countdown warning. Empty by default
   * `party_enemy_count_max` — max active enemies per spawn party during a blood rain. Defaults to `30`
 
+## Building
+
+This mod carries the repo's only NuGet dependency: [Cronos](https://github.com/HangfireIO/Cronos) (MIT), which parses
+the `schedule_irl` cron expression. It is a `PackageReference` restored from nuget.org, so the first build needs
+network access once — after that it comes from the local NuGet cache. Restore happens automatically with
+`dotnet build`, with `msbuild -restore`, or when an IDE loads the solution; no separate tool is required.
+
+`Cronos.dll` is copied into the mod folder next to `BloodRain.dll`. Both must ship together — the mod will not load
+without it.
+
 ## Changelog
 
 ### 1.1.0
