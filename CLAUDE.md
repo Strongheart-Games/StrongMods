@@ -113,6 +113,8 @@ cycle must produce self-contained edits.
 
 **Strict Limits & Constraints**
 
+* **Filesystem Scope:** Work only within this project directory and the 7 Days to Die install directories (read-only,
+  for vanilla configs and game DLLs). Treat everything else as out of scope.
 * **Size Target:** Aim for ~100 lines of changed code (excluding auto-generated files or structural configuration
   boilerplate).
 * **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
@@ -120,6 +122,9 @@ cycle must produce self-contained edits.
   functional changes with refactoring.
 * **Isolation:** When tasked with updating a standalone mod, do not modify the foundational `StrongMods` core project
   unless explicitly requested.
+* **Git**
+  * Stage only the files you intentionally modified.
+  * Do not commit, push, or rewrite Git history. These are also blocked by permission deny rules.
 
 ### Required Agent Workflow
 
