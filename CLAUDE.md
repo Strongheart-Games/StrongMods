@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
-(except the `Template*` and `packages` dirs) is one independent mod, and each is a separate C# class-library project
+(except `build`, `Template*` and `packages`) is one independent mod, and each is a separate C# class-library project
 (`.csproj`) targeting **.NET Framework 4.8.1**, **C# LangVersion 9**. All projects are listed in `StrongMods.sln`. See
 `README.md` for the one-line description of each mod.
 
@@ -16,26 +16,82 @@ themselves.
 
 ## Building
 
-Projects reference the game's managed DLLs directly via absolute `HintPath`s under
-`C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\`, and the `0Harmony.dll` from the game's
-`Mods\0_TFP_Harmony\`. **There is no NuGet restore for these**; the game must be installed at that path for a build to
-resolve references. `packages/` holds the handful of real NuGet deps (e.g. Cronos).
+### Shared build files
 
-**Debug builds deploy straight into the live game.** Each `.csproj`'s Debug `OutputPath` points at the game's
-`Mods\<ModName>` folder — so building in Debug *is* the install step. `ModInfo.xml` (and any doc/config
-`Content`) is copied next to the DLL via `CopyToOutputDirectory`. Release builds go to the local `bin\Release\`.
+Every project gets its settings from `build/`. Individual `.csproj` files carry only what is unique to them —
+`ProjectGuid`, the `Compile` list, and any deviation. A modlet is 4 lines; the median project is 16; the largest
+(`StrongUtils`, 43) is long only because of its `Compile` list.
 
-Build with MSBuild or `dotnet build` (the repo uses classic-style `.csproj`, not SDK-style):
+| File | Role |
+| --- | --- |
+| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(ModsDir)`. Not imported directly by projects — the two entry points below pull it in. |
+| `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
+| `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
+| `build/Modlet.targets` | The whole build for an XML-only modlet: a content copy plus `Clean`. |
+| `build/tools/compare-eval.py` | Verification helper; not imported by MSBuild. See *Verifying* below. |
 
-```bash
-dotnet build StrongMods.sln -c Debug              # build & deploy everything
-dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug   # one mod
+**Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a
+mistake.** `Microsoft.Common.CurrentVersion.targets` derives `OutDir`/`TargetDir` from `$(OutputPath)` *during
+evaluation*, so a `Directory.Build.targets` is imported too late: `$(OutputPath)` reads back correct while `OutDir`
+stays latched at the `bin\` fallback and the assembly lands in the wrong place. Import position is therefore
+explicit and load-bearing. The header comment in `build/Mod.targets` has the full story.
+
+A code mod imports the props file after `Microsoft.Common.props` and the targets file before
+`Microsoft.CSharp.targets`:
+
+```xml
+<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
+<Import Project="..\build\Mod.props" />
+  <!-- ProjectGuid, Compile items, any ModLoadPrefix / ModsDir / GameAssembly -->
+<Import Project="..\build\Mod.targets" />
+<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 ```
 
-There is no test project or linter step in this repo. Verification is done by running the game/server.
+A modlet imports one file: `<Import Project="..\build\Modlet.targets" />`.
 
-**StrongMods loads first.** Its Debug `OutputPath` is `Mods\000000-StrongMods` — the `000000-` prefix forces it ahead of
-other mods in load order, which matters because it replaces the XML patcher (see below).
+### References
+
+Game assemblies resolve from `$(SdtdManagedDir)`, and `0Harmony.dll` from `$(SdtdHarmonyDir)` — derived from
+`$(SdtdDir)`, **not** from `$(ModsDir)`, so redirecting the deploy target never breaks compilation. **There is no
+NuGet restore for these**; the game must be installed for a build to resolve references, and `build/Mod.targets`
+raises one readable error if it is not. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
+
+`packages/` holds the one real NuGet dep (Cronos, used only by `BloodRain`). Note that `packages/` is gitignored
+while `BloodRain/packages.config` is tracked, so **a fresh clone cannot build `BloodRain` until NuGet restores it** —
+and being `packages.config` rather than `PackageReference`, that needs `nuget.exe restore`, not `dotnet restore`.
+
+### Deploying
+
+**Debug builds deploy straight into the live game**: `OutputPath` is `$(ModsDir)\$(ModDeployName)\`, so building in
+Debug *is* the install step. Release builds go to `bin\Release\`.
+
+- `<ModLoadPrefix>ZZ_</ModLoadPrefix>` prefixes the deploy folder to force load order.
+- `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead (`PrismaCoreFixes` does this).
+- `<ModDeploy>false</ModDeploy>` never deploys; Debug goes to `bin\Debug\` (both templates do this).
+- `-p:ModsDir=...` on the command line redirects an entire build, which is how to **compile without touching the
+  live install**. Prefer this when the game or server may be running.
+
+```bash
+dotnet build StrongMods.sln -c Debug                                  # build & deploy everything
+dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug      # one mod
+dotnet build StrongMods.sln -c Debug -p:ModsDir=C:/Temp/verify        # build without deploying
+```
+
+Per-machine overrides (a different install path, a permanent redirect) go in a gitignored `Local.props` in the repo
+root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDTD_HOME` → the default.
+
+### Verifying
+
+There is no test project or linter. Two levels beyond running the game:
+
+1. **Evaluation diff, no build.** `msbuild <proj> -getProperty:... -getItem:...` prints a project's resolved settings
+   as JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
+   `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.py` does the diff;
+   its docstring has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
+2. **A real build**, redirected with `-p:ModsDir=...` so it cannot disturb the live install.
+
+**StrongMods loads first**, via `<ModLoadPrefix>000000-</ModLoadPrefix>` — the prefix forces it ahead of other mods
+in load order, which matters because it replaces the XML patcher (see below).
 
 ## Architecture
 
@@ -91,19 +147,34 @@ pieces. Notable shared infrastructure worth reusing:
 - **Formatting is enforced by `.editorconfig`** (2-space indent, LF, max line 120, `charset=utf-8`, K&R-style braces —
   `csharp_new_line_before_open_brace = none`). `var` only when the type is apparent; use language keyword types (`int`,
   not `Int32`); avoid `this.` qualification; constants in `PascalCase`.
-- **Namespaces match the project/assembly name.** Each project sets `RootNamespace` = `AssemblyName` = mod name.
+- **In Markdown, readability outranks the 120-column limit.** Wrap prose at 120, but **Markdown table rows are
+  exempt** — a table is easier to scan than the list it would become, so never reflow a table, convert one to
+  bullets, or truncate its cells just to fit the limit. `.editorconfig` cannot express this (it has no notion of
+  "inside a table"), so the rule lives here. Same applies to long URLs and code-block lines that cannot be broken.
+- **Namespaces match the project/assembly name.** `build/Mod.props` defaults `RootNamespace` and `AssemblyName` to
+  `$(MSBuildProjectName)`, so a project should not set them; the directory name *is* the mod name.
 - `ModInfo.xml` is UTF-8-with-BOM and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
-- AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project.
+- AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project, or in the
+  repo-root `.ai/` when the work spans the whole repo (e.g. `.ai/build-refactor-plan.md`).
 - While most projects have little or no docs yet, we strive to put a README.md in the root of each project and
   supporting detailed docs in its `Docs/` directory
 
 ## Adding a new mod
 
-Scaffold from a template (`Template7DtDMod` for a code mod, `Template7DtDModlet` for XML-only), then add the project to
-`StrongMods.sln`. Set the Debug `OutputPath` to the game's `Mods\<ModName>` folder (copy an existing
-`.csproj`'s reference block and property groups — the DLL `HintPath`s are identical across projects). Mark
-`ModInfo.xml` (and any `Config/` files or docs) as `Content` with `CopyToOutputDirectory=PreserveNewest`.
+Scaffold from a template (`Template7DtDMod` for a code mod, `Template7DtDModlet` for XML-only), then add the project
+to `StrongMods.sln`. The template already imports the shared build files, so there is **no** reference block,
+property group or `OutputPath` to copy, and no `Content` entries to declare — `ModInfo.xml`, `README.md`,
+`Config\**\*` and `Docs\**\*` are picked up automatically for code mods, and a modlet ships its whole directory.
+
+Scaffold into the repo root: the imports are relative (`..\build\...`), so a project one level down resolves them.
+
+For a code mod, add each new `.cs` file to the `Compile` list — these are classic `.csproj` files, so there is no
+globbing. Deviate from the defaults only where needed, above the `Mod.targets` import: `ModLoadPrefix` for load
+order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
+
+The templates set `<ModDeploy>false</ModDeploy>` inside a `<!--#if (IsTemplate) -->` block so they never install
+themselves into the game. `dotnet new` strips that block, so generated projects deploy normally — leave it alone.
 
 ## Agent Workflow & Workstyle Constraints
 
