@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | 🔨 **Phases 0–1 done** (2026-07-27) — change applied, building, no open decisions. Phase 2 verification not yet run |
+| Status | 🔨 **Phases 0–2 done** (2026-07-27) — **F2 is closed**: a fresh clone builds under both toolchains, deploy set byte-identical to baseline. Phase 3 (docs) outstanding |
 | Parent | `.ai/build-refactor-plan.md` §0, follow-on **F2** |
 | Scope | `BloodRain` only, plus repo-root docs/config. No C# changes. No other project touched. |
 | Approach | **Option 2** — convert `BloodRain` to `PackageReference`, keeping the non-SDK csproj. Option 1 (vendor the DLL) **ruled out**: repo policy is no binaries in git. |
@@ -257,6 +257,68 @@ Shell-quoting reminder carried over from the parent plan §4: in bash use forwar
 `"-p:ModsDir=C:/Temp/sdtd-verify"`. Backslashes are eaten and MSBuild silently writes to a *relative* path while still
 reporting success.
 
+### Phase 2 results — ✅ **done 2026-07-27, design revised mid-phase**
+
+Verification found a **regression in the Phase 1 shape** and the project file was changed in response. The bare
+`<PackageReference Include="Cronos" Version="0.11.0" />` is *not* sufficient for a legacy project.
+
+**What went wrong.** A non-SDK project turns `project.assets.json` into references via `ResolveNuGetPackageAssets`,
+which ships with **full MSBuild** (VS / Build Tools / an IDE's bundled copy) but **not with the .NET SDK**. So under
+`dotnet`, restore ran and wrote a correct `project.assets.json` and `nuget.g.props` — and the build then ignored
+them, failing with `CS0246`. Every `dotnet` form failed: `dotnet build`, `dotnet restore` + `dotnet build`, and
+`dotnet msbuild -restore`. A control build of `StrongHorns` (no packages) *succeeded* under `dotnet`, which is what
+isolated the cause to package-asset consumption rather than to legacy projects in general.
+
+This mattered because `CLAUDE.md` documents `dotnet build` as the repo's primary command, and because it was a real
+regression: before the change, `dotnet build` resolved the plain `HintPath` fine on a machine with a populated
+`packages\`. It also broke the dev-style-neutrality requirement in §2 outright — an SDK-only developer was blocked.
+
+**The fix**, verified under both toolchains before being applied:
+
+```xml
+<PackageReference Include="Cronos" Version="0.11.0" GeneratePathProperty="true" ExcludeAssets="all" />
+<Reference Include="Cronos">
+  <HintPath>$(PkgCronos)\lib\net45\Cronos.dll</HintPath>
+</Reference>
+```
+
+`GeneratePathProperty` makes restore emit `$(PkgCronos)` into `nuget.g.props`, pointing at the restored package;
+`ExcludeAssets="all"` stops the unusable automatic asset flow; the explicit `<Reference>` is consumed by RAR, which
+both toolchains have. Nothing hardcodes a version or a `..\packages\` location — and the surviving `lib\net45`
+fragment now *pins* the asset explicitly, retiring the V2 framework-nearest risk rather than depending on it.
+
+**It is also strictly better than the Phase 1 shape on output.** Copy-local via RAR restores `Cronos.xml`, so the
+deploy set returns to the original **11 files, byte-identical to the Phase 0 oracle** (`Cronos.dll` 50,424 and
+`Cronos.xml` 10,861, both matching hashes). The decision recorded above to drop `Cronos.xml` is therefore **moot** —
+nothing is lost after all, and this change is now a true no-op on deployed output.
+
+| # | Check | Result |
+| --- | --- | --- |
+| V1 | Cold-cache restore | ✅ `NUGET_PACKAGES` → empty dir; package pulled from nuget.org, build exit 0. Re-verified against the revised shape |
+| V2 | Asset selection | ✅ `lib\net45`, now **pinned explicitly** rather than resolved. Built `Cronos.dll` byte-identical to baseline |
+| V3 | Evaluation diff vs. `f698eee` | ✅ all 18 properties identical incl. `OutDir`/`TargetDir`/`TargetPath`. Exactly 3 intended item diffs: `None` loses `packages.config`; the Cronos `Reference` changes identity from the strong name to `Cronos`, and its `HintPath` from `..\packages\…` to the resolved `$(PkgCronos)` path. `Reference` count unchanged at 11 |
+| V4 | Deploy set | ✅ **identical to the Phase 0 baseline** — all 11 files |
+| V5 | Fresh-clone acceptance | ✅ worktree at post-change `HEAD`, no `packages\`, no `packages.config`: restore + build **exit 0**. The tree that failed in Phase 0 now succeeds. **F2 is closed** |
+| V6 | No-restore diagnostic | ⚠️ **unchanged from baseline**, not improved — see below |
+| V7 | Inert elsewhere | ✅ `StrongHorns` evaluation byte-identical; `nuget.config` leaks nothing |
+| V8 | Live install | ✅ untouched throughout; all 11 files retain their original timestamps |
+| V9 | Two toolchains | ✅ **both**, from a fresh clone: `msbuild -restore` and `dotnet build` each produce the correct 11-file output |
+
+**V6 did not deliver what §5 predicted, and the prediction was simply wrong.** The plan claimed a missing restore
+would produce NuGet's readable "assets file not found" error. It does not — that error comes from the .NET SDK
+targets, which a legacy project never imports. Measured behaviour by shape:
+
+| Shape | Missing-restore diagnostic |
+| --- | --- |
+| Original (`packages.config`) | 1 × `MSB3245` + 4 × `CS0246`; `MSB3245` **suppressed at `-v:m`** |
+| Phase 1 (bare `PackageReference`) | **0 warnings**, 4 × `CS0246`, no mention of NuGet anywhere — strictly worse |
+| Final (`GeneratePathProperty`) | 1 × `MSB3245` + 4 × `CS0246` — back to baseline |
+
+So the final shape neither improves nor degrades this. Making it genuinely readable would need a guard target
+mirroring `VerifyGameInstall` in `build/Mod.targets`, keyed on `@(PackageReference)` being non-empty while
+`project.assets.json` is missing. That is a separate logical change, deliberately **not** made here; it is recorded
+as a follow-on in §7.
+
 ### Phase 3 — Documentation (tracked, tool-neutral wording)
 
 - **`CLAUDE.md`**, *Building → References* (lines 59–61). Replace the "`packages/` is gitignored … needs
@@ -292,7 +354,17 @@ No Rider path, no VS path, and no "install X" appears in any tracked file.
 **Decision, settled 2026-07-27:** option 2. Option 1 was rejected on repo policy — no binaries in source control —
 which also settles the "restore step versus vendored DLL" trade in favour of the restore step.
 
-## 7. Explicitly out of scope
+## 7. Follow-ons and out of scope
+
+**Follow-on raised by Phase 2 — a missing-restore guard.** V6 showed that forgetting to restore still fails with an
+`MSB3245` warning (invisible at `-v:m`) plus a `CS0246` wall, in every project shape tested. The repo already has the
+right idiom for this in `build/Mod.targets` — `VerifyGameInstall` turns a missing game install into one readable
+error. An analogous `VerifyPackageRestore`, conditioned on `@(PackageReference)` being non-empty and
+`$(MSBuildProjectExtensionsPath)project.assets.json` not existing, would do the same for restore. Left undone because
+it is a separate logical change in shared build infrastructure, and because F1 will make every project restore-aware
+(via a reference-assemblies package), which is the natural moment to add it.
+
+### Explicitly out of scope
 
 F1 (SDK-style migration); the other 30 projects; the load-order-prefix normalisation of F7; cleaning up developers'
 existing local `packages/` folders; any C# change to `BloodRain`; central package management
