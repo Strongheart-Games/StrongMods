@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | 🔨 **Phase 0 done** (2026-07-27) — baseline captured, defect reproduced. Phase 1 not started; no repo files changed |
+| Status | 🔨 **Phases 0–1 done** (2026-07-27) — change applied, building, no open decisions. Phase 2 verification not yet run |
 | Parent | `.ai/build-refactor-plan.md` §0, follow-on **F2** |
 | Scope | `BloodRain` only, plus repo-root docs/config. No C# changes. No other project touched. |
 | Approach | **Option 2** — convert `BloodRain` to `PackageReference`, keeping the non-SDK csproj. Option 1 (vendor the DLL) **ruled out**: repo policy is no binaries in git. |
@@ -196,6 +196,44 @@ One logical change: swap the dependency mechanism.
 - Edit `BloodRain/BloodRain.csproj` per §4.1.
 - `git rm BloodRain/packages.config`.
 - Add root `nuget.config` per §4.3 (separable; drop on request).
+
+### Phase 1 results — 🔨 **applied 2026-07-27, one decision open**
+
+Three files: `BloodRain/BloodRain.csproj` (+7/−5), `BloodRain/packages.config` deleted, `nuget.config` added.
+`nuget.config` was included as agreed.
+
+| Check | Result |
+| --- | --- |
+| Restore | ✅ `msbuild -restore` succeeds in ~370 ms |
+| Restore target framework | ✅ `.NETFramework,Version=v4.8.1`, project framework `net481` |
+| **Asset selection (V2)** | ✅ **`lib/net45`**, read directly from `project.assets.json` (`compile` and `runtime` both), not inferred from file size. The netstandard2.0 risk did not materialise |
+| Build | ✅ exit 0, redirected via `-p:ModsDir=` |
+| `Cronos.dll` identity | ✅ 50,424 bytes, SHA-256 matches the deployed baseline byte for byte |
+| Live install (V8) | ✅ untouched — all 11 files retain their original timestamps |
+| **`Cronos.xml` (V4)** | ✅ **no longer deploys** — deploy set is 10 files, was 11. Accepted deliberately; see below |
+| `BloodRain.pdb` | ✅ still deploys, 48,640 bytes, same as baseline. Its hash differs from the baseline copy, as does `BloodRain.dll`'s — PDBs and assemblies embed a fresh build GUID per compilation, so that is expected, not drift |
+| Debug symbols overall | ✅ nothing lost. `Cronos.0.11.0`'s `lib\net45` ships only `Cronos.dll` and `Cronos.xml` — there is no `Cronos.pdb` in the package, so no third-party symbols were ever deployed to lose |
+
+**The `Cronos.xml` drop is real and not trivially reversible.** Under `packages.config`, RAR resolved the assembly
+and copy-local dragged the sibling `.xml` along via `AllowedReferenceRelatedFileExtensions`. Under `PackageReference`,
+`ResolvePackageAssets` contributes the runtime assembly directly and the documentation file is not included.
+`-p:CopyDocumentationFilesFromPackages=true` was tried and has **no effect** — it is a .NET SDK property and this is
+the legacy NuGet targets path.
+
+Restoring it would need `GeneratePathProperty="true"` plus an explicit
+`<None Include="$(PkgCronos)\lib\net45\Cronos.xml" CopyToOutputDirectory="PreserveNewest" />` — which reintroduces a
+literal `lib\net45` path fragment, the exact thing this change removed, and would then need revisiting under F1.
+
+**Decision, settled 2026-07-27: accept the drop.** `Cronos.xml` is IntelliSense documentation for the Cronos API. The
+game never reads it; nothing in `BloodRain` references it; it is 11 KB of build-time metadata shipped into a runtime
+mod folder. Dropping it makes the deploy set strictly more correct. Recorded as a deliberate, reviewed change rather
+than silent drift — which is what V4 existed to force.
+
+Debug information was checked explicitly as part of that decision and is unaffected: `BloodRain.pdb` still deploys,
+and the Cronos package contains no `.pdb` to begin with. The single lost file is the documentation XML.
+
+**V4 is therefore satisfied**, with the expectation amended from 11 files to 10. The remaining 10 match the Phase 0
+oracle: 7 `Content` items, `BloodRain.dll`, `BloodRain.pdb`, and a byte-identical `Cronos.dll`.
 
 ### Phase 2 — Verification
 

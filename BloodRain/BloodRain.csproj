@@ -5,13 +5,15 @@
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
     <ProjectGuid>{031D66E3-00A6-4AAD-85B9-7F26BFC9EFAF}</ProjectGuid>
+    <!-- PackageReference rather than packages.config, so any standard toolchain can restore: `msbuild -restore`,
+         `dotnet restore`, or an IDE on load. packages.config would need a hand-downloaded nuget.exe, which ships
+         with neither MSBuild nor the .NET SDK. A non-SDK project has to opt in explicitly; this is set here rather
+         than in build\Mod.props so that no other project in the repo becomes restore-aware. -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <!-- The one real NuGet dependency in the repo. No <Private>, so Cronos.dll ships alongside the mod. -->
-    <Reference Include="Cronos, Version=0.0.0.0, Culture=neutral, PublicKeyToken=3301b794bfa990f0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cronos.0.11.0\lib\net45\Cronos.dll</HintPath>
-    </Reference>
-    <None Include="packages.config" />
+    <!-- The one real NuGet dependency in the repo. Left copy-local, so Cronos.dll ships alongside the mod. -->
+    <PackageReference Include="Cronos" Version="0.11.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloodRain.cs" />
