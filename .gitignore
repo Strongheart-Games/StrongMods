@@ -10,6 +10,9 @@
 # Per-machine build overrides (copy Local.props.sample -> Local.props; see build/GamePaths.props)
 /Local.props
 
+# Claude Code local memory
+.claude/memory/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
