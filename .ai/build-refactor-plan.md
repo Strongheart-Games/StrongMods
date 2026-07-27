@@ -1,6 +1,28 @@
 # Plan: share common `.csproj` logic across the repo
 
-Status: **proposed — not started.** Scope: build files only. No C# changes, no behavior changes.
+- **Status:** ✅ **complete.** All 31 projects converted; phases 1–5 done. Only the follow-ons below remain.
+- **Scope:** build files only — no C# changes, no intended behaviour changes.
+- **Result:** 31 `.csproj` files went from **2,379 lines to 493** (126 insertions, 2,012 deletions). The game install
+  path went from ~310 hardcoded copies to one property in one file.
+- **Verification:** every project diffed by MSBuild evaluation against a pristine `git worktree` baseline, then
+  built. See §4 — including the two bugs and one silent-failure mode that only a real build caught.
+- **Deliberate exception:** `PrismaCoreFixes` was compiling as C# 7.3 and now compiles as C# 9. That is the single
+  intended compilation change in the whole refactor.
+
+## 0. Follow-ons — nothing here is done
+
+Captured so the reasoning isn't lost. No further analysis has been done on any of these beyond what is written.
+
+| # | Item | Notes |
+| --- | --- | --- |
+| F1 | **SDK-style migration** (`<Project Sdk="Microsoft.NET.Sdk">`, `net481`) | Deliberately deferred; see §5.3. Deletes the `Compile` lists and `ProjectGuid`s and lets `BloodRain` use `PackageReference`. Needs `GenerateAssemblyInfo=false` (the `Properties/AssemblyInfo.cs` files still exist) and `AppendTargetFrameworkToOutputPath=false`. This refactor is its prerequisite and survives it unchanged — the explicit-import sandwich works in both formats. |
+| F2 | **`BloodRain` cannot be built from a fresh clone** | `packages/` is gitignored but `BloodRain/packages.config` is tracked, and there is no `nuget.config`, so `..\packages\Cronos.0.11.0\...\Cronos.dll` is simply absent after cloning. Being `packages.config` rather than `PackageReference`, restoring needs `nuget.exe restore` — *not* `dotnet restore`. F1 fixes this properly; committing the ~30 KB DLL via a `.gitignore` negation is the stopgap. |
+| F3 | **`dotnet new` never exercised end-to-end** | No .NET SDK on this machine, so the templates' `<!--#if (IsTemplate) -->` conditional and `symbols` block are unrun. The MSBuild half is verified and the stripped result was checked by hand. Run one real `dotnet new 7dtdmod` somewhere with the SDK. Failure mode is loud: a scaffolded project would build to `bin\` instead of deploying. |
+| F4 | **A real `Deploy` target, separate from `Build`** | Debug still deploys as a side effect of building. `-p:ModsDir=...` and `<ModDeploy>false</ModDeploy>` already decouple *where*, so a `Deploy` target is now a small step rather than a redesign. |
+| F5 | **Test project; Refasmer reference assemblies** | As discussed 2026-07-24. Untouched. |
+| F6 | **CLAUDE.md Filesystem Scope bullet is self-contradictory** | It calls the 7DtD install directories "read-only", but a Debug build writes into `Mods\`, and this session deleted stale files there. Worth rewording so a future agent knows deploying is expected. Left alone deliberately — it is your policy statement, not mine to rewrite. |
+| F7 | **Load-order prefixes left ad-hoc** | `000000-` / `Z_` / `ZZ_` / `ZZZZZZZZZZ_` preserved verbatim (§5.2). Now visible as `ModLoadPrefix` in each project instead of buried in a path string, so normalising them later is cheap — but it renames live deploy folders, so it needs a manual cleanup pass. |
+| F8 | **Untracked leftovers** | `StrongMods/.ai/xml-patch-ensure-spec.md` and `xpath-inheritance-v1-spec.md` are untracked and predate this work — not mine, not touched. (`build/tools/` and `Local.props.sample` are now committed.) |
 
 ## 1. What's actually duplicated (measured, 31 projects)
 
@@ -179,10 +201,10 @@ in `GamePaths.props`. All four verified in §4.
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
 ```
-`RootNamespace`/`AssemblyName` are gone — they equal `$(MSBuildProjectName)` in all 21 projects, which `Mod.props`
-now defaults. `ProjectGuid` stays (the `.sln` references it). `StrongMods` will add
-`<ModLoadPrefix>000000-</ModLoadPrefix>` + `<GameAssembly Include="Noemax.GZip" />`; `PrismaCoreFixes` will add
-`<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` + `<PlatformTarget>x86</PlatformTarget>` — all above the import.
+`RootNamespace`/`AssemblyName` are gone — they equal `$(MSBuildProjectName)` in every project, which `Mod.props`
+now defaults. `ProjectGuid` stays (the `.sln` references it). Deviations sit above the `Mod.targets` import:
+`StrongMods` adds `<ModLoadPrefix>000000-</ModLoadPrefix>` + `<GameAssembly Include="Noemax.GZip" />`, and
+`PrismaCoreFixes` adds `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` + `<PlatformTarget>x86</PlatformTarget>`.
 
 ### After: a typical modlet
 ```xml
@@ -205,24 +227,25 @@ sliced into batches. Each phase ends at a reviewable stopping point.
 
 | # | Work | Files | Approx Δ lines |
 | --- | --- | --- | --- |
-| 0 | Capture a **property/item baseline**: for each project, record evaluated `OutputPath`, `DefineConstants`, `LangVersion`, `TargetFrameworkVersion` and the resolved `Reference` set to a text file in the scratchpad. This is the regression oracle for every later phase. | none (script only) | 0 |
+| 0 | ✅ **DONE** — capture a property/item baseline as the regression oracle. Implemented as a `git worktree` of `HEAD` evaluated on demand rather than a saved text file, which made it re-runnable per batch; see §4. | none | 0 |
 | 1 | ✅ **DONE** — added `build/{GamePaths.props,Mod.props,Mod.targets,Modlet.targets}` + `Local.props.sample`, gitignored `/Local.props`, converted pilots `StrongHorns` (104→18 lines) and `StrongMining` (20→4). No auto-imported files. Both **build clean**; see §4. | 5 new, 3 edited | +215 / −103 |
 | 2a | ✅ **DONE** — `AutoCloseDoors`, `StrongBoxes`, `StrongFill`, `StrongLocks`, `LootDiagnostics`. All 5 evaluate identically to baseline except the intended `System`→`mscorlib` relabel; all 5 **build clean**. `Config\**\*.xml` widened to `Config\**\*` for `Localization.csv`. | 5 | −430 |
 | 2b | ✅ **DONE** — `AuthZ`, `BountifulQuests`, `CustomChatCommands`, `StrongUtils`, `DisableLAN`. | 5 | −430 |
 | 2c | ✅ **DONE** — `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`, `AutoCollectLoot`. Both `ZZZZZZZZZZ_` prefixes reproduced via `ModLoadPrefix`; AutoCollectLoot's `ProjectReference` preserved. | 5 | −430 |
-
-All 15 evaluate identically to baseline except the `mscorlib` change, and all 15 **build clean**. Six of them
-(`DisableLAN`, `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`,
-`AutoCollectLoot`) previously had **no** `mscorlib` reference and now compile against the game's Unity `mscorlib`
-like the other 15 — that was the open risk in standardising the reference list, and their clean builds settle it.
-
-**Build AutoCollectLoot with `-p:BuildProjectReferences=false` until Phase 3.** It references `StrongMods`, which is
-still unconverted and therefore ignores `-p:ModsDir` — a plain redirected build of AutoCollectLoot would rebuild
-StrongMods straight into the live `Mods\000000-StrongMods\`. Verified the live DLL's timestamp was untouched.
 | 3 | ✅ **DONE** — `StrongMods`, `BloodRain`, `PrismaCoreFixes` (`Template7DtDMod` was handled with the templates). All evaluate identically to baseline except the `mscorlib` change and PrismaCoreFixes' `LangVersion`; all build clean. | 3 | −250 |
 | 4 | ✅ **DONE** — the 8 remaining modlets (`Template7DtDModlet` went with the templates). All evaluate identically except three losing inert `CopyToOutputDirectory` metadata; all build clean. | 8 | −130 |
 | — | ✅ **DONE (pulled forward from Phase 5)** — both `dotnet new` templates converted to the shared build and made **non-deploying**. See "Templates" below. | 4 | −100 |
-| 5 | Update `CLAUDE.md` ("Building" and "Adding a new mod" sections). Templates already done. | 1 | +40 |
+| 5 | ✅ **DONE** — `CLAUDE.md`: rewrote *Building* (shared files, the no-auto-import constraint, references, deploying, verifying) and *Adding a new mod*; fixed the `RootNamespace`/`AssemblyName` and `.ai/` convention bullets. | 1 | +75 |
+
+All 15 projects in Phase 2 evaluate identically to baseline except the `mscorlib` change, and all 15 **build clean**.
+Six of them (`DisableLAN`, `QuestUnlockFixes`, `DynamicFeralSense`, `DynamicLandClaimCount`, `ChatCommandHelper`,
+`AutoCollectLoot`) previously had **no** `mscorlib` reference and now compile against the game's Unity `mscorlib`
+like the others — that was the open risk in standardising the reference list, and their clean builds settle it.
+
+**During Phase 2 only, AutoCollectLoot needed `-p:BuildProjectReferences=false`.** It references `StrongMods`, which
+was still unconverted and therefore ignored `-p:ModsDir` — a plain redirected build would have rebuilt StrongMods
+straight into the live `Mods\000000-StrongMods\`. Phase 3 removed the need; verified afterwards that a plain
+redirected build sends StrongMods to the scratch folder and leaves the live DLL untouched.
 
 ### Templates: build to `bin` only
 
@@ -254,15 +277,8 @@ by earlier builds was removed.
 not be exercised end-to-end — the conditional-block syntax and `symbols` block are unrun. Worth one real
 `dotnet new 7dtdmod` on a machine that has the SDK.
 
-Optional follow-ups, **not** in this plan — call them out now so they don't get smuggled in:
-- **SDK-style migration** (`<Project Sdk="Microsoft.NET.Sdk">`, `net481`) — would delete the `Compile` lists and
-  `ProjectGuid`s entirely and let `BloodRain` use `PackageReference`. Needs `GenerateAssemblyInfo=false` (the
-  `Properties/AssemblyInfo.cs` files still exist) and `AppendTargetFrameworkToOutputPath=false`. The layout above is
-  a prerequisite and survives that migration unchanged, so this is the right ordering either way.
-- **Separating build from deploy** (build to `bin\`, deploy via a target/script) — the reason `Debug` is currently
-  unbuildable while the game runs. After this refactor the deploy root is a single property, so
-  `-p:ModsDir=<somewhere>` already redirects a whole build; a `Deploy` target is a small follow-on.
-- Refasmer reference assemblies, test project — as previously discussed.
+Follow-ups deliberately kept out of this plan are gathered in **§0** at the top, so they don't get smuggled into a
+phase.
 
 ## 4. Verification
 

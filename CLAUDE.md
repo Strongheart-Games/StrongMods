@@ -151,6 +151,9 @@ pieces. Notable shared infrastructure worth reusing:
   exempt** — a table is easier to scan than the list it would become, so never reflow a table, convert one to
   bullets, or truncate its cells just to fit the limit. `.editorconfig` cannot express this (it has no notion of
   "inside a table"), so the rule lives here. Same applies to long URLs and code-block lines that cannot be broken.
+- **Don't fake a table with consecutive `Label: value` lines.** Markdown joins adjacent lines into one paragraph, so
+  they render as an unreadable run-on. Use a real table, or a bullet per field — never bare label lines. This
+  applies especially to status/metadata headers at the top of a doc.
 - **Namespaces match the project/assembly name.** `build/Mod.props` defaults `RootNamespace` and `AssemblyName` to
   `$(MSBuildProjectName)`, so a project should not set them; the directory name *is* the mod name.
 - `ModInfo.xml` is UTF-8-with-BOM and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
