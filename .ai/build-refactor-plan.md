@@ -219,7 +219,7 @@ like the other 15 — that was the open risk in standardising the reference list
 **Build AutoCollectLoot with `-p:BuildProjectReferences=false` until Phase 3.** It references `StrongMods`, which is
 still unconverted and therefore ignores `-p:ModsDir` — a plain redirected build of AutoCollectLoot would rebuild
 StrongMods straight into the live `Mods\000000-StrongMods\`. Verified the live DLL's timestamp was untouched.
-| 3 | Convert the 4 outliers one at a time: `StrongMods` (load prefix + Noemax + `.ai` exclude), `BloodRain` (Cronos), `PrismaCoreFixes` (x86 + server path + **gains `LangVersion` 9**, so it recompiles — verify separately), `Template7DtDMod`. | 4 | −80 |
+| 3 | ✅ **DONE** — `StrongMods`, `BloodRain`, `PrismaCoreFixes` (`Template7DtDMod` was handled with the templates). All evaluate identically to baseline except the `mscorlib` change and PrismaCoreFixes' `LangVersion`; all build clean. | 3 | −250 |
 | 4 | Convert the 9 remaining modlets + `Template7DtDModlet`. | 10 | −150 |
 | — | ✅ **DONE (pulled forward from Phase 5)** — both `dotnet new` templates converted to the shared build and made **non-deploying**. See "Templates" below. | 4 | −100 |
 | 5 | Update `CLAUDE.md` ("Building" and "Adding a new mod" sections). Templates already done. | 1 | +40 |
@@ -275,6 +275,12 @@ There is no test suite, no .NET SDK, and no Visual Studio on this machine — bu
 That supports `-getProperty:` / `-getItem:`, which **evaluate** a project and print the result as JSON *without
 running any target* — no compile, no copy, nothing written to the live game folder. This is the regression oracle,
 and it makes each phase checkable without a build.
+
+The diff itself is done by **`build/tools/compare-eval.py`** (Python 3.14 at `%LOCALAPPDATA%\Python\bin\python`).
+It pairs each item's Identity with only its build-affecting metadata — comparing raw JSON also picks up MSBuild's
+location-derived metadata (`FullPath`, `DefiningProject*`, timestamps), which necessarily differs between the repo
+and the baseline worktree and buries the real diff. Exit code 0 = identical, 1 = differs, so it can gate a script.
+It is a standalone tool; nothing in `build\*.props`/`*.targets` imports it.
 
 Method used in Phase 1, repeat for every later batch:
 1. `git worktree add --detach <scratch>/baseline HEAD` — a pristine pre-change tree. (MSBuild's
@@ -348,6 +354,29 @@ file in every `bin\` tree was confirmed to be a duplicate of repo source. Two ex
 `ProgressiveBiomes`. The game reads `Config\` only at a mod's root, never inside `bin\`, so they were inert.
 `Hades\Worlds\` — the un-versioned world data its disabled `Clean` target protects — sits at the mod root, outside
 `bin\`, and is intact (16 files).
+
+### Phase 3 findings
+
+**`PrismaCoreFixes` was compiling as C# 7.3.** The original survey flagged it as the one project missing
+`<LangVersion>`; the evaluation diff confirms the effective value was `7.3`, not the `9` every other project uses.
+It is now `9` and still builds clean. This is the only intentional compilation change in the whole refactor.
+
+Each outlier's distinguishing trait survived, verified by evaluation *and* by a redirected build:
+- `StrongMods` — `000000-` prefix reproduced via `ModLoadPrefix`; `Noemax.GZip` added with a one-line
+  `<GameAssembly Include="Noemax.GZip" />`; `Docs\*.md` still ship.
+- `BloodRain` — the Cronos reference keeps **no** `<Private>` element, so `Cronos.dll` *and* `Cronos.xml` still copy
+  into the mod folder; `packages.config` preserved as `None`.
+- `PrismaCoreFixes` — `PlatformTarget=x86` held (Mod.props sets AnyCPU before the body, the body wins), and
+  `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` sends it to the **dedicated server** install while `PrismaCore.dll`
+  resolves from `$(SdtdServerDir)\Dependencies_3.0\`. Confirmed the un-redirected `OutDir` is still the server path.
+
+**The `-p:BuildProjectReferences=false` workaround is no longer needed.** With `StrongMods` converted, a redirected
+build of `AutoCollectLoot` now sends its `ProjectReference` output to the scratch folder too — verified `StrongMods.dll`
+appeared under `C:\Temp\sdtd-verify\000000-StrongMods\` and the live copy's timestamp was unchanged.
+
+**Watch the shell quoting.** In bash, `-p:ModsDir=C:\\Temp\\sdtd-verify` loses its backslashes and MSBuild reads it
+as a *relative* path, silently writing output into `<Project>\Tempsdtd-verify\` instead of the scratch folder — the
+build still reports success. Use forward slashes and quote the whole switch: `"-p:ModsDir=C:/Temp/sdtd-verify"`.
 
 ### Gap in this plan: `ProjectZFixes`
 
