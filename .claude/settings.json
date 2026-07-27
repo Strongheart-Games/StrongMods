@@ -16,6 +16,12 @@
       "Bash(dotnet build *)",
       "Bash(dotnet test *)",
       "Bash(dotnet format *)",
+      "Bash(dotnet clean *)",
+
+      "Bash(msbuild * /t:Restore *)",
+      "Bash(msbuild * /t:Build *)",
+      "Bash(msbuild * /t:VSTest *)",
+      "Bash(msbuild * /t:Clean *)",
 
       "Edit(*)"
     ],
