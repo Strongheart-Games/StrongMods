@@ -263,6 +263,17 @@ GUIDs flipped. No shared-file changes in this batch, so unconverted projects are
 | Release spot-check | ✅ `StrongBoxes` Release → `bin\Release\` correct shape, `.pdb` present |
 | V5 | ✅ Client, server, saves untouched |
 
+### Phase 3 results — done 2026-07-28
+
+`AuthZ`, `BountifulQuests`, `CustomChatCommands`, `StrongUtils`, `QuestUnlockFixes`, `DynamicFeralSense` converted —
+all plain; same 4-line shape; six `.sln` GUIDs flipped. No shared-file changes.
+
+| Check | Result |
+| --- | --- |
+| V1 ×6, Debug+Release | ✅ Known accepted pattern only (checked mechanically). `Compile` globs exact, `StrongUtils` 30/30 included; `StrongUtils`'s `GetValueOrDefault` use compiles fine under the §3 decision, as expected |
+| V2/V3 | ✅ Mixed solution (13 SDK + 18 legacy) builds both toolchains, exit 0, warnings at baseline; all six deploy sets exact; `PrismaCoreFixes` individual build OK |
+| V5 | ✅ Client, server, saves untouched |
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
