@@ -9,6 +9,16 @@
 | Sequencing | Ships **before** F1, as F1's de-risking step rather than a standalone patch. See §8. |
 | Size estimate | ~12 changed lines of build config + ~25 lines of docs. Well under the 100-line target. |
 
+## 0. Follow-ons
+
+Items **owned by this doc** — raised here, not tracked anywhere else. Repo-wide follow-ons live in
+`.ai/build-refactor-plan.md` §0 and are referred to below in prose only, never duplicated as rows here. IDs are
+permanent: never renumbered, never reused.
+
+| # | Status | Item | Notes |
+| --- | --- | --- | --- |
+| F2.1 | proposed | **No readable error when restore has not run** | A missing restore fails with an `MSB3245` warning — *suppressed at `-v:m`* — followed by a `CS0246` wall. Measured across all three project shapes tried (§5, V6), so this change neither improved nor worsened it. The repo already has the right idiom: `VerifyGameInstall` in `build/Mod.targets` turns a missing game install into one readable error. An analogous `VerifyPackageRestore`, conditioned on `@(PackageReference)` being non-empty while `$(MSBuildProjectExtensionsPath)project.assets.json` is absent, would do the same for restore. Deliberately not done here — it is a separate logical change to shared build infrastructure. F1 is the natural moment, since it makes every project restore-aware via a reference-assemblies package. |
+
 ## 1. The defect, precisely
 
 `BloodRain` is the only project in the repo with a real NuGet dependency (`Cronos`, used by `BloodRain.cs` for
@@ -370,22 +380,14 @@ The `.md` files are not compiled, so no rebuild verification applies beyond conf
 **Decision, settled 2026-07-27:** option 2. Option 1 was rejected on repo policy — no binaries in source control —
 which also settles the "restore step versus vendored DLL" trade in favour of the restore step.
 
-## 7. Follow-ons and out of scope
+## 7. Explicitly out of scope
 
-**Follow-on raised by Phase 2 — a missing-restore guard.** V6 showed that forgetting to restore still fails with an
-`MSB3245` warning (invisible at `-v:m`) plus a `CS0246` wall, in every project shape tested. The repo already has the
-right idiom for this in `build/Mod.targets` — `VerifyGameInstall` turns a missing game install into one readable
-error. An analogous `VerifyPackageRestore`, conditioned on `@(PackageReference)` being non-empty and
-`$(MSBuildProjectExtensionsPath)project.assets.json` not existing, would do the same for restore. Left undone because
-it is a separate logical change in shared build infrastructure, and because F1 will make every project restore-aware
-(via a reference-assemblies package), which is the natural moment to add it.
+Scope boundary, not a backlog — nothing here is tracked as a follow-on. Anything this work *raises* is a row in §0.
 
-### Explicitly out of scope
-
-F1 (SDK-style migration); the other 30 projects; the load-order-prefix normalisation of F7; cleaning up developers'
-existing local `packages/` folders; any C# change to `BloodRain`; central package management
-(`Directory.Packages.props`) — pointless for a single package, and it would introduce an auto-imported file into a
-repo that deliberately has none.
+F1 (SDK-style migration) and the load-order-prefix normalisation of F7, both tracked in `.ai/build-refactor-plan.md`
+§0; the other 30 projects; cleaning up developers' existing local `packages/` folders, which is a per-machine action
+with nothing to track; any C# change to `BloodRain`; and central package management (`Directory.Packages.props`) —
+pointless for a single package, and it would introduce an auto-imported file into a repo that deliberately has none.
 
 ## 8. Sequencing: this before F1, not folded into it
 
