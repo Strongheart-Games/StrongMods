@@ -12,6 +12,12 @@
       "Bash(git add *)",
       "Bash(git mv *)",
 
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue comment *)",
+      "Bash(gh issue create *)",
+      "Bash(gh issue reopen *)",
+
       "Bash(dotnet restore *)",
       "Bash(dotnet build *)",
       "Bash(dotnet test *)",
@@ -26,7 +32,9 @@
       "Edit(*)"
     ],
     "ask": [
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(gh issue edit *)",
+      "Bash(gh issue close *)"
     ],
     "deny": [
       "Bash(git commit *)",
@@ -42,6 +50,9 @@
       "Bash(git revert *)",
       "Bash(git cherry-pick *)",
       "Bash(git stash *)",
+
+      "Bash(gh issue delete *)",
+      "Bash(gh issue transfer *)",
 
       "Bash(curl *)",
       "Bash(wget *)",
