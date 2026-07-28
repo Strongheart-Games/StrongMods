@@ -46,6 +46,15 @@
          <GameAssembly Include="Noemax.GZip" /> in the project body, above the import. -->
     <GameAssembly Include="mscorlib" />
     <GameAssembly Include="System" />
+    <!-- The legacy C# targets injected System.Core implicitly from the machine's targeting pack; the SDK (with
+         implicit framework references disabled) adds nothing. Referencing the game's copy explicitly gives both
+         formats the same System.Core and removes the hidden targeting-pack dependence. -->
+    <GameAssembly Include="System.Core" />
+    <!-- Game assemblies type-forward through netstandard (Unity ships its own 2.1 shim). The legacy build
+         satisfied this via ImplicitlyExpandDesignTimeFacades from the machine's targeting pack — 104 facade DLLs
+         injected invisibly. The SDK does no such expansion, so the game's own copy is referenced explicitly;
+         SDK-only because the legacy facade expansion would clash with a second netstandard. -->
+    <GameAssembly Include="netstandard" Condition="'$(UsingMicrosoftNETSdk)' == 'true'" />
     <GameAssembly Include="System.Xml" />
     <GameAssembly Include="System.Xml.Linq" />
     <GameAssembly Include="Assembly-CSharp" />

@@ -104,6 +104,33 @@ warnings (any MSB3243/3245/3277 is a red flag); deploy-set parity; both toolchai
 get recorded here before Phase 2 rolls anything out. F2 §8 anticipated (a); (b) preserves current semantics more
 faithfully — neither is presumed.
 
+### Decision — settled by the pilot, 2026-07-28: (b) `FrameworkPathOverride`, by necessity
+
+Option (a) **cannot compile this repo**. `StrongHorns` failed under it with CS1061 on
+`ConcurrentDictionary.GetValueOrDefault` — an API the game's Unity Mono runtime provides but the official net481
+reference assemblies do not contain. The repo's shipping code is written against the game's actual surface, so
+official reference assemblies are not a viable compile target; this is a hard fail, not a fidelity preference.
+(Direct consequence for [#15](https://github.com/Strongheart-Games/StrongMods/issues/15): CI reference assemblies
+must be Refasmer'd from the game's own DLLs, not taken from `Microsoft.NETFramework.ReferenceAssemblies`.)
+
+Under (b), the SDK pilot's post-RAR `ReferencePath` is **exactly the legacy set, every path from the game install**
+— including `mscorlib` (option (a) additionally swapped `mscorlib` to the package's copy). Two references that the
+legacy build injected invisibly from the machine's targeting pack are now explicit `GameAssembly` entries instead:
+
+- `System.Core` — the legacy C# targets add it implicitly; now referenced from the game's copy (SDK builds).
+  Legacy builds are verified byte-identical either way (their implicit pack copy still wins).
+- `netstandard` (SDK-only) — the legacy build passed **115 references** to csc: the 10 explicit ones plus
+  `System.Core` plus **104 facade DLLs** injected by `ImplicitlyExpandDesignTimeFacades` from the targeting pack.
+  The SDK does no facade expansion; game assemblies type-forward through netstandard, so the game's own 2.1 shim is
+  referenced explicitly. Any further facade need in later batches will surface as a readable CS0012 naming the
+  assembly, and gets the same one-line explicit fix.
+
+Net effect: SDK-converted projects need **no targeting pack at all** — strictly less machine-dependent than the
+legacy build, which needed one invisibly. One nuance discovered en route: **every SDK-style project requires a
+restore** (NETSDK1004 without one) even with zero packages; under (b) that restore is local-only, no network. The
+missing-restore error is the readable one-liner [#11](https://github.com/Strongheart-Games/StrongMods/issues/11)
+asked for — to be verified against BloodRain in Phase 4 and commented there.
+
 ## 4. Known format differences to neutralize
 
 Each of these is a place the SDK's defaults differ from the legacy build; each has a countermeasure and a
@@ -193,6 +220,34 @@ Three findings that adjust later phases:
    two-toolchain check is only meaningful from a cleaned tree.
 
 Live client `Mods\`, server `Mods\`, and `%APPDATA%` saves all verified untouched by every build in this phase.
+
+### Phase 1 results — done 2026-07-28
+
+`StrongHorns` is SDK-style: the csproj is 4 lines (`Sdk` attribute + the two shared imports; no ProjectGuid, no
+Compile list). The framework-references decision is settled — see §3. Changed files: `build/Mod.props` (format
+branches + `FrameworkPathOverride`, `DisableImplicitFrameworkReferences`, `EnableDefaultNoneItems=false`,
+`GenerateAssemblyInfo=false`, `AppendTargetFrameworkToOutputPath=false`), `build/Mod.targets` (+`System.Core`,
++`netstandard` SDK-only), `StrongHorns/StrongHorns.csproj`, `StrongMods.sln` (type GUID).
+
+| # | Check | Result |
+| --- | --- | --- |
+| V1 | Targeted eval vs baseline, Debug+Release | ✅ All properties identical incl. `OutDir`/`TargetDir` (Debug deploy path byte-identical). `Compile` 5/5, `Content` 3/3 exact. Three intended diffs: duplicate `DEBUG` in `DefineConstants` (SDK appends; defines are a set — inert), explicit `System.Core` + `netstandard` reference items (§3). Release adds `RELEASE` to `DefineConstants` — no source in the repo uses `#if RELEASE` (verified by grep) |
+| V2 | Both toolchains | ✅ MSBuild 18.7 and dotnet 10.0.201, redirected, exit 0, **zero warnings** (baseline NU1503s are modlet-only) |
+| V3 | Deploy set | ✅ 5 files exact, content byte-identical modulo git CRLF/LF (baseline worktree checked out CRLF; the working tree is LF — a git artifact, not a build change). Release goes to `bin\Release\` with no `net481\` subfolder, `.pdb` present |
+| V4 | Assembly metadata | ✅ `FileVersionInfo` identical to baseline; no generated `*AssemblyInfo*` under `obj\`; no CS0579 |
+| V5 | Live installs | ✅ client, server, saves untouched by every build |
+| V6 | Legacy inertness | ✅ `StrongLocks` evaluates identically (+ the one intended `System.Core` item) and **builds byte-equivalently: csc still receives the same 115 references** — the added explicit `System.Core` is inert in legacy builds (the pack copy still wins) |
+| — | Mixed solution | ✅ Full `StrongMods.sln` (1 SDK + 30 legacy projects) builds under **both** toolchains, exit 0, warning set exactly at baseline, 28 deploy folders each |
+
+Operational notes for later batches, learned here:
+
+- Full MSBuild resolves `Microsoft.NET.Sdk` only if a .NET SDK is discoverable; **this machine has no global dotnet
+  install**, so `MSBuild.exe` runs need Rider's bundled dotnet dir prefixed to `PATH`
+  (`…\Rider253_000\lib\ReSharperHost\windows-x64\dotnet`). Machines with a normally-installed SDK need nothing.
+  `MSBuildSDKsPath` alone does not work.
+- When restore inputs change (shared-file edits, mode switches), NuGet's up-to-date check can leave a stale
+  `project.assets.json` that crashes `ResolvePackageAssets` with a NullRef. Fix: delete `obj\` and re-restore.
+  Batch protocol: clean `obj\`/`bin\` before verification builds (already required for cross-toolchain compares).
 
 ## 6. Verification — per batch unless noted
 
