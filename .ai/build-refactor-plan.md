@@ -1,6 +1,7 @@
 # Plan: share common `.csproj` logic across the repo
 
-- **Status:** ✅ **complete.** All 31 projects converted; phases 1–5 done. Only the follow-ons below remain.
+- **Status:** ✅ **complete.** All 31 projects converted; phases 1–5 done. Remaining work is tracked in
+  [GitHub Issues](https://github.com/Strongheart-Games/StrongMods/issues); §0 maps the legacy `F` numbers to them.
 - **Scope:** build files only — no C# changes, no intended behaviour changes.
 - **Result:** 31 `.csproj` files went from **2,379 lines to 493** (126 insertions, 2,012 deletions). The game install
   path went from ~310 hardcoded copies to one property in one file.
@@ -11,18 +12,25 @@
 
 ## 0. Follow-ons
 
-Captured so the reasoning isn't lost. No further analysis has been done on any of these beyond what is written.
+**Tracking moved to GitHub Issues on 2026-07-28.** Status, notes and discussion live there; what remains here is only
+a crosswalk from the legacy `F` identifiers this document uses in prose. The issue is authoritative — if the two ever
+disagree, believe GitHub.
 
-| # | Status                 | Item                                                                    | Notes |
-| --- |------------------------|-------------------------------------------------------------------------| --- |
-| F1 | proposed               | **SDK-style migration** (`<Project Sdk="Microsoft.NET.Sdk">`, `net481`) | Deliberately deferred; see §5.3. Deletes the `Compile` lists and `ProjectGuid`s, and lets `BloodRain` collapse the `GeneratePathProperty` + explicit `<Reference>` shape that F2 had to adopt back into a bare `PackageReference` (SDK-style projects consume package assets natively, which is exactly what a legacy project cannot do under `dotnet`). Needs `GenerateAssemblyInfo=false` (the `Properties/AssemblyInfo.cs` files still exist) and `AppendTargetFrameworkToOutputPath=false`. This refactor is its prerequisite and survives it unchanged — the explicit-import sandwich works in both formats.                                                                                         |
-| F2 | ✅ **DONE 2026-07-27** | **`BloodRain` cannot be built from a fresh clone**                      | Converted to `PackageReference` (plus a root `nuget.config`), keeping the non-SDK csproj. A fresh clone now builds under **both** `msbuild -restore` and `dotnet build`, and the deploy set is byte-identical to before. Shipped *before* F1 as its de-risking step: the `PackageReference` survives F1 verbatim, and it settled the package mechanism on one project so F1 can pilot SDK-style on a plain one. Design, verification and the `dotnet`/`ResolveNuGetPackageAssets` trap that forced a mid-flight redesign: `.ai/f2-bloodrain-fresh-clone.md`. **Two claims in the original note were wrong** — the `.gitignore` negation stopgap does not work at all (git will not re-include a file whose parent directory is excluded), and the DLL is 50 KB, not ~30 KB. |
-| F3 | proposed               | **`dotnet new` never exercised end-to-end**                             | No .NET SDK on this machine, so the templates' `<!--#if (IsTemplate) -->` conditional and `symbols` block are unrun. The MSBuild half is verified and the stripped result was checked by hand. Run one real `dotnet new 7dtdmod` somewhere with the SDK. Failure mode is loud: a scaffolded project would build to `bin\` instead of deploying.                                                                                                                                                                                                                                                                                                                                                           |
-| F4 | proposed               | **A real `Deploy` target, separate from `Build`**                       | Debug still deploys as a side effect of building. `-p:ModsDir=...` and `<ModDeploy>false</ModDeploy>` already decouple *where*, so a `Deploy` target is now a small step rather than a redesign.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| F5 | proposed               | **Test project; Refasmer reference assemblies; XML linting**            | As discussed 2026-07-24. Untouched. **XML linting added to this item 2026-07-27:** nothing in the repo validates XML before MSBuild loads it, and C#-oriented tooling never will — Roslyn analyzers, `.editorconfig` and `dotnet format` all read C# source, not project XML. A well-formedness (or schema) pass over `*.csproj`, `build\*.props`, `build\*.targets` and every mod's `Config\**\*.xml` would close that gap cheaply. Concrete case from F2: a `--` inside an XML comment — illegal in XML — broke two files and was caught only by an MSBuild load failure. The `Config\` patch files are the bigger prize: hand-written XML, shipped to the game, and currently unvalidated by anything. |
-| F6 | proposed               | **CLAUDE.md Filesystem Scope bullet is self-contradictory**             | It calls the 7DtD install directories "read-only", but a Debug build writes into `Mods\`, and this session deleted stale files there. Worth rewording so a future agent knows deploying is expected. Left alone deliberately — it is your policy statement, not mine to rewrite. |
-| F7 | proposed               | **Load-order prefixes left ad-hoc**                                     | `000000-` / `Z_` / `ZZ_` / `ZZZZZZZZZZ_` preserved verbatim (§5.2). Now visible as `ModLoadPrefix` in each project instead of buried in a path string, so normalising them later is cheap — but it renames live deploy folders, so it needs a manual cleanup pass. |
-| F8 | proposed               | **Untracked leftovers**                                                 | `StrongMods/.ai/xml-patch-ensure-spec.md` and `xpath-inheritance-v1-spec.md` are untracked and predate this work — not mine, not touched. (`build/tools/` and `Local.props.sample` are now committed.) |
+Open backlog: <https://github.com/Strongheart-Games/StrongMods/issues>
+
+| Legacy ID | Issue |
+| --- | --- |
+| F1 | [#9 SDK-style migration](https://github.com/Strongheart-Games/StrongMods/issues/9) |
+| F2 | [#10 BloodRain cannot be built from a fresh clone](https://github.com/Strongheart-Games/StrongMods/issues/10) |
+| F3 | [#12 `dotnet new` templates never exercised end-to-end](https://github.com/Strongheart-Games/StrongMods/issues/12) |
+| F4 | [#13 A real Deploy target, separate from Build](https://github.com/Strongheart-Games/StrongMods/issues/13) |
+| F5 | split in three: [#14 test project](https://github.com/Strongheart-Games/StrongMods/issues/14), [#15 Refasmer reference assemblies](https://github.com/Strongheart-Games/StrongMods/issues/15), [#16 XML linting](https://github.com/Strongheart-Games/StrongMods/issues/16) |
+| F6 | [#17 CLAUDE.md Filesystem Scope bullet is self-contradictory](https://github.com/Strongheart-Games/StrongMods/issues/17) |
+| F7 | [#18 Load-order prefixes left ad-hoc](https://github.com/Strongheart-Games/StrongMods/issues/18) |
+| F8 | [#19 Untracked leftovers in StrongMods/.ai/](https://github.com/Strongheart-Games/StrongMods/issues/19) |
+
+F5 was deliberately split when it moved: it bundled three separable pieces of work, and bundled items cannot be
+ranked against each other.
 
 ## 1. What's actually duplicated (measured, 31 projects)
 
@@ -277,8 +285,8 @@ by earlier builds was removed.
 not be exercised end-to-end — the conditional-block syntax and `symbols` block are unrun. Worth one real
 `dotnet new 7dtdmod` on a machine that has the SDK.
 
-Follow-ups deliberately kept out of this plan are gathered in **§0** at the top, so they don't get smuggled into a
-phase.
+Follow-ups deliberately kept out of this plan were captured rather than smuggled into a phase. They are now GitHub
+issues; **§0** maps the `F` numbers used above to them.
 
 ## 4. Verification
 

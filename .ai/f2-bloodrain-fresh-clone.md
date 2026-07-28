@@ -11,13 +11,11 @@
 
 ## 0. Follow-ons
 
-Items **owned by this doc** — raised here, not tracked anywhere else. Repo-wide follow-ons live in
-`.ai/build-refactor-plan.md` §0 and are referred to below in prose only, never duplicated as rows here. IDs are
-permanent: never renumbered, never reused.
+**Tracking moved to GitHub Issues on 2026-07-28.** This document is [#10](https://github.com/Strongheart-Games/StrongMods/issues/10).
 
-| # | Status | Item | Notes |
-| --- | --- | --- | --- |
-| F2.1 | proposed | **No readable error when restore has not run** | A missing restore fails with an `MSB3245` warning — *suppressed at `-v:m`* — followed by a `CS0246` wall. Measured across all three project shapes tried (§5, V6), so this change neither improved nor worsened it. The repo already has the right idiom: `VerifyGameInstall` in `build/Mod.targets` turns a missing game install into one readable error. An analogous `VerifyPackageRestore`, conditioned on `@(PackageReference)` being non-empty while `$(MSBuildProjectExtensionsPath)project.assets.json` is absent, would do the same for restore. Deliberately not done here — it is a separate logical change to shared build infrastructure. F1 is the natural moment, since it makes every project restore-aware via a reference-assemblies package. |
+This work raised exactly one follow-on:
+[#11 No readable error when NuGet restore has not run](https://github.com/Strongheart-Games/StrongMods/issues/11).
+The reasoning behind it stays here — §5 (V6) and §7 — while GitHub carries its status.
 
 ## 1. The defect, precisely
 
@@ -382,10 +380,13 @@ which also settles the "restore step versus vendored DLL" trade in favour of the
 
 ## 7. Explicitly out of scope
 
-Scope boundary, not a backlog — nothing here is tracked as a follow-on. Anything this work *raises* is a row in §0.
+Scope boundary, not a backlog — nothing here is tracked as a follow-on. Anything this work *raised* was filed as an
+issue instead; see §0.
 
-F1 (SDK-style migration) and the load-order-prefix normalisation of F7, both tracked in `.ai/build-refactor-plan.md`
-§0; the other 30 projects; cleaning up developers' existing local `packages/` folders, which is a per-machine action
+F1 (SDK-style migration) and the load-order-prefix normalisation of F7, now
+[#9](https://github.com/Strongheart-Games/StrongMods/issues/9) and
+[#18](https://github.com/Strongheart-Games/StrongMods/issues/18); the other 30 projects; cleaning up developers'
+existing local `packages/` folders, which is a per-machine action
 with nothing to track; any C# change to `BloodRain`; and central package management (`Directory.Packages.props`) —
 pointless for a single package, and it would introduce an auto-imported file into a repo that deliberately has none.
 
