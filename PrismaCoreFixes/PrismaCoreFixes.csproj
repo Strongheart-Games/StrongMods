@@ -1,10 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <ProjectGuid>{98109D45-BDDB-4B31-8C31-933E1AD3851D}</ProjectGuid>
     <PlatformTarget>x86</PlatformTarget>  <!-- For Compatibility with PrismaCore -->
     <!-- This mod targets the dedicated server, not the client install. -->
     <ModsDir>$(SdtdServerDir)\Mods</ModsDir>
@@ -15,11 +11,5 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="PrismaCoreFixes.cs" />
-    <Compile Include="ModApi.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
   <Import Project="..\build\Mod.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,17 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <ProjectGuid>{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}</ProjectGuid>
     <!-- Loads late, after the mods whose chat commands it wraps. -->
     <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="ChatCommandHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
   <Import Project="..\build\Mod.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

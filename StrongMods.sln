@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDModlet", "Template7DtDModlet\Template7DtDModlet.csproj", "{B1413BD6-A2C1-461A-9F97-EFAB66B4F8FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodRain", "BloodRain\BloodRain.csproj", "{44BCB2A9-427E-476F-9081-A39B3D46F610}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloodRain", "BloodRain\BloodRain.csproj", "{44BCB2A9-427E-476F-9081-A39B3D46F610}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongUtils", "StrongUtils\StrongUtils.csproj", "{FED4B6B3-0482-4574-BBE8-6F189F5681DF}"
 EndProject
@@ -12,13 +12,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongholdTweaks", "Strongh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BountifulQuests", "BountifulQuests\BountifulQuests.csproj", "{AE1B39DA-8714-4D2B-A982-82E0EE96BDB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCollectLoot", "AutoCollectLoot\AutoCollectLoot.csproj", "{76AB9778-CE81-41AE-A6F1-8C79BB953118}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoCollectLoot", "AutoCollectLoot\AutoCollectLoot.csproj", "{76AB9778-CE81-41AE-A6F1-8C79BB953118}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicLandClaimCount", "DynamicLandClaimCount\DynamicLandClaimCount.csproj", "{8E52B445-96E6-4625-92C0-B17575AC7C55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicLandClaimCount", "DynamicLandClaimCount\DynamicLandClaimCount.csproj", "{8E52B445-96E6-4625-92C0-B17575AC7C55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrismaCoreFixes", "PrismaCoreFixes\PrismaCoreFixes.csproj", "{98109D45-BDDB-4B31-8C31-933E1AD3851D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrismaCoreFixes", "PrismaCoreFixes\PrismaCoreFixes.csproj", "{98109D45-BDDB-4B31-8C31-933E1AD3851D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCommandHelper\ChatCommandHelper.csproj", "{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatCommandHelper", "ChatCommandHelper\ChatCommandHelper.csproj", "{A640E0C8-7DA1-4B85-99B2-798AA2B6B859}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectZFixes", "ProjectZFixes\ProjectZFixes.csproj", "{3B97B71A-88B4-48F5-9948-BCB8530987C0}"
 EndProject
@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoCloseDoors", "AutoClose
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AECVehiclesFixes", "AECVehiclesFixes\AECVehiclesFixes.csproj", "{2B3124B6-EF9F-41F2-B717-2C52A51F5694}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMods", "StrongMods\StrongMods.csproj", "{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongMods", "StrongMods\StrongMods.csproj", "{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LootDiagnostics", "LootDiagnostics\LootDiagnostics.csproj", "{DD41E183-5878-4873-8645-B73E6C229833}"
 EndProject

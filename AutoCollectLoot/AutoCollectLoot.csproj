@@ -1,31 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <ProjectGuid>{76AB9778-CE81-41AE-A6F1-8C79BB953118}</ProjectGuid>
     <!-- Loads late so its XML patches apply after the mods they depend on. -->
     <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AutoCollectLoot.cs" />
-    <Compile Include="BuffManager.cs" />
-    <Compile Include="Commands\AutoLootConsoleCommand.cs" />
-    <Compile Include="ConfigManager.cs" />
-    <Compile Include="LootItems.cs" />
-    <Compile Include="LootLottery.cs" />
-    <Compile Include="ModApi.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <!-- Private=false: StrongMods deploys itself; its DLL must not be duplicated into this mod's folder. -->
     <ProjectReference Include="..\StrongMods\StrongMods.csproj">
-      <Project>{74f67ce9-f5c2-4714-9ac1-5abe2c44a4c3}</Project>
-      <Name>StrongMods</Name>
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\build\Mod.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

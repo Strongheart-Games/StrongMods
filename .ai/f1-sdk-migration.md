@@ -274,6 +274,26 @@ all plain; same 4-line shape; six `.sln` GUIDs flipped. No shared-file changes.
 | V2/V3 | ✅ Mixed solution (13 SDK + 18 legacy) builds both toolchains, exit 0, warnings at baseline; all six deploy sets exact; `PrismaCoreFixes` individual build OK |
 | V5 | ✅ Client, server, saves untouched |
 
+### Phase 4 results — done 2026-07-28
+
+The outlier batch: `DynamicLandClaimCount`, `ChatCommandHelper`, `StrongMods`, `AutoCollectLoot`,
+`PrismaCoreFixes`, `BloodRain`. Every distinguishing trait survived, verified by evaluation and redirected builds:
+the `000000-`/`ZZZZZZZZZZ_` prefixes; `Noemax.GZip`; the `ProjectReference` with `Private=false` (redundant
+`Project` GUID and `Name` metadata dropped — the SDK resolves by path); `PlatformTarget=x86` + the dedicated-server
+`ModsDir` + the `PrismaCore` reference; and BloodRain's F2 workaround collapsed to a bare
+`<PackageReference Include="Cronos" Version="0.11.0" />`.
+
+| Check | Result |
+| --- | --- |
+| V1 ×6, Debug+Release | ✅ Known pattern only, plus two intended item diffs: AutoCollectLoot's `ProjectReference` metadata trim, BloodRain's explicit `Cronos` `Reference` replaced by native package-asset flow |
+| V2/V3 | ✅ Mixed solution (19 SDK + 12 modlets) both toolchains, exit 0, warnings at baseline; all six deploy sets exact — **BloodRain back to the full 11-file F2 oracle**, `Cronos.dll` (`lib/net45`, 50,424) *and* `Cronos.xml` byte-identical. `Cronos.xml` needed `CopyDocumentationFilesFromPackages=true` in BloodRain.csproj — the SDK skips package doc files by default; the property only exists on the SDK asset path, which is why F2 found it inert under the legacy targets |
+| V7 | ✅ Redirected solution build sends `StrongMods.dll` to the scratch `000000-StrongMods\`; `AutoCollectLoot`'s folder contains no `StrongMods.dll` (`Private=false` held) |
+| PrismaCoreFixes | ✅ Individual redirected build OK; un-redirected `OutDir` still the dedicated-server path (evaluation identical to baseline); `.sln` no-build state preserved (config rows untouched) |
+| [#11](https://github.com/Strongheart-Games/StrongMods/issues/11) | ✅ **Delivered by the migration.** A missing restore now fails with a single readable `NETSDK1004` "Run a NuGet package restore" under both toolchains, replacing the baseline's `-v:m`-suppressed MSB3245 + 4×CS0246. Verified with `obj\` deleted; commented on the issue |
+| V5 | ✅ Client, server, saves untouched |
+
+All 19 code mods are now SDK-style.
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
