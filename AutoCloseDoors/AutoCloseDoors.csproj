@@ -1,16 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
-  <PropertyGroup>
-    <ProjectGuid>{0EF79908-328B-4B13-8647-A27F3BC65F71}</ProjectGuid>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="AutoCloseDoors.cs" />
-    <Compile Include="ModApi.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
   <Import Project="..\build\Mod.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

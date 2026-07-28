@@ -22,19 +22,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatCommandHelper", "ChatCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectZFixes", "ProjectZFixes\ProjectZFixes.csproj", "{3B97B71A-88B4-48F5-9948-BCB8530987C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisableLAN", "DisableLAN\DisableLAN.csproj", "{0DAD2297-EF81-4F52-83CE-565F6A05ED04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DisableLAN", "DisableLAN\DisableLAN.csproj", "{0DAD2297-EF81-4F52-83CE-565F6A05ED04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestUnlockFixes", "QuestUnlockFixes\QuestUnlockFixes.csproj", "{5340DFC4-6E05-49D6-A497-B4776A9AD035}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicFeralSense", "DynamicFeralSense\DynamicFeralSense.csproj", "{21319922-DC60-422A-B2CB-64D96496F224}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongHorns", "StrongHorns\StrongHorns.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMining", "StrongMining\StrongMining.csproj", "{343152C4-6197-4461-9B01-E223627C59E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongBoxes", "StrongBoxes\StrongBoxes.csproj", "{6252E52E-1BBA-413F-B389-88546EE20AF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongBoxes", "StrongBoxes\StrongBoxes.csproj", "{6252E52E-1BBA-413F-B389-88546EE20AF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PootPavillion", "PootPavillion\PootPavillion.csproj", "{3BABA8DB-AD22-49E9-A719-D3AF58D7C181}"
 EndProject
@@ -42,7 +42,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomChatCommands", "Custo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AECInternationalMarketFixes", "AECInternationalMarketFixes\AECInternationalMarketFixes.csproj", "{791AD590-BA3D-45E9-A2ED-493B6CEF729F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongLocks", "StrongLocks\StrongLocks.csproj", "{85873556-03BB-4F43-8CC9-DC090FAA260C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongLocks", "StrongLocks\StrongLocks.csproj", "{85873556-03BB-4F43-8CC9-DC090FAA260C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthZ", "AuthZ\AuthZ.csproj", "{9951FF29-1B0A-4F33-AFA0-CAEC5FD35B5B}"
 EndProject
@@ -50,13 +50,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hades", "Hades\Hades.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerSpawnedTraders", "PlayerSpawnedTraders\PlayerSpawnedTraders.csproj", "{25731978-87DD-4A91-9830-16C92FBFE4DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCloseDoors", "AutoCloseDoors\AutoCloseDoors.csproj", "{0EF79908-328B-4B13-8647-A27F3BC65F71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoCloseDoors", "AutoCloseDoors\AutoCloseDoors.csproj", "{0EF79908-328B-4B13-8647-A27F3BC65F71}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AECVehiclesFixes", "AECVehiclesFixes\AECVehiclesFixes.csproj", "{2B3124B6-EF9F-41F2-B717-2C52A51F5694}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMods", "StrongMods\StrongMods.csproj", "{74F67CE9-F5C2-4714-9AC1-5ABE2C44A4C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LootDiagnostics", "LootDiagnostics\LootDiagnostics.csproj", "{DD41E183-5878-4873-8645-B73E6C229833}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LootDiagnostics", "LootDiagnostics\LootDiagnostics.csproj", "{DD41E183-5878-4873-8645-B73E6C229833}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgressiveBiomes", "ProgressiveBiomes\ProgressiveBiomes.csproj", "{1C7B533A-7150-4518-9E81-9A5F5AD4CA7A}"
 EndProject

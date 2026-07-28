@@ -249,6 +249,20 @@ Operational notes for later batches, learned here:
   `project.assets.json` that crashes `ResolvePackageAssets` with a NullRef. Fix: delete `obj\` and re-restore.
   Batch protocol: clean `obj\`/`bin\` before verification builds (already required for cross-toolchain compares).
 
+### Phase 2 results — done 2026-07-28
+
+`AutoCloseDoors`, `StrongBoxes`, `StrongFill`, `StrongLocks`, `LootDiagnostics`, `DisableLAN` converted — all six
+were plain (ProjectGuid + Compile list only), so each is now the same 4-line csproj as the pilot. Six `.sln` type
+GUIDs flipped. No shared-file changes in this batch, so unconverted projects are untouched by construction.
+
+| Check | Result |
+| --- | --- |
+| V1 ×6, Debug+Release | ✅ Exactly the pilot's accepted diff pattern for every project, nothing new. `Compile` globs reproduce every explicit list exactly (3/4/2/4/3/2 files); `Content` exact; Debug `OutDir` identical |
+| V2/V3 | ✅ Full mixed solution (7 SDK + 24 legacy) builds under both toolchains, exit 0, warnings at baseline (NU1503 modlets only). All six deploy sets file-exact with content byte-identical modulo the known CRLF artifact; `StrongHorns` re-verified |
+| PrismaCoreFixes | ✅ Individual redirected build (per Phase 0 protocol), deploy set OK |
+| Release spot-check | ✅ `StrongBoxes` Release → `bin\Release\` correct shape, `.pdb` present |
+| V5 | ✅ Client, server, saves untouched |
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
