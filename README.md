@@ -28,3 +28,9 @@
 | **StrongMining** | Terrain and ore blocks that regenerate themselves when broken.                                                           |
 | **StrongMods** | Core modding tools: a breadth-first XML patcher and the `<foreach>` XML-patch templating engine. Other mods build on it. |
 | **StrongUtils** | A grab-bag of modding and administration tools.                                                                          |
+
+## Bugs and requests
+
+Please open an issue: <https://github.com/Strongheart-Games/StrongMods/issues>
+
+Mentioning which mod is affected, and your game version, makes triage much faster.

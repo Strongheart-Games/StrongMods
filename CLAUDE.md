@@ -176,6 +176,11 @@ pieces. Notable shared infrastructure worth reusing:
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
 - AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project, or in the
   repo-root `.ai/` when the work spans the whole repo (e.g. `.ai/build-refactor-plan.md`).
+- **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options
+  weighed, the verification. The issue carries the work and its status. **Never add a status or follow-on table to a
+  doc:** it becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number.
+  The older plans keep a `§0` crosswalk purely because their prose cites legacy `F` identifiers; that table maps IDs
+  to issues and deliberately carries no status.
 - While most projects have little or no docs yet, we strive to put a README.md in the root of each project and
   supporting detailed docs in its `Docs/` directory
 
@@ -215,6 +220,16 @@ cycle must produce self-contained edits.
 * **Git**
   * Stage only the files you intentionally modified.
   * Do not commit, push, or rewrite Git history. These are also blocked by permission deny rules.
+* **Issues**
+  * File and update issues with the `gh` CLI, against
+    [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues).
+  * Label with a `type:` facet, plus `scope:repo-wide` or `mod:<Name>` for where it applies. Priority is **not** a
+    label — ranking lives on the Project board so there is only one ordering.
+  * Resolve by **closing**, never by deleting. Deleting and transferring issues are blocked by permission deny rules,
+    and the bot account lacks the admin rights to do either.
+  * Agents authenticate as a dedicated bot account, configured per machine via `GH_CONFIG_DIR`. Do not assume that
+    identity is active — confirm with `gh auth status` before writing, since an unset variable silently falls back to
+    the human owner's credentials.
 
 ### Required Agent Workflow
 
