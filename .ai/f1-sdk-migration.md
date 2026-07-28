@@ -159,6 +159,41 @@ entries updated for that batch, and an explicit **pause for review**. Decided 20
 
 Issue #9 is closed by the human after Phase 6 review, per the handoff workflow.
 
+### Phase 0 results — done 2026-07-28
+
+Baseline commit: `8308091` (the commit that added this plan). Artifacts live under `C:\Temp\f1\` — disposable but
+fully reproducible from the pinned commit: `baseline\` (detached worktree), `eval-baseline\` (40 evaluation
+snapshots: 19 code mods + `Template7DtDMod`, Debug and Release each), `deploy-msbuild\` / `deploy-dotnet\` plus
+`manifest-msbuild.json` / `manifest-dotnet.json` (per-mod file names, sizes, SHA-256), and both build logs.
+
+- **Harness self-check passed.** Repo `HEAD` vs the baseline worktree evaluates IDENTICAL for a sample spanning all
+  outlier shapes (`StrongHorns`, `BloodRain`, `PrismaCoreFixes`, `StrongMods`), validating the oracle before
+  anything changes.
+- **Both toolchains build the full solution redirected, exit 0**: Rider MSBuild 18.7 and dotnet SDK 10.0.201. The
+  deploy sets have **identical mod sets and file sets, with every content file byte-identical across toolchains**
+  (192 files, 29 mod folders). All 38 compiled `.dll`/`.pdb` files differ across toolchains (different Roslyn —
+  expected); the one identical binary is `Cronos.dll`, which comes from the NuGet cache, not a compiler.
+- **Baseline warning set**: NU1503 ×10 (modlets skip restore) per toolchain pass, nothing else. "No new warnings"
+  in V2 is measured against this, not against zero.
+
+Three findings that adjust later phases:
+
+1. **`PrismaCoreFixes` is excluded from solution builds** — its `.sln` config rows have `ActiveCfg` but no
+   `.Build.0`, so solution-level builds silently skip it (pre-existing, presumably deliberate: it needs the
+   dedicated-server install). Every batch's verification must build it **individually**; a green solution build
+   proves nothing about it. Its `.sln` entry edit in Phase 4 must preserve the no-build state.
+2. **Redirect `SavesOutputPath` too.** `StrongholdTweaks`'s `CopySaves` target (`AfterTargets="Build"`) writes to
+   the real `%APPDATA%\7DaysToDie\Saves` on any solution build; only content-equality plus `SkipUnchangedFiles`
+   made previous runs harmless. Protocol for every verification build:
+   `"-p:ModsDir=..." "-p:SavesOutputPath=..."`. Verified the redirect catches the copy and the live saves stay
+   untouched.
+3. **Clean `obj\`/`bin\` before any cross-toolchain comparison.** A second toolchain building the same tree reuses
+   the first's intermediates and skips its own compiler entirely (caught because 37/39 binaries came out
+   byte-identical — impossible for two Roslyn versions). The first dotnet pass was redone from clean; V2's
+   two-toolchain check is only meaningful from a cleaned tree.
+
+Live client `Mods\`, server `Mods\`, and `%APPDATA%` saves all verified untouched by every build in this phase.
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
