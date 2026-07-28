@@ -5,7 +5,7 @@
   <DisplayName value="Template7DtDModlet" />
   <Description value="One sentence describing what this modlet does." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/Template7DtDModlet" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/Template7DtDModlet" />
   <Dependencies>
     <Game version="[3,4)" />
     <Mod name="StrongMods" version="1.0" />
