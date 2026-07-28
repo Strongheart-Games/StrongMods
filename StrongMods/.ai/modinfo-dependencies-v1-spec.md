@@ -43,7 +43,7 @@ A complete example:
   <Version value="0.0.1" />
   <Description value="Modding tools from Strongheart." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongMods" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/StrongMods" />
   <Dependencies>
     <Game version="3.*" />
     <Mod name="StrongCore" />

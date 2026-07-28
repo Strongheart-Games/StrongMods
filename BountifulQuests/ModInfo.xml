@@ -5,7 +5,7 @@
   <DisplayName value="Bountiful Quests" />
   <Description value="Players can take more than one quest from a trader and can reset the list of offered quests at any time." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/BountifulQuests" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/BountifulQuests" />
   <Dependencies>
     <Game version="[3,4)" />
     <Mod name="StrongMods" version="1.0" />

@@ -5,7 +5,7 @@
   <DisplayName value="StrongMods" />
   <Description value="Modding tools from Strongheart." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongMods" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/StrongMods" />
   <Dependencies>
     <Game version="[3,4)" />
   </Dependencies>

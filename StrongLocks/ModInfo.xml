@@ -5,7 +5,7 @@
   <DisplayName value="StrongLocks" />
   <Description value="All lockables default to locked when placed, including doors, vehicles, and crates." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/StrongLocks" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/StrongLocks" />
   <Dependencies>
     <Game version="[3,4)" />
     <Mod name="StrongMods" version="1.0" />

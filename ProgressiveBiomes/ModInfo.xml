@@ -5,7 +5,7 @@
   <DisplayName value="Progressive Biomes" />
   <Description value="Progressive Biomes rebalances wandering zombie spawns to make each biome feel like a meaningful step up in difficulty." />
   <Author value="str0ngh34rt" />
-  <Website value="https://github.com/str0ngh34rt/StrongMods/tree/main/ProgressiveBiomes" />
+  <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/ProgressiveBiomes" />
   <Dependencies>
     <Game version="[3,4)" />
     <Mod name="StrongMods" version="1.0" />
