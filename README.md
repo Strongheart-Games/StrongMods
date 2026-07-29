@@ -17,7 +17,6 @@
 | **Hades** | Contains the Hades world, prefabs, and related configurations.                                                           |
 | **PlayerSpawnedTraders** | Placeable trader mannequins that grow into working traders.                                                              |
 | **Poot Pavillion** | Adds a craftable toilet that generates Tinkle and Dookie over time.                                                      |
-| **PrismaCore Fixes** | Provides fixes for critical issues in PrismaCore.                                                                        |
 | **Project Z Fixes** | Provides fixes for critical issues in Project Z version 2.2.4.1.                                                         |
 | **QuestUnlockFixes** | Fixes the `UnlockQuestPOI()` issue that prevents players from fully logging out.                                         |
 | **StrongBoxes** | Change storage box behavior based on the box's sign label.                                                               |
