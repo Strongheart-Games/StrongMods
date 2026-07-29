@@ -100,6 +100,27 @@ seam now would smuggle #23's design into #13. One line in CLAUDE.md marks it.
 | V8 | Vendor interplay | Build with `-p:SdtdDir=vendor\game\<label>` (no deploy request): compiles, `bin\` only, vendor tree unmodified |
 | V9 | Live deploy (human) | One real `-t:Deploy` against the live game, reviewer confirms the install updated — the actual feature, exercised once for real |
 
+## 4b. Phase 0–1 results
+
+**Phase 0 (2026-07-29):** oracle captured at commit `bc0633a` — redirected full-solution build, 28 mod folders /
+188 files plus 1 saves file, all hashed (`.scratch/f4-baseline/manifest.json`).
+
+**Phase 1 (2026-07-29):** `Mod.targets` reworked — `OutputPath` unconditionally `bin\$(Configuration)\`; the
+`Deploy` target added (`DependsOnTargets="Build"`, gated on `ModDeploy`, copy with `SkipUnchangedFiles`).
+
+| Check | Result |
+| --- | --- |
+| V1 (code mods + template) | ✅ 19/19 evaluate `OutputPath`/`OutDir` = `bin\Debug\` (note: `OutDir` reports *relative* now that `OutputPath` is relative — earlier absolute values came from the absolute deploy path) |
+| Plain build safety | ✅ Unredirected project builds write nothing outside the repo; `bin\` holds the shippable folder |
+| V3 (code mods) | ✅ Per-project `-t:Deploy` (redirected): 95 files across all 18 code mods file-identical to the oracle (content hashes; dll/pdb sizes) |
+| V4 | ✅ `Template7DtDMod -t:Deploy` exits 0 and deploys nothing — the capability gate holds |
+| V7 | ✅ `dotnet clean` clears staging only; the deployed copy is untouched |
+| V8 | ✅ Vendor-tree build stays in `bin\`, tree unmodified |
+| V5/live | ✅ Game, server, saves untouched throughout |
+
+Transition note: until Phase 2, modlets still deploy-as-build, so **solution-level** builds/`-t:Deploy` remain
+redirected; per-project invocations on code mods are already safe unredirected.
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

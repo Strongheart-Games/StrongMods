@@ -31,13 +31,14 @@
     <!-- Deploy folder name under Mods\. $(ModLoadPrefix) forces load order (e.g. 000000-, ZZ_). -->
     <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
 
-    <!-- Set <ModDeploy>false</ModDeploy> in a project that must never install into the game — the dotnet new
-         template does this. Debug then behaves like Release and writes to bin\. -->
+    <!-- Per-project capability gate for the Deploy target below: <ModDeploy>false</ModDeploy> marks a project
+         that must never install into the game — the dotnet new templates do this. (Renaming this property is
+         tracked as issue #24.) -->
     <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
 
-    <!-- Debug deploys straight into the live game; override -p:ModsDir=... to build without deploying. -->
-    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(ModDeploy)' == 'true'">$(ModsDir)\$(ModDeployName)\</OutputPath>
-    <OutputPath Condition="'$(Configuration)' != 'Debug' OR '$(ModDeploy)' != 'true'">bin\$(Configuration)\</OutputPath>
+    <!-- Building never touches a live install: output always stages to bin\, which holds exactly the shippable
+         mod folder. Installing is the explicit Deploy target below (issue #13): dotnet build -t:Deploy -->
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -85,6 +86,20 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- The explicit install step: builds (if needed), then copies the staged mod folder into the live install.
+       dotnet build <proj> -t:Deploy, or -t:Deploy on the solution (MSBuild forwards it to every project).
+       SkipUnchangedFiles keeps re-deploys cheap. Deploying while $(SdtdDir) points at a vendored tree would
+       "install" into the tree — don't combine -t:Deploy with -p:SdtdDir. -->
+  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+    <ItemGroup>
+      <_DeployFile Include="$(OutDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_DeployFile)"
+          DestinationFiles="@(_DeployFile->'$(ModsDir)\$(ModDeployName)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="  $(MSBuildProjectName) deployed -> $(ModsDir)\$(ModDeployName)\" />
+  </Target>
 
   <!-- Turn a missing/moved game install, or a forgotten Mod.props import, into one readable error instead of
        ~200 CS0246s or a silently wrong output folder. -->
