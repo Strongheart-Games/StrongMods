@@ -1,62 +1,53 @@
 <Project>
 
   <!--
-    Defaults for code-mod projects. A project imports this explicitly, immediately after Microsoft.Common.props and
-    BEFORE its own property groups, so anything the project sets in its body wins:
+    Defaults for code-mod projects (SDK-style, Microsoft.NET.Sdk). A project imports this explicitly as the first
+    element of its body, and Mod.targets as the last:
 
-      <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
-      <Import Project="..\build\Mod.props" />
-      ...project body...
-      <Import Project="..\build\Mod.targets" />
-      <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+      <Project Sdk="Microsoft.NET.Sdk">
+        <Import Project="..\build\Mod.props" />
+        ...deviations only: ModLoadPrefix, ModsDir, GameAssembly items, PlatformTarget, PackageReference...
+        <Import Project="..\build\Mod.targets" />
+      </Project>
 
-    Nothing here is auto-imported; there is deliberately no Directory.Build.props in this repo. See the header of
-    Mod.targets for why the import positions are explicit.
+    The SDK's implicit imports bracket the body (Sdk.props before, Sdk.targets after), so anything a project sets
+    between the two imports wins over these defaults and is consumed by Mod.targets. Nothing here is auto-imported;
+    there is deliberately no Directory.Build.props in this repo. See the header of Mod.targets for why the import
+    positions are explicit.
   -->
 
   <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
 
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-
-  <!-- Format branches for the SDK-style migration (F1, issue #9). Sdk.props sets UsingMicrosoftNETSdk before
-       this file is imported, so it is a reliable discriminator. The legacy branch is deleted when the last
-       project converts. -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
     <TargetFramework>net481</TargetFramework>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+
     <!-- Properties/AssemblyInfo.cs files still exist and are compiled by the default glob; without this the SDK
          would generate a duplicate set (CS0579). -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
     <!-- The deploy folder is $(ModsDir)\$(ModDeployName)\, never ...\net481\. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
     <!-- The SDK would inject System.Core, System.Data, System.Drawing, System.Numerics,
-         System.Runtime.Serialization and System.IO.Compression.FileSystem. The legacy build never referenced
-         them; the reference list stays the explicit one in Mod.targets. -->
+         System.Runtime.Serialization and System.IO.Compression.FileSystem. The reference list stays the explicit
+         one in Mod.targets. -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <!-- The default None glob (**/*) re-lists ModInfo.xml, README.md and Config\** which Mod.targets already
+
+    <!-- The default None glob (**/*) would re-list ModInfo.xml, README.md and Config\** which Mod.targets already
          declares as Content. Inert for the build but noise in evaluation and the IDE. -->
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+
     <!-- Framework types resolve from the game's Managed folder, not a targeting pack. This is a necessity, not a
          style choice: the code uses APIs the game's Unity Mono runtime provides (e.g. GetValueOrDefault) that the
          official net481 reference assemblies do not contain — Microsoft.NETFramework.ReferenceAssemblies cannot
-         compile this repo. Decision evidence: .ai/f1-sdk-migration.md §3. -->
+         compile this repo. It also means what compiles is what the game's runtime actually has. Decision evidence:
+         .ai/f1-sdk-migration.md §3. -->
     <FrameworkPathOverride>$(SdtdManagedDir)</FrameworkPathOverride>
   </PropertyGroup>
 
+  <!-- DebugType is pinned to the pre-SDK values (the SDK would default to portable); the game's Mono runtime and
+       existing tooling expect Windows PDBs. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>

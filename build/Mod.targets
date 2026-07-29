@@ -1,25 +1,24 @@
 <Project>
 
   <!--
-    Shared build logic for code-mod projects. A project imports this explicitly, AFTER its own property/item groups
-    but BEFORE Microsoft.CSharp.targets:
+    Shared build logic for code-mod projects. A project imports this explicitly as the LAST element of its body:
 
-      <Import Project="..\build\Mod.targets" />
-      <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+      <Project Sdk="Microsoft.NET.Sdk">
+        <Import Project="..\build\Mod.props" />
+        ...project body...
+        <Import Project="..\build\Mod.targets" />
+      </Project>
 
-    That position matters and is not negotiable. Microsoft.Common.CurrentVersion.targets derives OutDir, TargetDir
-    and TargetPath from $(OutputPath) *during evaluation*, at the point it is imported. Setting OutputPath any later
-    — e.g. from a Directory.Build.targets, which Microsoft.Common.targets imports at the end — leaves OutDir latched
-    to the bin\$(Configuration)\ fallback, so the assembly is written to bin\Debug\ instead of the game folder, and
-    the build fails with "The BaseOutputPath/OutputPath property is not set". Querying $(OutputPath) alone does not
-    reveal this; it looks correct. Verify $(OutDir) and $(TargetDir).
+    That position matters and is not negotiable. Sdk.targets (imported implicitly after the body) pulls in
+    Microsoft.Common.CurrentVersion.targets, which derives OutDir, TargetDir and TargetPath from $(OutputPath)
+    *during evaluation*, at the point it is imported. Setting OutputPath any later — e.g. from a
+    Directory.Build.targets, which is imported at the very end — leaves OutDir latched to the bin\$(Configuration)\
+    fallback, so the assembly is written to the wrong place while $(OutputPath) reads back correct. Querying
+    $(OutputPath) alone does not reveal this; verify $(OutDir) and $(TargetDir).
 
     This is why the repo has no Directory.Build.props/.targets at all: their import positions are fixed by MSBuild
     and one of them is wrong for this. Every import here is explicit and positioned deliberately, and both project
     shapes (code mods, modlets) use the same mechanism.
-
-    Importing this file IS the opt-in: a project that does not import it is unaffected, which is what lets the
-    migration proceed a few projects at a time.
 
     A project may set $(ModLoadPrefix), override $(ModsDir), or add <GameAssembly Include="..." /> items above the
     import.
@@ -46,15 +45,11 @@
          <GameAssembly Include="Noemax.GZip" /> in the project body, above the import. -->
     <GameAssembly Include="mscorlib" />
     <GameAssembly Include="System" />
-    <!-- The legacy C# targets injected System.Core implicitly from the machine's targeting pack; the SDK (with
-         implicit framework references disabled) adds nothing. Referencing the game's copy explicitly gives both
-         formats the same System.Core and removes the hidden targeting-pack dependence. -->
     <GameAssembly Include="System.Core" />
-    <!-- Game assemblies type-forward through netstandard (Unity ships its own 2.1 shim). The legacy build
-         satisfied this via ImplicitlyExpandDesignTimeFacades from the machine's targeting pack — 104 facade DLLs
-         injected invisibly. The SDK does no such expansion, so the game's own copy is referenced explicitly;
-         SDK-only because the legacy facade expansion would clash with a second netstandard. -->
-    <GameAssembly Include="netstandard" Condition="'$(UsingMicrosoftNETSdk)' == 'true'" />
+    <!-- Game assemblies type-forward through netstandard (Unity ships its own 2.1 shim). The pre-SDK build
+         satisfied this invisibly via targeting-pack facade expansion; with implicit framework references disabled
+         the game's own copy is referenced explicitly, like everything else. -->
+    <GameAssembly Include="netstandard" />
     <GameAssembly Include="System.Xml" />
     <GameAssembly Include="System.Xml.Linq" />
     <GameAssembly Include="Assembly-CSharp" />

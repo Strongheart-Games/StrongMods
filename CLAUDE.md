@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
-(except `build`, `Template*` and `packages`) is one independent mod, and each is a separate C# class-library project
-(`.csproj`) targeting **.NET Framework 4.8.1**, **C# LangVersion 9**. All projects are listed in `StrongMods.sln`. See
-`README.md` for the one-line description of each mod.
+(except `build`, `Template*` and `packages`) is one independent mod, and each is a separate SDK-style C#
+class-library project (`Microsoft.NET.Sdk`, `net481`), **C# LangVersion 9**. All projects are listed in
+`StrongMods.sln`. See `README.md` for the one-line description of each mod.
 
 A shipped mod is a directory in the game's `Mods/` folder containing a compiled DLL, a `ModInfo.xml` manifest, and
 optionally a `Config/` folder of XML patches. Most projects here are code mods; some are XML-only ("modlets"). The two
@@ -18,9 +18,9 @@ themselves.
 
 ### Shared build files
 
-Every project gets its settings from `build/`. Individual `.csproj` files carry only what is unique to them —
-`ProjectGuid`, the `Compile` list, and any deviation. A modlet is 4 lines; the median project is 16; the largest
-(`StrongUtils`, 43) is long only because of its `Compile` list.
+Every project gets its settings from `build/`. Individual `.csproj` files carry only what is unique to them — the
+canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and only genuine deviations add lines.
+`.cs` files are globbed by the SDK; there are no `Compile` lists and no `ProjectGuid`s.
 
 | File | Role |
 | --- | --- |
@@ -36,45 +36,40 @@ evaluation*, so a `Directory.Build.targets` is imported too late: `$(OutputPath)
 stays latched at the `bin\` fallback and the assembly lands in the wrong place. Import position is therefore
 explicit and load-bearing. The header comment in `build/Mod.targets` has the full story.
 
-A code mod imports the props file after `Microsoft.Common.props` and the targets file before
-`Microsoft.CSharp.targets`:
+A code mod imports the props file as the first element of its body and the targets file as the last; the SDK's
+implicit `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwich holds:
 
 ```xml
-<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="..." />
-<Import Project="..\build\Mod.props" />
-  <!-- ProjectGuid, Compile items, any ModLoadPrefix / ModsDir / GameAssembly -->
-<Import Project="..\build\Mod.targets" />
-<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\build\Mod.props" />
+  <!-- deviations only: ModLoadPrefix, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
+  <Import Project="..\build\Mod.targets" />
+</Project>
 ```
 
 A modlet imports one file: `<Import Project="..\build\Modlet.targets" />`.
 
 ### References
 
-Game assemblies resolve from `$(SdtdManagedDir)`, and `0Harmony.dll` from `$(SdtdHarmonyDir)` — derived from
-`$(SdtdDir)`, **not** from `$(ModsDir)`, so redirecting the deploy target never breaks compilation. **There is no
-NuGet restore for these**; the game must be installed for a build to resolve references, and `build/Mod.targets`
+**Everything compiles against the game's own assemblies** — game types from `$(SdtdManagedDir)`, `0Harmony.dll`
+from `$(SdtdHarmonyDir)` (derived from `$(SdtdDir)`, **not** from `$(ModsDir)`, so redirecting the deploy target
+never breaks compilation), *and framework types too*: `build/Mod.props` sets `FrameworkPathOverride` to the game's
+Managed folder, so no .NET Framework targeting pack is needed anywhere. **This is a necessity, not a preference** —
+the code uses APIs the game's Unity Mono runtime provides that official net481 reference assemblies lack, so
+`Microsoft.NETFramework.ReferenceAssemblies` cannot compile this repo (evidence: `.ai/f1-sdk-migration.md` §3). It
+also means what compiles is what the runtime actually has. The game must be installed to build; `build/Mod.targets`
 raises one readable error if it is not. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
 
-`BloodRain` has the repo's one real NuGet dependency (Cronos). It is a `PackageReference`, so **any standard
-toolchain restores it** — `dotnet build` restores implicitly, `msbuild -restore` does it in one invocation, and IDEs
-restore on load. No `nuget.exe`, no `packages.config`, and a fresh clone builds. The gitignored `packages/` folder is
-a leftover from the old `packages.config` mechanism; nothing reads it, and it will not exist on a fresh clone.
+**Every project needs a NuGet restore before its first build** (SDK-style projects require the assets file even
+with no packages). This is automatic in practice: `dotnet build` restores implicitly, IDEs restore on load, and
+bare `msbuild` needs `-restore`. A build without one fails with a single readable `NETSDK1004` "run a restore"
+error. Only `BloodRain` actually pulls a package — Cronos, a bare `<PackageReference>`, fetched from nuget.org once
+per machine. Its csproj also sets `CopyDocumentationFilesFromPackages=true` so `Cronos.xml` keeps deploying beside
+`Cronos.dll`, as it always has — the SDK skips package doc files by default.
 
-The reference is deliberately routed through `GeneratePathProperty` plus an explicit `<Reference>`:
-
-```xml
-<PackageReference Include="Cronos" Version="0.11.0" GeneratePathProperty="true" ExcludeAssets="all" />
-<Reference Include="Cronos">
-  <HintPath>$(PkgCronos)\lib\net45\Cronos.dll</HintPath>
-</Reference>
-```
-
-**Do not simplify that to a bare `<PackageReference>` while the project is non-SDK.** A legacy project turns restored
-assets into references via `ResolveNuGetPackageAssets`, which ships with full MSBuild but **not** with the .NET SDK.
-A bare `PackageReference` therefore builds fine under `msbuild.exe` and fails with `CS0246` under `dotnet build` —
-which restores the package correctly and then ignores it. Routing through a `HintPath` works under both, and keeps
-`Cronos.dll`/`Cronos.xml` copying into the mod folder. The SDK-style migration will remove the need for this shape.
+Full `MSBuild.exe` (as opposed to `dotnet build`) resolves `Microsoft.NET.Sdk` only if a .NET SDK is discoverable —
+on a machine without one in `PATH`/`Program Files`, prefix `PATH` with a bundled SDK's dotnet directory (e.g.
+Rider's `lib\ReSharperHost\windows-x64\dotnet`).
 
 ### Deploying
 
@@ -170,7 +165,7 @@ pieces. Notable shared infrastructure worth reusing:
 - **Don't fake a table with consecutive `Label: value` lines.** Markdown joins adjacent lines into one paragraph, so
   they render as an unreadable run-on. Use a real table, or a bullet per field — never bare label lines. This
   applies especially to status/metadata headers at the top of a doc.
-- **Namespaces match the project/assembly name.** `build/Mod.props` defaults `RootNamespace` and `AssemblyName` to
+- **Namespaces match the project/assembly name.** The SDK defaults `RootNamespace` and `AssemblyName` to
   `$(MSBuildProjectName)`, so a project should not set them; the directory name *is* the mod name.
 - `ModInfo.xml` is UTF-8-with-BOM and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
@@ -193,9 +188,10 @@ property group or `OutputPath` to copy, and no `Content` entries to declare — 
 
 Scaffold into the repo root: the imports are relative (`..\build\...`), so a project one level down resolves them.
 
-For a code mod, add each new `.cs` file to the `Compile` list — these are classic `.csproj` files, so there is no
-globbing. Deviate from the defaults only where needed, above the `Mod.targets` import: `ModLoadPrefix` for load
-order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
+New `.cs` files are picked up automatically by the SDK's glob — no csproj edit when adding a file. The flip side:
+**every `.cs` file in the project directory compiles**, so never leave scratch or half-finished `.cs` files lying
+around (`.ai\**` is excluded). Deviate from the defaults only where needed, between the two imports: `ModLoadPrefix`
+for load order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
 
 The templates set `<ModDeploy>false</ModDeploy>` inside a `<!--#if (IsTemplate) -->` block so they never install
 themselves into the game. `dotnet new` strips that block, so generated projects deploy normally — leave it alone.

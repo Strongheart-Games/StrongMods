@@ -305,6 +305,32 @@ regenerating the `ProjectGuid`, which no longer exists).
 | Template never deploys | ✅ Both toolchains build it to `bin\Debug\` only (4 files, no `template.json`), nothing appears under a redirected `ModsDir` |
 | **`dotnet new` end-to-end — first time ever exercised** | ✅ `dotnet new install` + `dotnet new 7dtdmod -n ScaffoldSmoke`: the engine strips the conditional block to exactly the canonical 4-line csproj, `sourceName` replacement works, and the generated project **builds and deploys** (redirected) with the correct 4-file set. Template uninstalled and scaffold deleted afterwards; commented on [#12](https://github.com/Strongheart-Games/StrongMods/issues/12) — its code-mod half is now covered, the modlet template remains unexercised |
 
+### Phase 6 results — done 2026-07-28. Migration complete.
+
+Shared files are now SDK-only: the `$(UsingMicrosoftNETSdk)` branches are gone from `Mod.props`, along with the
+legacy-noise properties (`OutputType`, `AppDesignerFolder`, `RootNamespace`/`AssemblyName`, `FileAlignment`,
+`ErrorReport`, `WarningLevel`, the `Configuration`/`Platform` defaults) — every one verified to evaluate
+identically under SDK defaults, so deleting them produced **zero** evaluation diffs. `Mod.targets`'s header was
+rewritten for the SDK sandwich (the OutDir-latching rationale is unchanged and still load-bearing), and the
+`netstandard` reference lost its transition condition. CLAUDE.md rewritten where it described the old world: the
+SDK project shape, globbing (including the every-`.cs`-compiles caveat), the framework-references necessity
+argument, the universal restore requirement with its readable failure mode, the `MSBuild.exe` SDK-discovery note,
+and the retired BloodRain do-not-simplify block.
+
+| Check | Result |
+| --- | --- |
+| Evaluation sweep, all 19 code mods | ✅ Known accepted pattern only — the shared-file cleanup added nothing |
+| **Final oracle: all 29 deployed mods** | ✅ Full solution + `PrismaCoreFixes`, both toolchains, from clean: exit 0, warnings at baseline, **29/29 deploy sets file-exact** against the Phase 0 manifest with content byte-identical (modulo the git CRLF artifact) |
+| V5 | ✅ Client, server, saves untouched throughout |
+
+Closing figures: the 20 converted csprojs (19 mods + the template) total **131 lines** — the shared-build refactor
+took them from 2,379 to ~493; this migration takes them to 131, with no `Compile` lists left to maintain. A
+converted project needs no targeting pack (the legacy build silently needed one), every toolchain path is
+first-class, and `dotnet new` scaffolds SDK-style. Delivered en route: [#11](https://github.com/Strongheart-Games/StrongMods/issues/11)
+closed; evidence comments on [#12](https://github.com/Strongheart-Games/StrongMods/issues/12) and
+[#15](https://github.com/Strongheart-Games/StrongMods/issues/15). Issue
+[#9](https://github.com/Strongheart-Games/StrongMods/issues/9) is ready to close on review.
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
