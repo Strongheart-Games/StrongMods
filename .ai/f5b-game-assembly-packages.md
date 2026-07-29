@@ -175,6 +175,10 @@ guessed** (offering a game install as `--unit dedicated-server` fails loudly; ve
 | V4 | Guard | ✅ Bogus `SdtdDir` fails with the one readable `VerifyGameInstall` error |
 | V5 | Live installs + trees | ✅ Client/server/saves untouched; no stray deploys into `vendor/` (all builds redirected `ModsDir`) |
 
+Phase 3 (2026-07-29): CLAUDE.md gained *Building without the game*; results commented on
+[#15](https://github.com/Strongheart-Games/StrongMods/issues/15); CI packaging/feed/workflow filed as
+[#22](https://github.com/Strongheart-Games/StrongMods/issues/22).
+
 ## 8. Risks
 
 | Risk | Assessment | Mitigation |

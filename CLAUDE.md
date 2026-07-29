@@ -91,6 +91,21 @@ dotnet build StrongMods.sln -c Debug -p:ModsDir=C:/Temp/verify        # build wi
 Per-machine overrides (a different install path, a permanent redirect) go in a gitignored `Local.props` in the repo
 root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDTD_HOME` → the default.
 
+### Building without the game
+
+`build/tools/vendor.py` copies a unit's assemblies into the gitignored `vendor/` tree
+(`vendor/game/<label>/`, `vendor/dedicated-server/<label>/` — see its docstring for labels and provenance). Any
+such tree, or a live install of either unit, works as a build root:
+
+```bash
+dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13 -p:ModsDir=.scratch/deploy
+```
+
+`build/GamePaths.props` detects which layout `$(SdtdDir)` is (the game and the dedicated server name their data
+directory differently). **Always redirect `ModsDir` when building against a vendored tree** — the default Debug
+deploy would land inside it. **Never commit or publish anything under `vendor/`**: the repo is public and those
+are licensed game files (`.ai/f5b-game-assembly-packages.md` §2).
+
 ### Verifying
 
 There is no test project or linter. Two levels beyond running the game:
