@@ -204,8 +204,12 @@ cycle must produce self-contained edits.
 
 **Strict Limits & Constraints**
 
-* **Filesystem Scope:** Work only within this project directory and the 7 Days to Die install directories (read-only,
-  for vanilla configs and game DLLs). Treat everything else as out of scope.
+* **Filesystem Scope:** Work only within this project directory (including its `.scratch/` area) and the
+  7 Days to Die install and save directories. In the game directories, read freely — vanilla configs, game DLLs — but write
+  only through the build: a Debug build deploying a mod into a `Mods\` or `Saves\` folder, of the client or the
+  dedicated server, is the designed install step, not a scope violation. Never create, hand-edit, or delete files
+  in those locations outside of that build path without explicit human approval, and use a redirected build (see
+  *Scratch space* below) whenever deploying is not the goal. Treat everything else on the machine as out of scope.
 * **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected
   verification builds (`-p:ModsDir=.scratch/deploy`, `-p:SavesOutputPath=.scratch/saves`), baseline `git worktree`s,
   captured evaluation JSON, experiment output. Never use `C:\Temp` or other out-of-scope locations. Anything under
