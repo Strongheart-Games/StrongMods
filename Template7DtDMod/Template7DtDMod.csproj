@@ -1,20 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
-  <PropertyGroup>
-    <ProjectGuid>{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}</ProjectGuid>
 <!--#if (IsTemplate) -->
+  <PropertyGroup>
     <!-- The template project itself is scaffolding, not a shippable mod, so it must never install into the game.
          `dotnet new` strips this block when generating a project, so generated mods deploy normally. -->
     <ModDeploy>false</ModDeploy>
-<!--#endif -->
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="ModApi.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
+<!--#endif -->
   <Import Project="..\build\Mod.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

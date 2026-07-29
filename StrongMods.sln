@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Template7DtDMod", "Template7DtDMod\Template7DtDMod.csproj", "{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template7DtDModlet", "Template7DtDModlet\Template7DtDModlet.csproj", "{B1413BD6-A2C1-461A-9F97-EFAB66B4F8FF}"
 EndProject

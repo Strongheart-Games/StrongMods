@@ -294,6 +294,17 @@ the `000000-`/`ZZZZZZZZZZ_` prefixes; `Noemax.GZip`; the `ProjectReference` with
 
 All 19 code mods are now SDK-style.
 
+### Phase 5 results — done 2026-07-28
+
+`Template7DtDMod` converted to the same 4-line shape with the `#if (IsTemplate)` / `ModDeploy=false` block
+preserved inside the body; `.sln` GUID flipped; the `guids` entry in `template.json` removed (its only purpose was
+regenerating the `ProjectGuid`, which no longer exists).
+
+| Check | Result |
+| --- | --- |
+| Template never deploys | ✅ Both toolchains build it to `bin\Debug\` only (4 files, no `template.json`), nothing appears under a redirected `ModsDir` |
+| **`dotnet new` end-to-end — first time ever exercised** | ✅ `dotnet new install` + `dotnet new 7dtdmod -n ScaffoldSmoke`: the engine strips the conditional block to exactly the canonical 4-line csproj, `sourceName` replacement works, and the generated project **builds and deploys** (redirected) with the correct 4-file set. Template uninstalled and scaffold deleted afterwards; commented on [#12](https://github.com/Strongheart-Games/StrongMods/issues/12) — its code-mod half is now covered, the modlet template remains unexercised |
+
 ## 6. Verification — per batch unless noted
 
 The evaluation diff is no longer a whole-project no-op oracle (the SDK changes hundreds of properties by design), so
