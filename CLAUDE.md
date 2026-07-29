@@ -206,6 +206,11 @@ cycle must produce self-contained edits.
 
 * **Filesystem Scope:** Work only within this project directory and the 7 Days to Die install directories (read-only,
   for vanilla configs and game DLLs). Treat everything else as out of scope.
+* **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected
+  verification builds (`-p:ModsDir=.scratch/deploy`, `-p:SavesOutputPath=.scratch/saves`), baseline `git worktree`s,
+  captured evaluation JSON, experiment output. Never use `C:\Temp` or other out-of-scope locations. Anything under
+  `.scratch/` may be deleted at any time; clean up worktrees with `git worktree remove` before deleting their
+  directories so git's metadata does not dangle.
 * **Size Target:** Aim for ~100 lines of changed code (excluding auto-generated files or structural configuration
   boilerplate).
 * **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
