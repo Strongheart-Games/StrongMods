@@ -277,3 +277,11 @@ cycle must produce self-contained edits.
 * Present a brief, clear summary of the changes made.
 * Wait for manual code review and explicit human approval before taking any further action. Do not automatically commit,
   push, or move on to the next task.
+* **Each phase needs its own explicit go.** Approval of a plan authorizes nothing but the plan itself; answers to
+  side questions, decision confirmations, or filed follow-up issues are not a "go" for the next phase — even a
+  phase that changes no tracked files (e.g. a baseline capture). If the human's message doesn't clearly say to
+  proceed, ask.
+* **Commit gate:** before starting a phase, confirm the previous phases' artifacts are committed — `git status
+  --porcelain` must show no uncommitted changes to files *this effort* has touched (including its plan doc).
+  Pre-existing untracked or modified files unrelated to the effort do not block. If the gate fails, stop and ask
+  for the commit rather than proceeding on top of unreviewed work.
