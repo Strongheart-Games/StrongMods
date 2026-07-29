@@ -153,6 +153,28 @@ Future NuGet mapping (recorded for the CI follow-on, not exercised here): one pa
 No runtime smoke check is needed (the F1 V6/V8 analogue): mods compiled against byte-identical copies of the same
 assemblies are the same mods.
 
+## 7b. Phase 1–2 results — done 2026-07-29
+
+Both trees generated as `V3.1.0-b13` (label confirmed from the client log's
+`Version: V 3.1.0 (b13)` line; the exe metadata is only the Unity engine version, which retroactively validates
+the human-label decision): game 155 files / 47.1 MB / buildid `24392370`; dedicated server 155 files / 47.1 MB /
+buildid `24392395`; both on the default branch.
+
+Design revisions made during review, before verification: **normalization dropped** (§3 — trees mirror their
+source install; `GamePaths.props` gained the two-line layout-detection conditional, making all four roots work
+with a bare `-p:SdtdDir=`), and the generator's data-dir fallback removed so unit identity is **verified, not
+guessed** (offering a game install as `--unit dedicated-server` fails loudly; verified both directions).
+
+| # | Check | Result |
+| --- | --- | --- |
+| V1 | Tree fidelity | ✅ 155/155 per unit byte-identical across tree == manifest == source install; counts match |
+| V1b | Layout detection | ✅ `SdtdManagedDir` resolves correctly for all four roots (live game, live dedicated server, vendored either) |
+| V2 | Build vs vendored game tree | ✅ Both toolchains, full solution, exit 0, warnings at baseline (NU1503 modlets only) |
+| V2b | **First-ever compile against the dedicated-server assemblies** | ✅ **Clean** — exit 0, zero errors, warnings at baseline, all 28 mods deploy. At compile level the two binaries are currently equivalent for this codebase; recorded for [#21](https://github.com/Strongheart-Games/StrongMods/issues/21). (The historical patch-application divergence was runtime-level — the class the future #14 tests cover, and the reason the packages carry real assemblies) |
+| V3 | Output equivalence | ✅ Vendored-game deploys identical to a live-install build: same 188-file set, content byte-identical, assembly sizes equal, per toolchain |
+| V4 | Guard | ✅ Bogus `SdtdDir` fails with the one readable `VerifyGameInstall` error |
+| V5 | Live installs + trees | ✅ Client/server/saves untouched; no stray deploys into `vendor/` (all builds redirected `ModsDir`) |
+
 ## 8. Risks
 
 | Risk | Assessment | Mitigation |
