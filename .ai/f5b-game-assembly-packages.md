@@ -58,11 +58,16 @@ contents — the game's assemblies, which are not specific to this solution — 
 the packages. The prefix question is informational only while the feed is private and org-scoped; nothing here is
 ever publishable regardless (§2).
 
-**Layout normalization (verified against the live installs):** the dedicated server's data directory is
+**Layout handling (revised 2026-07-29; originally normalization):** the dedicated server's data directory is
 `7DaysToDieServer_Data`, not `7DaysToDie_Data`; both units ship `Mods/0_TFP_Harmony`, and the server carries the
-full Unity module set the builds reference (incl. `UnityEngine.AudioModule`). The generator **normalizes the
-dedicated-server tree to the game shape** so one `SdtdDir`-derived path family consumes either tree with zero
-build-file changes; `manifest.json` records the true source paths.
+full Unity module set the builds reference (incl. `UnityEngine.AudioModule`). The first design normalized the
+server tree to the game's name, but that only papered over the seam: a **live** server install would still not
+have been consumable via `-p:SdtdDir=`. Instead, vendored trees **mirror their source install exactly**, and
+`build/GamePaths.props` absorbs the game's naming inconsistency at the single point of path derivation — an
+`Exists()` conditional selects `7DaysToDieServer_Data\Managed` when present, else the game's name. All four roots
+(live game, live dedicated server, vendored either) now work with a bare `-p:SdtdDir=`, which is exactly what
+[#21](https://github.com/Strongheart-Games/StrongMods/issues/21) will need. Note deployment never touches
+`*_Data` — mods deploy to `Mods\` and `Saves\` — so this seam only ever concerned compile-time references.
 
 ## 4. Design
 
@@ -76,15 +81,16 @@ install discovery for the Windows Steam path and the common Linux ones (`~/.stea
 build. No external tools at all: generation is a filtered copy.
 
 1. Resolves the install for the requested unit (`--unit game` | `--unit dedicated-server`) and the output root.
-2. Copies every `*.dll` from the unit's `Managed/` directory and `Mods/0_TFP_Harmony/0Harmony.dll` into an
-   install-shaped tree (normalized per §3), byte-identical:
+2. Copies every `*.dll` from the unit's `Managed/` directory and `Mods/0_TFP_Harmony/0Harmony.dll` into a tree
+   that mirrors the source install exactly (§3), byte-identical:
 
    ```
    vendor/game/<label>/7DaysToDie_Data/Managed/*.dll
    vendor/game/<label>/Mods/0_TFP_Harmony/0Harmony.dll
    vendor/game/<label>/manifest.json                                (provenance; §5)
-   vendor/game/<label>/7DtD.Assemblies.Game.nuspec        (stub for the CI packaging follow-on)
-   vendor/dedicated-server/<label>/...                              (same shape)
+   vendor/game/<label>/7DtD.Assemblies.Game.nuspec                  (stub for the CI packaging follow-on)
+   vendor/dedicated-server/<label>/7DaysToDieServer_Data/Managed/*.dll   (server keeps its real name)
+   vendor/dedicated-server/<label>/...                              (otherwise same shape)
    ```
 
 3. Records per-file SHA-256 in `manifest.json`, so a tree (or a package built from it) is verifiable against its
@@ -136,7 +142,8 @@ Future NuGet mapping (recorded for the CI follow-on, not exercised here): one pa
 
 | # | Check | Pass criterion |
 | --- | --- | --- |
-| V1 | Tree fidelity | Every copied file byte-identical to its source (manifest hashes recomputed and compared); file counts match the source sets; dedicated-server tree correctly normalized |
+| V1 | Tree fidelity | Every copied file byte-identical to its source (manifest hashes recomputed and compared); file counts match the source sets; each tree mirrors its install's real layout |
+| V1b | Layout detection | `SdtdManagedDir` evaluates correctly for **all four roots**: live game, live dedicated server, vendored game, vendored server |
 | V2 | **Full solution builds against the game tree with no install in play** | `-p:SdtdDir=vendor\game\<label> -p:ModsDir=.scratch\deploy`, both toolchains, exit 0, warnings at baseline |
 | V2b | **Full solution builds against the dedicated-server tree** | Same command, dedicated-server tree — the first time anything in this repo compiles against the server binary. A failure is *discovery* (real surface divergence), recorded and resolved under [#21](https://github.com/Strongheart-Games/StrongMods/issues/21) |
 | V3 | Output equivalence | Game-tree deploy sets file-identical to a normal-install build; content files byte-identical. (The inputs are byte-identical real assemblies, so this is a sanity check on path plumbing, not on compilation semantics) |

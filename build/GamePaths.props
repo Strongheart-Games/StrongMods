@@ -20,6 +20,12 @@
     <SdtdDir Condition="'$(SdtdDir)' == '' AND '$(SDTD_HOME)' != ''">$(SDTD_HOME)</SdtdDir>
     <SdtdDir Condition="'$(SdtdDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die</SdtdDir>
     <SdtdServerDir Condition="'$(SdtdServerDir)' == ''">$(SdtdDir) Dedicated Server</SdtdServerDir>
+    <!-- The game and the dedicated server name their data directory differently (7DaysToDie_Data vs
+         7DaysToDieServer_Data). Detect which layout $(SdtdDir) actually is, so a bare -p:SdtdDir=... works
+         against any of: the live game, the live dedicated server, or a vendored tree of either
+         (build/tools/vendor.py). The game's name is the fallback so evaluation without an install present
+         (e.g. -getProperty checks) still yields the familiar path. -->
+    <SdtdManagedDir Condition="'$(SdtdManagedDir)' == '' AND Exists('$(SdtdDir)\7DaysToDieServer_Data\Managed')">$(SdtdDir)\7DaysToDieServer_Data\Managed</SdtdManagedDir>
     <SdtdManagedDir Condition="'$(SdtdManagedDir)' == ''">$(SdtdDir)\7DaysToDie_Data\Managed</SdtdManagedDir>
     <!-- Where 0Harmony.dll is read from. Deliberately derived from $(SdtdDir), NOT from $(ModsDir): Harmony is part
          of the game install, whereas $(ModsDir) is the deploy destination and may be redirected (-p:ModsDir=... to
