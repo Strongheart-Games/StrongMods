@@ -14,6 +14,11 @@
 # deliberately inside the repo so lingering stale files are visible. Safe to delete wholesale at any time.
 /.scratch/
 
+# Vendored binary dependencies (build/tools/vendor.py): the game's licensed assemblies, per releasable unit and
+# version. NEVER commit or publish anything under this tree — the repo is public and these files are not ours to
+# redistribute. See .ai/f5b-game-assembly-packages.md §2.
+/vendor/
+
 # Claude Code local memory
 .claude/memory/
 
