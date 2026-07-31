@@ -73,20 +73,29 @@ Rider's `lib\ReSharperHost\windows-x64\dotnet`).
 
 ### Deploying
 
-**Debug builds deploy straight into the live game**: `OutputPath` is `$(ModsDir)\$(ModDeployName)\`, so building in
-Debug *is* the install step. Release builds go to `bin\Release\`.
-
-- `<ModLoadPrefix>ZZ_</ModLoadPrefix>` prefixes the deploy folder to force load order.
-- `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead (`PrismaCoreFixes` does this).
-- `<ModDeploy>false</ModDeploy>` never deploys; Debug goes to `bin\Debug\` (both templates do this).
-- `-p:ModsDir=...` on the command line redirects an entire build, which is how to **compile without touching the
-  live install**. Prefer this when the game or server may be running.
+**Building never touches a live install.** Every build stages the shippable mod folder to `bin\$(Configuration)\`;
+installing is the explicit `Deploy` target (`build/Deploy.targets`, shared by both project shapes):
 
 ```bash
-dotnet build StrongMods.sln -c Debug                                  # build & deploy everything
-dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug      # one mod
-dotnet build StrongMods.sln -c Debug -p:ModsDir=C:/Temp/verify        # build without deploying
+dotnet build StrongMods.sln -c Debug                                  # build everything; writes only bin\/obj\
+dotnet build StrongMods.sln -c Debug -t:Deploy                        # build and install into the live game
+dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug -t:Deploy   # one mod
 ```
+
+`Deploy` **mirrors** staging into `$(ModsDir)\$(ModDeployName)\`: source is authoritative for content *and
+existence*, so a file removed from source is deleted from the deployed folder at the next deploy (announced in
+the build log). Mirroring assumes the repo manages the whole deploy folder — a project deploying into a
+directory with unmanaged content is an Overlay, not a Mod (issue #25); `Hades` is parked with `ModDeploy=false`
+until that lands.
+
+- `<ModLoadPrefix>ZZ_</ModLoadPrefix>` prefixes the deploy folder to force load order.
+- `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
+- `<ModDeploy>false</ModDeploy>` marks a project that never deploys (both templates; `Hades`).
+- `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch.
+  Plain builds no longer need it for safety. Do not combine `-t:Deploy` with `-p:SdtdDir=` (a vendored tree
+  would receive the deploy).
+- `Clean` touches only the `bin\` staging, never a live install. Removing a deployed mod entirely is a manual act.
+- Release deploys too: `-c Release -t:Deploy`.
 
 Per-machine overrides (a different install path, a permanent redirect) go in a gitignored `Local.props` in the repo
 root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDTD_HOME` → the default.
@@ -98,13 +107,13 @@ root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDT
 such tree, or a live install of either unit, works as a build root:
 
 ```bash
-dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13 -p:ModsDir=.scratch/deploy
+dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13
 ```
 
 `build/GamePaths.props` detects which layout `$(SdtdDir)` is (the game and the dedicated server name their data
-directory differently). **Always redirect `ModsDir` when building against a vendored tree** — the default Debug
-deploy would land inside it. **Never commit or publish anything under `vendor/`**: the repo is public and those
-are licensed game files (`.ai/f5b-game-assembly-packages.md` §2).
+directory differently). Building against a vendored tree is safe by default (builds stage to `bin\` only); just
+never run `-t:Deploy` with `-p:SdtdDir=` pointed at a tree. **Never commit or publish anything under `vendor/`**:
+the repo is public and those are licensed game files (`.ai/f5b-game-assembly-packages.md` §2).
 
 ### Verifying
 
@@ -114,7 +123,9 @@ There is no test project or linter. Two levels beyond running the game:
    as JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
    `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.py` does the diff;
    its docstring has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
-2. **A real build**, redirected with `-p:ModsDir=...` so it cannot disturb the live install.
+2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. To verify the
+   *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SavesOutputPath=` for
+   StrongholdTweaks' saves copy).
 
 **StrongMods loads first**, via `<ModLoadPrefix>000000-</ModLoadPrefix>` — the prefix forces it ahead of other mods
 in load order, which matters because it replaces the XML patcher (see below).
@@ -211,6 +222,9 @@ for load order, `ModsDir` to target the dedicated server, `GameAssembly` for an 
 The templates set `<ModDeploy>false</ModDeploy>` inside a `<!--#if (IsTemplate) -->` block so they never install
 themselves into the game. `dotnet new` strips that block, so generated projects deploy normally — leave it alone.
 
+A new mod also needs a `mod:<Name>` issue label, and only a human can create it (see *Issues* below) — ask for it
+as part of landing the mod.
+
 ## Agent Workflow & Workstyle Constraints
 
 **Core Directive: Small, Atomic Changes**
@@ -245,6 +259,10 @@ cycle must produce self-contained edits.
     [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues).
   * Label with a `type:` facet, plus `scope:repo-wide` or `mod:<Name>` for where it applies. Priority is **not** a
     label — ranking lives on the Project board so there is only one ordering.
+  * **Labels are human-managed: apply existing labels only, never create one.** The bot's repo role is Triage, which
+    can apply labels but not create them — `gh label create` fails with HTTP 403 regardless of the token's grants,
+    so don't retry or troubleshoot it (issue #27 has the analysis). If a needed label doesn't exist, file the issue
+    with the labels that do exist and ask the human to create the missing one.
   * Resolve by **closing**, never by deleting. Deleting and transferring issues are blocked by permission deny rules,
     and the bot account lacks the admin rights to do either.
   * Agents authenticate as a dedicated bot account, configured per machine via `GH_CONFIG_DIR`. Do not assume that
