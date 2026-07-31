@@ -183,9 +183,10 @@ What it does, in order — the guardrails are steps 1–3:
    the Python estate is the parked #36 thread's cleanup.
 5. Pushes with the write PAT (from an environment variable, else a prompt — never stored).
 6. Applies the retention policy (§3) via the Packages API.
-7. Updates `build/ci/game-versions.json` and the pins in `build/ci/GameAssemblies.csproj`; with `--pr`, also
-   branches, commits, and opens the version-bump PR via `gh` — whose green CI is the round-trip proof. Without
-   `--pr` it leaves the edits for a manual commit.
+7. Updates `build/ci/game-versions.json` and the pins in `build/ci/GameAssemblies.csproj`; with `--commit`,
+   also commits both files and pushes — the green Build run on main is the round-trip proof. Without `--commit`
+   it leaves the edits for a manual commit. (Originally planned as `--pr`; revised 2026-07-31 — the owner
+   doesn't use PRs. If an agent-sandbox-PR workflow materializes later, a `--pr` mode is a small addition.)
 
 The vendor and pack tools stay fully usable standalone — the first-ever publish (§7 phase 4) runs them by hand
 to prove each piece before the orchestrator exists.
@@ -397,6 +398,34 @@ exercised naturally by the next version-bump PR). Run 30664311536:
   (deprecated on runners); bump to the next major versions eventually. Not filed as an issue — it rides along
   whenever the workflow is next edited.
 
+**Phase 7 — done 2026-07-31 (`vendor.cs` port + `release.cs`).**
+
+- **`vendor.cs`** replaced `vendor.py` (retired via `git rm`), equivalence proven against the Python-generated
+  b14 trees: all 155 file hashes and manifest metadata identical per unit, nuspec byte-identical modulo one
+  *deliberate* improvement — the port always writes LF, where Python's `write_text` produced platform-dependent
+  CRLF on Windows. A `pack.cs` run over a `vendor.cs`-generated tree passed every validation.
+- **Port shook out a real pack.cs bug:** a relative `--vendor-root` reached MSBuild as a relative
+  `NuspecBasePath`, which MSBuild resolves against the stub *project* directory — path doubled, pack failed.
+  Masked until now because the default root is always absolute. Fixed: tree and output paths are absolutized at
+  entry.
+- **`release.cs`** implements §6 with `--dry-run`/`--steamcmd`/`--steam-user`/`--commit`/`--selftest`.
+  Verified (V8):
+  - Selftest 11 checks: the plan's verbatim retention case (`3.0.0.259`, `3.0.1.4`, `3.0.1.7` → deletes exactly
+    `3.0.1.4`), sole-version and cross-key preservation (the #37 lagging-mod guarantee), unparsable-version
+    never deleted; label validation (forward ok incl. major jumps, unchanged/backward/bad-grammar refused);
+    csproj bump surgical per package id, unknown id throws.
+  - **Live nothing-new guardrail:** with the published state current, exits 0 "Nothing to publish" with no
+    prompt.
+  - **Live full stale path** (state file temporarily reset to b13 — making `V3.1.0-b14` the truthful next
+    label): detection of both units, hint display, piped-label validation, `vendor.cs --force` + `pack.cs` for
+    both units, clean `--dry-run` stop before push. State restored, working tree clean.
+  - **Live unchanged-label refusal:** exit 2 with the rollback-education message.
+  - Rollback decisions from steam_check abort loudly before any prompt (code path; the live rollback itself
+    can't be simulated against real Steam).
+- **Still pending, by nature:** `--steamcmd` end-to-end and retention against the real Packages API — both get
+  their first genuine exercise at the next real game update, watched. Push is per-file (never glob), matching
+  the phase-5 quirk record.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
@@ -443,3 +472,7 @@ The original open questions, resolved — plus the automation scope they added:
    Python original's outputs); `vendor.cs` ports inside #22 because `release.cs` depends on it; the remaining
    Python (`compare-eval.py`) migrates opportunistically under the parked #36 thread. Tool sharing is process
    composition over `--json` + exit codes, not `#:include`. CI consequence: `setup-dotnet` pins SDK 10.x (§5).
+7. **No PRs** (2026-07-31): the owner is the sole contributor and commits directly to main, so every "bump PR"
+   in this doc reads as "commit to main; the Build run on main is the proof". `release.cs` ships `--commit`
+   instead of the planned `--pr`. (Possible future exception the owner flagged: agent-sandbox workflows that
+   hand back PRs — a `--pr` mode can be added then.)

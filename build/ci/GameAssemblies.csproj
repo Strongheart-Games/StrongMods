@@ -3,8 +3,9 @@
   <!--
     CI-only restore vehicle for the private game-assembly packages — never built, never in StrongMods.sln.
     The two Version attributes below are THE single place the consumed game version lives (plan §4): bumping a
-    unit's package after a publish is a one-line change here, and the PR's green build is the round-trip proof.
-    The units version independently (a server-only hotfix bumps only the server package).
+    unit's package after a publish is a one-line change here (release.cs step 7 writes it), and the Build run on
+    main after the bump commit is the round-trip proof. The units version independently (a server-only hotfix
+    bumps only the server package).
 
     Restored by .github/workflows/build.yml:
       dotnet restore build/ci/GameAssemblies.csproj -\-packages <isolated dir> -\-configfile build/ci/nuget.config

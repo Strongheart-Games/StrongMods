@@ -204,7 +204,9 @@ internal static class Pack {
     }
 
     var version = FourPart(lbl);
-    var vendor = vendorRootArg ?? Path.Combine(RepoRoot(), "vendor");
+    // Absolute from here on: MSBuild resolves a relative NuspecBasePath against the stub project's directory,
+    // not our working directory — a relative --vendor-root would silently double the path.
+    var vendor = Path.GetFullPath(vendorRootArg ?? Path.Combine(RepoRoot(), "vendor"));
     var tree = Path.Combine(vendor, unitName, lbl);
     if (!Directory.Exists(tree)) {
       throw new PackError($"vendored tree not found: {tree} (generate it with vendor.py)");
@@ -246,7 +248,7 @@ internal static class Pack {
                                 + "    <TargetFramework>netstandard2.0</TargetFramework>\n"
                                 + "  </PropertyGroup>\n</Project>\n");
 
-    var output = outputArg ?? Path.Combine(vendor, "packages");
+    var output = Path.GetFullPath(outputArg ?? Path.Combine(vendor, "packages"));
     Directory.CreateDirectory(output);
     RunDotnet("pack", stubProj, $"-p:NuspecFile={nuspecPath}", $"-p:NuspecBasePath={tree}",
       "-p:NoPackageAnalysis=true", "-o", output, "--nologo", "-v:minimal");
