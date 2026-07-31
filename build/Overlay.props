@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    Defaults for Overlay projects. An overlay imports this BEFORE its body and Overlay.targets after it — the
+    same explicit sandwich code mods use, and for the same reason: import position is load-bearing. An overlay's
+    body REFERENCES shared properties (DeployRoot is typically built from $(ModsDir) or $(SdtdSavesDir)), and
+    property expansion is immediate — a DeployRoot set before GamePaths.props is imported freezes with the
+    reference empty. That exact bug shipped once: $(ModsDir)\Hades evaluated to \Hades and a deploy landed in
+    C:\Hades (2026-07-30, caught at V7). Overlay.targets guards against a missing props import.
+
+      <Project DefaultTargets="Build" xmlns="...">
+        <Import Project="..\build\Overlay.props" />
+        ...DeployRoot, MirrorOnDeploy items, OverlayContentExclude...
+        <Import Project="..\build\Overlay.targets" />
+      </Project>
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+  </PropertyGroup>
+
+</Project>
