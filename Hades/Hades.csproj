@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- Deploys are PARKED (issue #25): the live Mods\Hades\ holds ~400 MB of world binaries authored in the
-         in-game World Editor and not managed by this repo (issue #26) — the Deploy target's mirror semantics
-         would delete them. Hades converts to the Overlay project type (#25), which deploys additively; until
-         then, install changes to the live folder by hand. Build still stages to bin\ normally. -->
-    <ModDeploy>false</ModDeploy>
+    <!-- Deploys into the live Mods\Hades\ beside ~400 MB of world binaries authored in the in-game World Editor
+         and not managed by this repo (issue #26). Overlay semantics keep them safe: only the MirrorOnDeploy
+         scopes below are source-authoritative; everything else — Prefabs\ especially, which is edited live in
+         the prefab editor — deploys protectively and is never deleted. -->
+    <DeployRoot>$(ModsDir)\Hades</DeployRoot>
   </PropertyGroup>
-  <Import Project="..\build\Modlet.targets" />
+  <ItemGroup>
+    <MirrorOnDeploy Include="Config" />
+    <MirrorOnDeploy Include="ModInfo.xml" />
+    <MirrorOnDeploy Include="README.md" />
+    <MirrorOnDeploy Include="Worlds\Hades S6\WalkerSim.xml" />
+  </ItemGroup>
+  <Import Project="..\build\Overlay.targets" />
 </Project>

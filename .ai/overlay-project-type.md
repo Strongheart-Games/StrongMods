@@ -129,6 +129,23 @@ granularity. Nothing in v1's file-level design precludes it; it gets its own des
 | V6 | Plain-build safety | Full solution, both toolchains, no redirects: zero warnings, nothing outside `bin\`/`obj\` |
 | V7 | Live Hades deploy (human) | After review: owner runs the real `-t:Deploy`; live `Worlds\` binaries untouched (hash-verified against the Phase-0 inventory), tracked files current |
 
+## 4b. Phase 0–1 results
+
+**Phase 0 (2026-07-30):** baselines at `48766c0` — live `Mods\Hades\` hash inventory (38 files / 433 MB: 23
+repo-tracked, **15 unmanaged that must survive every deploy**), live saves inventory (280 files), and a
+zero-warning deploy oracle (165 files / 27 mods + 1 saves file; Hades absent, still parked).
+
+**Phase 1 (2026-07-30):** `build/Overlay.targets` created; `SdtdSavesDir` added to `GamePaths.props`; Hades
+converted and un-parked (`DeployRoot=$(ModsDir)\Hades`; mirrors `Config`, `ModInfo.xml`, `README.md`,
+`Worlds\Hades S6\WalkerSim.xml`; `Prefabs\` protected by default).
+
+| Check | Result |
+| --- | --- |
+| Semantic gauntlet (V1/V2/V3) | ✅ All nine assertions in one seeded scratch deploy: unmanaged world + unmanaged prefab survive; stale file inside the `Config` mirror scope deleted (and announced); newer live edit of a tracked prefab preserved; older destination overwritten; absent files copied; both mirror flavors (dir + deep single file) deploy. The `MakeRelative` path-form risk did not materialize — no overdeletion |
+| Idempotency | ✅ Second deploy: no removals, quiet no-op |
+| Plain-build safety | ✅ Stages to `bin\` only; solution restore still zero NU1503 (the probe rides in `Overlay.targets` too) |
+| Live installs | ✅ Untouched (all deploys redirected) |
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

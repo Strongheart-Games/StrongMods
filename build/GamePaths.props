@@ -34,6 +34,8 @@
     <SdtdHarmonyDir Condition="'$(SdtdHarmonyDir)' == ''">$(SdtdDir)\Mods\0_TFP_Harmony</SdtdHarmonyDir>
     <!-- Deploy root. A project targeting the dedicated server overrides this with $(SdtdServerDir)\Mods. -->
     <ModsDir Condition="'$(ModsDir)' == ''">$(SdtdDir)\Mods</ModsDir>
+    <!-- The game's save-data root (client). Overlay projects deploying into Saves\ use this as their DeployRoot. -->
+    <SdtdSavesDir Condition="'$(SdtdSavesDir)' == ''">$(AppData)\7DaysToDie\Saves</SdtdSavesDir>
   </PropertyGroup>
 
 </Project>

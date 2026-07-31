@@ -1,0 +1,112 @@
+<Project>
+
+  <!--
+    Shared build logic for Overlay projects: content that deploys into a directory this repo does NOT fully
+    manage — a third party's, the game's (Saves\), or content authored out-of-band (Hades' World Editor output).
+    Third entry point beside Mod.targets and Modlet.targets; self-contained — never combine with the other entry
+    points or Deploy.targets (their mirror Deploy target would collide with the overlay one below).
+
+    Overlay deploy semantics (issue #25; settled in #13's review):
+      - DEFAULT is protective-additive: copy a file if it is absent or newer at the destination, never overwrite
+        newer live edits, never delete anything. Defaults fail toward the harmless side.
+      - <MirrorOnDeploy> declares the directories/files the project definitively manages: within those scopes
+        source is authoritative — overwrite and delete stale. Named for the consequence (robocopy /MIR): a
+        declaration marks exactly where deletion may happen.
+      - A Mod is an overlay that mirrors everything; these entry points differ only in that implicit declaration.
+
+    MirrorOnDeploy takes literal directory or file identities, NOT wildcards — item globs would expand against
+    the source tree at evaluation and lose the pattern needed for stale detection at the deploy root:
+
+      <MirrorOnDeploy Include="Config" />                         directory: mirrored recursively
+      <MirrorOnDeploy Include="ModInfo.xml" />                    single file
+      <MirrorOnDeploy Include="Worlds\Hades S6\WalkerSim.xml" />  a managed file inside unmanaged territory
+
+    Every overlay must set <DeployRoot> (e.g. $(ModsDir)\Hades, $(SdtdSavesDir)) — overlays state their
+    destination explicitly; there is no Mods\<name> convention here.
+
+    Extension points, set before the import: <DeployRoot>, <MirrorOnDeploy> items, <ModLoadPrefix> (unused by
+    overlays unless DeployRoot references it), <OverlayContentExclude> extra staging excludes,
+    <ModDeploy>false</ModDeploy> to never deploy (renaming: #24).
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <OutputPath>bin\$(Configuration)</OutputPath>
+    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**\*"
+             Exclude="*.csproj;bin\**\*;obj\**\*;.ai\**\*;.template.config\**\*;$(OverlayContentExclude)" />
+  </ItemGroup>
+
+  <Target Name="Build">
+    <Copy SourceFiles="@(Content)"
+          DestinationFiles="@(Content->'$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Clean touches only the staging folder — never a deploy root. -->
+  <Target Name="Clean">
+    <RemoveDir Directories="$(OutputPath)" Condition="Exists('$(OutputPath)')" />
+  </Target>
+
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+  <!-- Answers NuGet's solution-restore probe (see the twin in Modlet.targets for the full story). -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+    <Error Condition="'$(DeployRoot)' == ''"
+           Text="Overlay project $(MSBuildProjectName) must set &lt;DeployRoot&gt; (e.g. $(ModsDir)\&lt;name&gt; or $(SdtdSavesDir)) before importing Overlay.targets." />
+    <PropertyGroup>
+      <_StagingDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutputPath)'))</_StagingDir>
+      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(DeployRoot)'))</_DeployDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Partition the declarations: directories mirror recursively, files mirror individually. -->
+      <_MirrorDir Include="@(MirrorOnDeploy)" Condition="$([System.IO.Directory]::Exists('$(_StagingDir)%(Identity)'))" />
+      <_MirrorFileId Include="@(MirrorOnDeploy)" Exclude="@(_MirrorDir)" />
+
+      <_MirrorStaged Include="$(_StagingDir)%(_MirrorDir.Identity)\**\*" />
+      <_MirrorStaged Include="$(_StagingDir)%(_MirrorFileId.Identity)"
+                     Condition="Exists('$(_StagingDir)%(_MirrorFileId.Identity)')" />
+      <_MirrorStaged>
+        <DestPath>$(_DeployDir)$([MSBuild]::MakeRelative('$(_StagingDir)', '%(FullPath)'))</DestPath>
+      </_MirrorStaged>
+
+      <_MirrorDeployed Include="$(_DeployDir)%(_MirrorDir.Identity)\**\*" />
+      <_MirrorDeployed Include="$(_DeployDir)%(_MirrorFileId.Identity)"
+                       Condition="Exists('$(_DeployDir)%(_MirrorFileId.Identity)')" />
+      <!-- Stale = deployed within a mirror scope but no longer staged. Deleted below; nothing outside the
+           declared scopes is ever deleted. -->
+      <_MirrorStale Include="@(_MirrorDeployed)" Exclude="@(_MirrorStaged->'%(DestPath)')" />
+
+      <!-- Everything staged but not mirror-scoped deploys protectively: absent-or-newer only. -->
+      <_ProtectedStaged Include="$(_StagingDir)**\*" Exclude="@(_MirrorStaged)" />
+      <_ProtectedStaged>
+        <DestPath>$(_DeployDir)$([MSBuild]::MakeRelative('$(_StagingDir)', '%(FullPath)'))</DestPath>
+      </_ProtectedStaged>
+      <_ProtectedStaged>
+        <IsNewerThanDest Condition="!Exists('%(DestPath)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('%(DestPath)').Ticks)">true</IsNewerThanDest>
+      </_ProtectedStaged>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_MirrorStaged)" DestinationFiles="@(_MirrorStaged->'%(DestPath)')"
+          SkipUnchangedFiles="true" />
+    <Delete Files="@(_MirrorStale)" />
+    <Copy SourceFiles="@(_ProtectedStaged)" DestinationFiles="@(_ProtectedStaged->'%(DestPath)')"
+          Condition="'%(_ProtectedStaged.IsNewerThanDest)' == 'true'" />
+
+    <Message Importance="high" Text="  $(MSBuildProjectName) overlaid -> $(_DeployDir)" />
+    <Message Importance="high" Text="    removed stale (mirrored scope): @(_MirrorStale->'%(Filename)%(Extension)', ', ')"
+             Condition="'@(_MirrorStale)' != ''" />
+  </Target>
+
+</Project>
