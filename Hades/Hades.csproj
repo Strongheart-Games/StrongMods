@@ -8,6 +8,12 @@
          the prefab editor — deploys protectively and is never deleted. -->
     <DeployRoot>$(ModsDir)\Hades</DeployRoot>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <MirrorOnDeploy Include="Config" />
     <MirrorOnDeploy Include="ModInfo.xml" />

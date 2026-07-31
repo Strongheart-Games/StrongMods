@@ -7,7 +7,7 @@
 
     A modlet project imports this explicitly (modlets have no Microsoft.Common.props import, so MSBuild's
     Directory.Build.props auto-import does not reach them). Extension points a project may set before the import:
-      <ModLoadPrefix>ZZ_</ModLoadPrefix>            deploy as Mods\ZZ_<ProjectName>
+      <ModLoadTier>AfterDependencies</ModLoadTier>  deploy-folder load order (tiers: build\Deploy.targets)
       <ModsDir>...</ModsDir>                        deploy somewhere other than the client install
       <ModletContentExclude>Saves\**\*</ModletContentExclude>   extra Exclude globs
   -->

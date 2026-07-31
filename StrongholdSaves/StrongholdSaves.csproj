@@ -9,6 +9,12 @@
     <!-- The project README documents the repo project; it does not belong in the game's Saves\ tree. -->
     <OverlayContentExclude>README.md</OverlayContentExclude>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <MirrorOnDeploy Include="StrongMods\custom_chat_commands.xml" />
   </ItemGroup>

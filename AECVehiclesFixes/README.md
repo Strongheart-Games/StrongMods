@@ -6,8 +6,8 @@ A collection of fixes for the AEC Vehicles mod. The goal is to have these fixes 
 
 ## Installation
 
-* Copy the `Z_AECVehiclesFixes/` directory into `Mods/`
-* Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/Z_AECVehiclesFixes/ModInfo.xml`,
+* Copy the `ZZ_AECVehiclesFixes/` directory into `Mods/`
+* Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/ZZ_AECVehiclesFixes/ModInfo.xml`,
   otherwise the mod won't be loaded
 * Only needs to be installed on the server
 

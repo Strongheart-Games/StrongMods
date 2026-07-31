@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <!-- Loads late so its XML patches apply after the mods they depend on. -->
-    <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
+    <!-- After anything that might add new enemies to the game. -->
+    <ModLoadTier>Last</ModLoadTier>
   </PropertyGroup>
   <ItemGroup>
     <!-- Private=false: StrongMods deploys itself; its DLL must not be duplicated into this mod's folder. -->

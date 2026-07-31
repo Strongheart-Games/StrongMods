@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <PropertyGroup>
-    <!-- Loads late, after the mods whose chat commands it wraps. -->
-    <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
+    <!-- After anything that might implement a chat command. -->
+    <ModLoadTier>Last</ModLoadTier>
   </PropertyGroup>
   <Import Project="..\build\Mod.targets" />
 </Project>

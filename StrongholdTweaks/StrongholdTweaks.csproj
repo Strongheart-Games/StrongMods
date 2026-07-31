@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- Loads late so its tweaks apply after the mods they adjust. -->
-    <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
+    <!-- The true last layer: config specific to this instance ("localconfig"); nothing may follow it. -->
+    <ModLoadTier>LocalConfig</ModLoadTier>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <Import Project="..\build\Modlet.targets" />
 </Project>

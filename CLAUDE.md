@@ -46,7 +46,7 @@ implicit `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwi
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
-  <!-- deviations only: ModLoadPrefix, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
+  <!-- deviations only: ModLoadTier, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
   <Import Project="..\build\Mod.targets" />
 </Project>
 ```
@@ -97,7 +97,10 @@ absent or newer, never overwrite newer live edits, never delete) except inside i
 directories/files, where mirror semantics apply scoped. `Hades`' live prefab edits and world binaries survive its
 deploys by construction.
 
-- `<ModLoadPrefix>ZZ_</ModLoadPrefix>` prefixes the deploy folder to force load order.
+- `<ModLoadTier>AfterDependencies</ModLoadTier>` sets deploy-folder load order by *intent* — tiers `First`,
+  `AfterDependencies`, `Last`, `LocalConfig` map to the literal prefixes in `build/Deploy.targets`, whose header
+  comment records the verified sort facts (the game's comparison is culture-aware, not ordinal). Raw
+  `<ModLoadPrefix>` remains the escape hatch; setting both is a build error.
 - `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
 - `<ModDeploy>false</ModDeploy>` marks a project that never deploys (both templates; `Hades`).
 - `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch.
@@ -136,8 +139,8 @@ There is no test project or linter. Two levels beyond running the game:
    *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
    StrongholdSaves overlay).
 
-**StrongMods loads first**, via `<ModLoadPrefix>000000-</ModLoadPrefix>` — the prefix forces it ahead of other mods
-in load order, which matters because it replaces the XML patcher (see below).
+**StrongMods loads first**, via `<ModLoadTier>First</ModLoadTier>` (the `000000-` prefix) — the tier forces it
+ahead of other mods in load order, which matters because it replaces the XML patcher (see below).
 
 ## Architecture
 
@@ -225,7 +228,7 @@ Scaffold into the repo root: the imports are relative (`..\build\...`), so a pro
 
 New `.cs` files are picked up automatically by the SDK's glob — no csproj edit when adding a file. The flip side:
 **every `.cs` file in the project directory compiles**, so never leave scratch or half-finished `.cs` files lying
-around (`.ai\**` is excluded). Deviate from the defaults only where needed, between the two imports: `ModLoadPrefix`
+around (`.ai\**` is excluded). Deviate from the defaults only where needed, between the two imports: `ModLoadTier`
 for load order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
 
 The templates set `<ModDeploy>false</ModDeploy>` inside a `<!--#if (IsTemplate) -->` block so they never install

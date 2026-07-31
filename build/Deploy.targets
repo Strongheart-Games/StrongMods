@@ -20,12 +20,51 @@
     absolute paths or repo-root-relative invocations.
   -->
 
+  <!--
+    Load-order tiers: a project declares intent via $(ModLoadTier); the map below turns it into the literal folder
+    prefix. The game loads mods alphabetically by folder name with a CULTURE-AWARE comparison — verified from a
+    client log, 2026-07-30:
+
+      _disabled < 0_TFP_Harmony < 000000-StrongMods < plain names < Z_* < Z-IM-PZ-Compat < ZZ_* < ZZZZZZZZZZ_*
+
+    Two non-obvious facts this map depends on:
+      - Culture-aware, not ordinal: ordinal ASCII would sort ZZ_ BEFORE Z_ ('Z' 0x5A < '_' 0x5F). The prefixes only
+        work because of the comparer the game actually uses.
+      - 000000- is not absolutely first: 0_TFP_Harmony (the game's own Harmony bootstrap) precedes it. Correct and
+        intended — the game enforces its Harmony mod loads first.
+
+    AfterDependencies is two Z's because dependency folder names are hard to anticipate. The concrete case:
+    Project Z deploys in two styles — the GA build is one mod whose folder starts with ProjectZ (sorts among plain
+    names), the Experimental build is 10+ separate mods all starting with Z_. Following it in EITHER style needs
+    at least ZZ.
+
+    Last and LocalConfig share a prefix deliberately: the property encodes intent, the map collapses intents into
+    sort bands, and order within a band is alphabetical by project name. $(ModLoadPrefix) remains the low-level
+    escape hatch for anything a tier cannot express; setting both is an error (validated below).
+  -->
+  <PropertyGroup>
+    <_ModLoadPrefixExplicit>$(ModLoadPrefix)</_ModLoadPrefixExplicit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ModLoadTier)' != '' and '$(_ModLoadPrefixExplicit)' == ''">
+    <ModLoadPrefix Condition="'$(ModLoadTier)' == 'First'">000000-</ModLoadPrefix>
+    <ModLoadPrefix Condition="'$(ModLoadTier)' == 'AfterDependencies'">ZZ_</ModLoadPrefix>
+    <ModLoadPrefix Condition="'$(ModLoadTier)' == 'Last'">ZZZZZZZZZZ_</ModLoadPrefix>
+    <ModLoadPrefix Condition="'$(ModLoadTier)' == 'LocalConfig'">ZZZZZZZZZZ_</ModLoadPrefix>
+  </PropertyGroup>
+
   <PropertyGroup>
     <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
     <!-- Per-project capability gate: <ModDeploy>false</ModDeploy> marks a project that must never install into
          the game — the dotnet new templates do this, and Hades pending #25. (Renaming this property: #24.) -->
     <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
   </PropertyGroup>
+
+  <Target Name="_ValidateModLoadTier" BeforeTargets="Build;Deploy">
+    <Error Condition="'$(ModLoadTier)' != '' and '$(_ModLoadPrefixExplicit)' != ''"
+           Text="$(MSBuildProjectName) sets both ModLoadTier ('$(ModLoadTier)') and ModLoadPrefix ('$(_ModLoadPrefixExplicit)') — pick one. ModLoadTier is the preferred form; ModLoadPrefix is the escape hatch for what a tier cannot express." />
+    <Error Condition="'$(ModLoadTier)' != '' and '$(ModLoadPrefix)' == ''"
+           Text="$(MSBuildProjectName) sets unknown ModLoadTier '$(ModLoadTier)'. Valid tiers: First, AfterDependencies, Last, LocalConfig — see the map in build\Deploy.targets." />
+  </Target>
 
   <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
     <PropertyGroup>

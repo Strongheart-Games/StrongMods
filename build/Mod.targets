@@ -20,8 +20,8 @@
     and one of them is wrong for this. Every import here is explicit and positioned deliberately, and both project
     shapes (code mods, modlets) use the same mechanism.
 
-    A project may set $(ModLoadPrefix), override $(ModsDir), or add <GameAssembly Include="..." /> items above the
-    import.
+    A project may set $(ModLoadTier) (preferred; see build\Deploy.targets) or $(ModLoadPrefix), override $(ModsDir),
+    or add <GameAssembly Include="..." /> items above the import.
   -->
 
   <PropertyGroup>
@@ -30,7 +30,7 @@
 
     <!-- Building never touches a live install: output always stages to bin\, which holds exactly the shippable
          mod folder. Installing is the explicit Deploy target (build\Deploy.targets, imported below):
-         dotnet build -t:Deploy. $(ModLoadPrefix) forces deploy-folder load order (e.g. 000000-, ZZ_). -->
+         dotnet build -t:Deploy. $(ModLoadTier)/$(ModLoadPrefix) force deploy-folder load order (Deploy.targets). -->
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
