@@ -57,6 +57,23 @@ dotnet build StrongMods.sln -c Debug              # build everything; touches no
 dotnet build StrongMods.sln -c Debug -t:Deploy    # build and install into the live game
 ```
 
+**Design revised during Phase 1 review (2026-07-29/30), before Phase 2:**
+
+- **Deploy is a mirror, not a copy** — source is authoritative for content *and existence*; files removed from
+  source are deleted from the deployed folder at the next deploy (the scalpel for "a removed file keeps doing its
+  thing"; `Clean` stays out of the live install). The mirror is strictly scoped to `$(ModsDir)\$(ModDeployName)\`.
+- **The shared machinery lives in a new `build/Deploy.targets`**, imported by `Mod.targets` and `Modlet.targets`
+  (not by projects — same pattern as `GamePaths.props`). The `ModDeploy`/`ModDeployName` defaults move there.
+- **Mirror semantics assume the repo manages the whole folder — and two projects violate that.** That discovery
+  became the **Overlay project type** ([#25](https://github.com/Strongheart-Games/StrongMods/issues/25)):
+  protective-additive deploys with `MirrorOnDeploy` opt-in globs, Hades converting to it, and `StrongholdSaves`
+  splitting out of StrongholdTweaks. Within #13: **Hades is parked** (`ModDeploy=false`, comment pointing at
+  #25) — its live folder holds ~400 MB of unmanaged world binaries
+  ([#26](https://github.com/Strongheart-Games/StrongMods/issues/26)) that a mirror would delete.
+  `ModletCleanEnabled` retires now (its purpose — protecting deployed files from `Clean` — no longer exists).
+- **StrongholdTweaks' `CopySaves` hooks `AfterTargets="Deploy"`** (interim, until the #25 split); plain builds
+  never approach the saves folder.
+
 Consequences, all wanted:
 
 - **`Clean` stops reaching into the game.** It cleans `bin\` staging only. Removing a deployed mod from the live
@@ -120,6 +137,21 @@ seam now would smuggle #23's design into #13. One line in CLAUDE.md marks it.
 
 Transition note: until Phase 2, modlets still deploy-as-build, so **solution-level** builds/`-t:Deploy` remain
 redirected; per-project invocations on code mods are already safe unredirected.
+
+**Phase 2 (2026-07-30):** shared `build/Deploy.targets` created (mirror semantics, `ModDeploy`/`ModDeployName`
+defaults moved there); `Mod.targets` Phase-1 target replaced by the import; `Modlet.targets` stages to `bin\`
+with a plain skip-unchanged copy (the copy-if-newer condition retired — protective semantics belong to the
+Overlay type, [#25](https://github.com/Strongheart-Games/StrongMods/issues/25)), `ModletCleanEnabled` retired;
+Hades parked (`ModDeploy=false`, pointing at #25/#26); StrongholdTweaks' `CopySaves` gated behind `Deploy`.
+
+| Check | Result |
+| --- | --- |
+| V2 | ✅ Plain solution build, **no redirects**, both toolchains: exit 0, warnings at baseline, nothing outside `bin\`/`obj\` — live game, server, saves, and `vendor/` all untouched |
+| V3 | ✅ Solution-level `-t:Deploy` (forwarding proven in practice): 165 files / 27 mods file-identical to the oracle; Hades correctly absent (parked); templates correctly absent (gate holds) |
+| V5 | ✅ Saves content deploys only on the deploy request, oracle-identical; plain builds never approach the saves path |
+| Mirror | ✅ Planted stale file + stale subdirectory file both deleted on redeploy, announced in the log (`removed stale: …`). Accepted limitation: emptied *directories* remain (files are mirrored, empty dirs are inert cosmetic residue) |
+| V7 | ✅ Modlet `Clean` removes staging only; deployed copies untouched |
+| Live | ✅ Untouched throughout |
 
 ## 5. Risks
 

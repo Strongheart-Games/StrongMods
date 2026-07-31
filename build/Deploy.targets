@@ -1,0 +1,51 @@
+<Project>
+
+  <!--
+    The explicit install step, shared by code mods (Mod.targets) and modlets (Modlet.targets). Not imported by
+    projects directly — the two entry points pull it in, like GamePaths.props.
+
+      dotnet build <proj> -t:Deploy         one project
+      dotnet build StrongMods.sln -t:Deploy everything (MSBuild forwards the target to every project)
+
+    Deploy MIRRORS the staged bin\ output into $(ModsDir)\$(ModDeployName)\: source is authoritative for content
+    AND existence, so a file removed from source stops existing (and doing its thing) in the game at the next
+    deploy. The mirror is strictly scoped to the mod's own deploy folder.
+
+    Mirroring assumes this repo manages the whole deploy folder. A project that deploys into a directory with
+    content the repo does not manage is an Overlay, not a Mod — see issue #25. Hades is parked with
+    <ModDeploy>false</ModDeploy> until it converts (issue #25); its Worlds\ holds unmanaged world binaries.
+
+    Deploying while $(SdtdDir) points at a vendored tree would "install" into the tree — do not combine
+    -t:Deploy with -p:SdtdDir. Relative -p:ModsDir values resolve against the invocation directory; prefer
+    absolute paths or repo-root-relative invocations.
+  -->
+
+  <PropertyGroup>
+    <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
+    <!-- Per-project capability gate: <ModDeploy>false</ModDeploy> marks a project that must never install into
+         the game — the dotnet new templates do this, and Hades pending #25. (Renaming this property: #24.) -->
+    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+  </PropertyGroup>
+
+  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+    <PropertyGroup>
+      <_StagingDir Condition="'$(ModStagingDir)' != ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(ModStagingDir)'))</_StagingDir>
+      <_StagingDir Condition="'$(_StagingDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutDir)'))</_StagingDir>
+      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(ModsDir)', '$(ModDeployName)'))</_DeployDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_StagedFile Include="$(_StagingDir)**\*" />
+      <!-- Stale = deployed but no longer staged. Deleted below: that is the mirror. -->
+      <_StaleDeployedFile Include="$(_DeployDir)**\*"
+                          Exclude="@(_StagedFile->'$(_DeployDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_StagedFile)"
+          DestinationFiles="@(_StagedFile->'$(_DeployDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Delete Files="@(_StaleDeployedFile)" />
+    <Message Importance="high" Text="  $(MSBuildProjectName) deployed (mirror) -> $(_DeployDir)" />
+    <Message Importance="high" Text="    removed stale: @(_StaleDeployedFile->'%(Filename)%(Extension)', ', ')"
+             Condition="'@(_StaleDeployedFile)' != ''" />
+  </Target>
+
+</Project>

@@ -12,8 +12,10 @@
     <SavesContent Include="Saves\**\*" />
   </ItemGroup>
   <!-- The one modlet that installs somewhere other than Mods\, so it keeps its own copy step rather than
-       complicating Modlet.targets for a single case. Redirect with -p:SavesOutputPath=... to test safely. -->
-  <Target Name="CopySaves" AfterTargets="Build">
+       complicating the shared files for a single case. Rides the explicit Deploy request (plain builds never
+       touch the saves folder); redirect with -p:SavesOutputPath=... to test the deploy itself safely.
+       Interim shape: issue #25 splits this into a StrongholdSaves overlay project. -->
+  <Target Name="CopySaves" AfterTargets="Deploy" Condition="'$(ModDeploy)' == 'true'">
     <Copy SourceFiles="@(SavesContent)"
           DestinationFiles="@(SavesContent->'$(SavesOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />

@@ -1,29 +1,23 @@
 <Project>
 
   <!--
-    Shared build logic for XML-only modlets: there is nothing to compile, so Build is a content copy and Clean
-    removes the deployed folder.
+    Shared build logic for XML-only modlets: there is nothing to compile, so Build stages the content into bin\
+    and Clean removes the staging folder. Installing is the explicit Deploy target (build\Deploy.targets,
+    imported below): dotnet build -t:Deploy. Building never touches a live install.
 
     A modlet project imports this explicitly (modlets have no Microsoft.Common.props import, so MSBuild's
     Directory.Build.props auto-import does not reach them). Extension points a project may set before the import:
       <ModLoadPrefix>ZZ_</ModLoadPrefix>            deploy as Mods\ZZ_<ProjectName>
       <ModsDir>...</ModsDir>                        deploy somewhere other than the client install
       <ModletContentExclude>Saves\**\*</ModletContentExclude>   extra Exclude globs
-      <ModletCleanEnabled>false</ModletCleanEnabled>            keep Clean from deleting un-versioned files
   -->
 
   <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
 
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
-    <ModletCleanEnabled Condition="'$(ModletCleanEnabled)' == ''">true</ModletCleanEnabled>
-
-    <!-- Set <ModDeploy>false</ModDeploy> in a project that must never install into the game — the dotnet new
-         template does this. Debug then behaves like Release and writes to bin\. -->
-    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
-    <OutputPath Condition="'$(Configuration)' == 'Debug' AND '$(ModDeploy)' == 'true'">$(ModsDir)\$(ModDeployName)</OutputPath>
-    <OutputPath Condition="'$(Configuration)' != 'Debug' OR '$(ModDeploy)' != 'true'">bin\$(Configuration)</OutputPath>
+    <OutputPath>bin\$(Configuration)</OutputPath>
+    <ModStagingDir>$(OutputPath)\</ModStagingDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,17 +28,21 @@
   </ItemGroup>
 
   <Target Name="Build">
-    <!-- Copy-if-newer rather than SkipUnchangedFiles: previously duplicated by hand in Hades and
-         RefugeHordeBaseS11, which carried a TODO to propagate it everywhere. This is that propagation. -->
+    <!-- Staging is wholly ours, so a plain skip-unchanged copy suffices; the protective copy semantics that
+         used to live here are the Overlay project type's concern now (issue #25). -->
     <Copy SourceFiles="@(Content)"
           DestinationFiles="@(Content->'$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
-          Condition="%(Filename) != '' AND (!Exists('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('$(OutputPath)\%(RecursiveDir)%(Filename)%(Extension)').Ticks))" />
+          SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="Clean" Condition="'$(ModletCleanEnabled)' == 'true'">
+  <!-- Clean touches only the staging folder — never a live install. (ModletCleanEnabled is gone: it existed to
+       keep Clean away from deployed un-versioned files, a hazard that no longer exists.) -->
+  <Target Name="Clean">
     <RemoveDir Directories="$(OutputPath)" Condition="Exists('$(OutputPath)')" />
   </Target>
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+  <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
 
 </Project>

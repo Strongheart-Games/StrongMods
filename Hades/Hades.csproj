@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- No Clean target: the deployed folder accumulates un-version-controlled world files (Worlds\), and
-         removing the directory would destroy them. -->
-    <ModletCleanEnabled>false</ModletCleanEnabled>
+    <!-- Deploys are PARKED (issue #25): the live Mods\Hades\ holds ~400 MB of world binaries authored in the
+         in-game World Editor and not managed by this repo (issue #26) — the Deploy target's mirror semantics
+         would delete them. Hades converts to the Overlay project type (#25), which deploys additively; until
+         then, install changes to the live folder by hand. Build still stages to bin\ normally. -->
+    <ModDeploy>false</ModDeploy>
   </PropertyGroup>
   <Import Project="..\build\Modlet.targets" />
 </Project>
