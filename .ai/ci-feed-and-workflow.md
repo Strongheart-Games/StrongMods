@@ -294,6 +294,27 @@ Phased to the workstyle constraints; each phase is one reviewable change with it
 7. (Optional, once, for `release.cs --steamcmd`:) install SteamCMD and do its first interactive `+login` so the
    credential cache exists — §6 caveats.
 
+### 7c. Results log
+
+**Phase 1 — done 2026-07-31.** Findings recorded in §6b (branch structure, the live hotfix edge case, data
+quirks); `steam_check.cs` delivered with 11 offline checks after the mid-phase #36 language pivot (Python
+original ported 1:1, equivalence proven byte-for-byte, then retired).
+
+**Phase 2 — done 2026-07-31.** `build/tools/pack.cs` delivered; all §2 behaviors verified:
+
+- Selftest: 11 checks green (four-part mapping incl. missing-patch fill, bad-label refusal, the `<repository>`
+  leak-guard refusal, final-nuspec file list exactly manifest + `manifest.json`, stub/label version-disagreement
+  refusal, strict/lenient/tampered/unmanifested-file verification against a scratch fixture tree).
+- Both b13 units packed for real: 155 files / 47.1 MB tree → **17.3 MB nupkg** each (§3's 15–25 MB estimate
+  holds), buildids 24392370 / 24392395 carried in the packed manifests.
+- Package contents proven exact: 160 entries = 155 manifested DLLs + `manifest.json` + nuspec + 3 OPC ceremony
+  files; nothing else (no stub-project pollution), every manifested entry re-hashed from the archive.
+- The `dotnet pack -p:NuspecFile` stub-project pattern worked as designed — the §9 "known-janky" risk did not
+  materialize; the `System.IO.Compression` fallback stays unexercised.
+- `--verify-tree`: exit 0 on a pristine tree, exit 2 with a readable error on failure.
+- Standing note for phase 5: the packed trees are **b13, already behind Steam's public branch** (§6b findings) —
+  fine as pipeline proof; re-vendor at the current version before the first real publish.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
