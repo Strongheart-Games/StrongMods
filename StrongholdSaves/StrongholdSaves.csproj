@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\build\Overlay.props" />
   <PropertyGroup>
     <!-- Stronghold-specific save/world config, overlaid into the game-managed Saves\ tree. Split out of
          StrongholdTweaks (issue #25): save-related config is not a Mod and never belonged in Mods\. The Saves\

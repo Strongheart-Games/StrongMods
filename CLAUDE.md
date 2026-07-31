@@ -10,9 +10,11 @@ class-library project (`Microsoft.NET.Sdk`, `net481`), **C# LangVersion 9**. All
 `StrongMods.sln`. See `README.md` for the one-line description of each mod.
 
 A shipped mod is a directory in the game's `Mods/` folder containing a compiled DLL, a `ModInfo.xml` manifest, and
-optionally a `Config/` folder of XML patches. Most projects here are code mods; some are XML-only ("modlets"). The two
-`Template7DtD*` directories are `dotnet new` templates for scaffolding a new mod of each kind, not shippable mods
-themselves.
+optionally a `Config/` folder of XML patches. Three project shapes exist: **code mods**, XML-only **modlets**, and
+**overlays** — projects deploying into directories the repo doesn't fully manage, such as `Hades` (content beside
+World-Editor-authored world binaries) and `StrongholdSaves` (config in the game's `Saves/` tree); see
+`build/Overlay.targets` for their semantics. The two `Template7DtD*` directories are `dotnet new` templates for
+scaffolding a new mod, not shippable mods themselves.
 
 ## Building
 
@@ -24,11 +26,12 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 
 | File | Role |
 | --- | --- |
-| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(ModsDir)`. Not imported directly by projects — the two entry points below pull it in. |
+| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(ModsDir)`, `$(SdtdSavesDir)`. Not imported directly by projects — the entry points below pull it in. |
 | `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
-| `build/Deploy.targets` | The shared `Deploy` target (mirror install into the live game). Pulled in by the two entry points, like `GamePaths.props`. |
+| `build/Deploy.targets` | The shared `Deploy` target (mirror install into the live game). Pulled in by `Mod.targets` and `Modlet.targets`, like `GamePaths.props`. |
+| `build/Overlay.props` + `build/Overlay.targets` | The overlay entry-point pair: protective-additive `Deploy` with `MirrorOnDeploy` scoped mirroring into a declared `DeployRoot`. A props/targets **sandwich** like code mods, because an overlay's body *references* shared path properties — see the `Overlay.props` header for the incident that makes the order load-bearing. Never combined with the other entry points. |
 | `build/tools/compare-eval.py` | Verification helper; not imported by MSBuild. See *Verifying* below. |
 
 **Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a
@@ -48,7 +51,10 @@ implicit `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwi
 </Project>
 ```
 
-A modlet imports one file: `<Import Project="..\build\Modlet.targets" />`.
+A modlet imports one file: `<Import Project="..\build\Modlet.targets" />`. An overlay uses a **two-import
+sandwich** (`..\build\Overlay.props` first, `..\build\Overlay.targets` last) with `<DeployRoot>` and its
+`<MirrorOnDeploy>` declarations between them — the props import must come first because `DeployRoot` references
+shared path properties, which would otherwise expand empty.
 
 ### References
 
@@ -83,11 +89,13 @@ dotnet build StrongMods.sln -c Debug -t:Deploy                        # build an
 dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug -t:Deploy   # one mod
 ```
 
-`Deploy` **mirrors** staging into `$(ModsDir)\$(ModDeployName)\`: source is authoritative for content *and
-existence*, so a file removed from source is deleted from the deployed folder at the next deploy (announced in
-the build log). Mirroring assumes the repo manages the whole deploy folder — a project deploying into a
-directory with unmanaged content is an Overlay, not a Mod (issue #25); `Hades` is parked with `ModDeploy=false`
-until that lands.
+For mods and modlets, `Deploy` **mirrors** staging into `$(ModsDir)\$(ModDeployName)\`: source is authoritative
+for content *and existence*, so a file removed from source is deleted from the deployed folder at the next deploy
+(announced in the build log). Mirroring assumes the repo manages the whole deploy folder — a project deploying
+into a directory with unmanaged content is an **Overlay** instead: its `Deploy` is protective-additive (copy if
+absent or newer, never overwrite newer live edits, never delete) except inside its declared `MirrorOnDeploy`
+directories/files, where mirror semantics apply scoped. `Hades`' live prefab edits and world binaries survive its
+deploys by construction.
 
 - `<ModLoadPrefix>ZZ_</ModLoadPrefix>` prefixes the deploy folder to force load order.
 - `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
@@ -125,8 +133,8 @@ There is no test project or linter. Two levels beyond running the game:
    `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.py` does the diff;
    its docstring has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
 2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. To verify the
-   *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SavesOutputPath=` for
-   StrongholdTweaks' saves copy).
+   *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
+   StrongholdSaves overlay).
 
 **StrongMods loads first**, via `<ModLoadPrefix>000000-</ModLoadPrefix>` — the prefix forces it ahead of other mods
 in load order, which matters because it replaces the XML patcher (see below).

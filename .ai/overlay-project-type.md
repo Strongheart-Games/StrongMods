@@ -169,6 +169,40 @@ verification battery exists for.
 | V5 | ✅ Full solution `-t:Deploy`: non-Hades mods oracle-identical; **Hades participates again** (23 files); saves file arrives via the overlay; zero warnings |
 | Live | ✅ Untouched throughout |
 
+## 4d. Phase 3 — 2026-07-30
+
+CLAUDE.md updated: the three-shapes taxonomy in *What this repo is*, `Overlay.targets` and `SdtdSavesDir` in the
+shared-files table, the overlay import line, the *Deploying* section's overlay semantics (Hades un-parked
+language), and the *Verifying* redirect note (`SdtdSavesDir` replaces the dead `SavesOutputPath`). Remaining
+for close-out, owner-run:
+
+- **V7**: the first real Hades deploy — `dotnet build Hades/Hades.csproj -t:Deploy` — then re-verify the live
+  inventory: the 15 unmanaged files byte-identical to the Phase 0 baseline, tracked files current.
+- The real StrongholdSaves deploy (`-t:Deploy`, default `SdtdSavesDir`) if desired — content is identical to
+  what StrongholdTweaks last deployed, so this is optional hygiene.
+- Close [#25](https://github.com/Strongheart-Games/StrongMods/issues/25). The property-merge flavor
+  (serverconfig) stays recorded in the issue for a future pick-up — raise a fresh issue when it becomes real.
+
+## 4e. V7 incident and fix — 2026-07-30
+
+**The owner's first real deploy went to `C:\Hades\`.** `Hades.csproj` set `DeployRoot=$(ModsDir)\Hades` before
+the single `Overlay.targets` import — but `GamePaths.props` (which defines `ModsDir`) was imported *inside* that
+import, later. Property expansion is immediate, so `DeployRoot` froze as `\Hades` → drive root. Two aggravators:
+the terminal logger hid the destination message (`-tl:off` or `-v:m` shows it), and **every scratch verification
+had passed `-p:ModsDir=` as a global property — defined before everything — so the redirects that protected the
+live install also masked the default-resolution bug.** StrongholdSaves escaped by luck (its reference froze to
+empty, tripping the must-set-DeployRoot error).
+
+Fix, all verified: overlays became a **props/targets sandwich** (`Overlay.props` imports `GamePaths.props` and
+carries the defaults; body references then resolve; `Overlay.targets` closes), plus three guards in `Deploy` —
+missing-props-import (readable error, mirroring `VerifyGameInstall`'s), missing `DeployRoot`, and a
+**driveless-rooted-path tripwire** (`\Hades`-shaped values mean a reference expanded empty). New standing check
+added to the battery: **evaluate `DeployRoot` with no overrides** for every overlay — the class of check the
+redirects can't mask. Both overlays now resolve correctly by default; gauntlets re-passed; the real V7 deploy
+landed correctly with all 15 unmanaged files byte-identical and the tracked set current (the mirror healed a
+pre-existing ModInfo org-URL drift). The stray `C:\Hades\` (23 staged files, nothing else) awaits owner-approved
+deletion.
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

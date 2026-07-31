@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\build\Overlay.props" />
   <PropertyGroup>
     <!-- Deploys into the live Mods\Hades\ beside ~400 MB of world binaries authored in the in-game World Editor
          and not managed by this repo (issue #26). Overlay semantics keep them safe: only the MirrorOnDeploy

@@ -22,19 +22,16 @@
       <MirrorOnDeploy Include="Worlds\Hades S6\WalkerSim.xml" />  a managed file inside unmanaged territory
 
     Every overlay must set <DeployRoot> (e.g. $(ModsDir)\Hades, $(SdtdSavesDir)) — overlays state their
-    destination explicitly; there is no Mods\<name> convention here.
+    destination explicitly; there is no Mods\<name> convention here. Because DeployRoot references shared
+    properties, an overlay imports Overlay.props BEFORE its body (see its header for the incident that made this
+    load-bearing) and this file after.
 
-    Extension points, set before the import: <DeployRoot>, <MirrorOnDeploy> items, <ModLoadPrefix> (unused by
-    overlays unless DeployRoot references it), <OverlayContentExclude> extra staging excludes,
-    <ModDeploy>false</ModDeploy> to never deploy (renaming: #24).
+    Extension points, set between the two imports: <DeployRoot>, <MirrorOnDeploy> items,
+    <OverlayContentExclude> extra staging excludes, <ModDeploy>false</ModDeploy> to never deploy (renaming: #24).
   -->
 
-  <Import Project="$(MSBuildThisFileDirectory)GamePaths.props" />
-
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <OutputPath>bin\$(Configuration)</OutputPath>
-    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,8 +60,12 @@
   </Target>
 
   <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+    <Error Condition="'$(ModsDir)' == ''"
+           Text="build\Overlay.props was not imported by $(MSBuildProjectFile). Add &lt;Import Project=&quot;..\build\Overlay.props&quot; /&gt; as the first element of the project, BEFORE the properties that reference shared paths." />
     <Error Condition="'$(DeployRoot)' == ''"
-           Text="Overlay project $(MSBuildProjectName) must set &lt;DeployRoot&gt; (e.g. $(ModsDir)\&lt;name&gt; or $(SdtdSavesDir)) before importing Overlay.targets." />
+           Text="Overlay project $(MSBuildProjectName) must set &lt;DeployRoot&gt; (e.g. $(ModsDir)\&lt;name&gt; or $(SdtdSavesDir)) between the Overlay.props and Overlay.targets imports." />
+    <Error Condition="$(DeployRoot.StartsWith('\')) OR $(DeployRoot.StartsWith('/'))"
+           Text="Overlay project $(MSBuildProjectName) has DeployRoot '$(DeployRoot)' — a rooted-but-driveless path, which means a property reference in it evaluated empty. Is the Overlay.props import missing or below the DeployRoot definition?" />
     <PropertyGroup>
       <_StagingDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutputPath)'))</_StagingDir>
       <_DeployDir>$([MSBuild]::NormalizeDirectory('$(DeployRoot)'))</_DeployDir>
