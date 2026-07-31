@@ -27,7 +27,8 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 | `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(ModsDir)`. Not imported directly by projects — the two entry points below pull it in. |
 | `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
-| `build/Modlet.targets` | The whole build for an XML-only modlet: a content copy plus `Clean`. |
+| `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
+| `build/Deploy.targets` | The shared `Deploy` target (mirror install into the live game). Pulled in by the two entry points, like `GamePaths.props`. |
 | `build/tools/compare-eval.py` | Verification helper; not imported by MSBuild. See *Verifying* below. |
 
 **Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a
@@ -235,8 +236,8 @@ cycle must produce self-contained edits.
 
 * **Filesystem Scope:** Work only within this project directory (including its `.scratch/` area) and the
   7 Days to Die install and save directories. In the game directories, read freely — vanilla configs, game DLLs — but write
-  only through the build: a Debug build deploying a mod into a `Mods\` or `Saves\` folder, of the client or the
-  dedicated server, is the designed install step, not a scope violation. Never create, hand-edit, or delete files
+  only through the build: the `Deploy` target installing a mod into a `Mods\` or `Saves\` folder, of the client or
+  the dedicated server, is the designed install step, not a scope violation. Never create, hand-edit, or delete files
   in those locations outside of that build path without explicit human approval, and use a redirected build (see
   *Scratch space* below) whenever deploying is not the goal. Treat everything else on the machine as out of scope.
 * **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected

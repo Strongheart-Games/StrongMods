@@ -153,6 +153,22 @@ Hades parked (`ModDeploy=false`, pointing at #25/#26); StrongholdTweaks' `CopySa
 | V7 | ✅ Modlet `Clean` removes staging only; deployed copies untouched |
 | Live | ✅ Untouched throughout |
 
+**Phase 3 (2026-07-30):** CLAUDE.md rewritten — *Deploying* (the "building in Debug *is* the install step" era
+ends; `-t:Deploy` commands; mirror semantics; the Hades/Overlay note; the stale `PrismaCoreFixes` reference
+removed), *Building without the game* (vendored builds safe by default, `ModsDir` redirect no longer required),
+*Verifying* (real builds inherently safe; redirects only for testing the deploy step), the Filesystem Scope
+bullet (`Deploy` target, not "Debug build", is the install act), and a `Deploy.targets` row in the shared-files
+table. Both templates re-verified inert under an explicit `-t:Deploy`. Remaining: V9 — the owner runs one real
+`-t:Deploy` against the live game and confirms the install updates; then #13 closes.
+
+**Phase 3 addendum (2026-07-30, from V9 review feedback):** the long-standing NU1503 baseline warnings (10×, one
+per modlet, on every solution restore) are gone. NuGet probes each project for a `_IsProjectRestoreSupported`
+target and warns for projects that lack it; `Modlet.targets` now declares it (returning the project — an empty
+target verifiably does not suppress). Restore is a genuine no-op for modlets: no `obj\` artifacts appear, and
+both toolchains now build the full solution with **zero warnings** — which also clears the runway for
+warnings-as-errors in CI someday. Failure mode if NuGet ever changes this internal contract: the warnings return,
+nothing breaks.
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

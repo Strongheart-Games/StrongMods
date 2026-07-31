@@ -43,6 +43,17 @@
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
 
+  <!-- Answers NuGet's solution-restore probe. Modlets have no packages, so restore is a genuine no-op — but a
+       project that lacks this target gets skipped with a scary NU1503 warning on every solution restore.
+       Declaring ourselves restore-valid (the Returns item is how NuGet counts a "yes") makes the no-op silent.
+       The underscore marks a NuGet-internal contract: if a NuGet update changes it, the failure mode is just the
+       warnings returning. Verified empty-target-without-Returns does NOT suppress the warning. -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
 
 </Project>
