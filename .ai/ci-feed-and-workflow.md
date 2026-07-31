@@ -380,6 +380,23 @@ nupkg re-hash; V2 and V3 here), everything under `.scratch/roundtrip/`:
   clicks) was considered and rejected: it couples package visibility to a repo's visibility — a cousin of the
   §1 leak.
 
+**Phase 6 — done 2026-07-31 (V5: the workflow ran green on Linux).** Fired by the phase-5 push to main
+(deviation from the planned PR branch — same workflow, `push` event instead of `pull_request`; the PR path gets
+exercised naturally by the next version-bump PR). Run 30664311536:
+
+- **Both matrix legs green** — game 28 s, dedicated-server 25 s total, every step executed: tool selftests
+  (the C# tools' first Linux execution — both green, no platform seams), restore from the live private feed via
+  the bot secret, single-version glob + `--verify-tree` (155/155 on both restored trees), full-solution Debug
+  builds against each unit. **f5b §8's "developed on Windows, asserted for Linux" risk is now cashed: zero
+  Linux discoveries.** #21's standing compile-against-both check is live on every push/PR from here on.
+- **Accidental negative control, worth having:** the phase-4 push (before packages or secret existed) left a
+  red run that failed exactly where it should — restore, `error : Value cannot be null or empty string
+  (Parameter 'password')` from the unexpanded `%PACKAGES_READ_TOKEN%`. Missing credentials are loud, never a
+  silent green.
+- Cosmetic annotation to pick up in some future touch: actions/checkout@v4 + setup-dotnet@v4 target Node 20
+  (deprecated on runners); bump to the next major versions eventually. Not filed as an issue — it rides along
+  whenever the workflow is next edited.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
