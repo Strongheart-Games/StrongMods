@@ -31,9 +31,8 @@ Stronghold-specific game tweaks.
 * All other deployments:
   * Deploy to host (in single-player this is your game)
 * Configuration is the patch set itself, under `Config/` — edit the XML to change any of the values above
-* `Saves/StrongMods/custom_chat_commands.xml` is *not* part of the mod folder: it is the chat-command
-  definitions (`/horde`, `/stronghold`, `/bed`, `/resetdrone`, `/resetme`) read from the save game directory,
-  and requires the mods that implement custom chat commands
+* The chat-command definitions that used to ship here from `Saves/` now live in the separate `StrongholdSaves`
+  project, which installs into the save game directory rather than `Mods/`
 
 ## Changelog
 

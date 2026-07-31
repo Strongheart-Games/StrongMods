@@ -74,16 +74,22 @@
       <_MirrorDir Include="@(MirrorOnDeploy)" Condition="$([System.IO.Directory]::Exists('$(_StagingDir)%(Identity)'))" />
       <_MirrorFileId Include="@(MirrorOnDeploy)" Exclude="@(_MirrorDir)" />
 
-      <_MirrorStaged Include="$(_StagingDir)%(_MirrorDir.Identity)\**\*" />
+      <!-- Every batched include below is guarded against its source vector being EMPTY: MSBuild then expands
+           %(...) to an empty string instead of zero iterations, silently turning the glob into the whole
+           staging/deploy root — which made the entire deploy root mirror-scoped and DELETED unmanaged files
+           (caught by verification, 2026-07-30). The guards are load-bearing; do not "simplify" them away. -->
+      <_MirrorStaged Include="$(_StagingDir)%(_MirrorDir.Identity)\**\*"
+                     Condition="'@(_MirrorDir)' != ''" />
       <_MirrorStaged Include="$(_StagingDir)%(_MirrorFileId.Identity)"
-                     Condition="Exists('$(_StagingDir)%(_MirrorFileId.Identity)')" />
+                     Condition="'@(_MirrorFileId)' != '' AND Exists('$(_StagingDir)%(_MirrorFileId.Identity)')" />
       <_MirrorStaged>
         <DestPath>$(_DeployDir)$([MSBuild]::MakeRelative('$(_StagingDir)', '%(FullPath)'))</DestPath>
       </_MirrorStaged>
 
-      <_MirrorDeployed Include="$(_DeployDir)%(_MirrorDir.Identity)\**\*" />
+      <_MirrorDeployed Include="$(_DeployDir)%(_MirrorDir.Identity)\**\*"
+                       Condition="'@(_MirrorDir)' != ''" />
       <_MirrorDeployed Include="$(_DeployDir)%(_MirrorFileId.Identity)"
-                       Condition="Exists('$(_DeployDir)%(_MirrorFileId.Identity)')" />
+                       Condition="'@(_MirrorFileId)' != '' AND Exists('$(_DeployDir)%(_MirrorFileId.Identity)')" />
       <!-- Stale = deployed within a mirror scope but no longer staged. Deleted below; nothing outside the
            declared scopes is ever deleted. -->
       <_MirrorStale Include="@(_MirrorDeployed)" Exclude="@(_MirrorStaged->'%(DestPath)')" />

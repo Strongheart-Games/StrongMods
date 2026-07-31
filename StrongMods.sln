@@ -8,6 +8,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloodRain", "BloodRain\Bloo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongUtils", "StrongUtils\StrongUtils.csproj", "{FED4B6B3-0482-4574-BBE8-6F189F5681DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongholdSaves", "StrongholdSaves\StrongholdSaves.csproj", "{F6E6DAB8-21F1-43D7-B021-58A632175E5A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongholdTweaks", "StrongholdTweaks\StrongholdTweaks.csproj", "{846F6E7B-77D0-4C3D-96BB-FAD7E0EA7DDE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BountifulQuests", "BountifulQuests\BountifulQuests.csproj", "{AE1B39DA-8714-4D2B-A982-82E0EE96BDB2}"
@@ -66,6 +68,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6E6DAB8-21F1-43D7-B021-58A632175E5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E6DAB8-21F1-43D7-B021-58A632175E5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E6DAB8-21F1-43D7-B021-58A632175E5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6E6DAB8-21F1-43D7-B021-58A632175E5A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{44BCB2A9-427E-476F-9081-A39B3D46F610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44BCB2A9-427E-476F-9081-A39B3D46F610}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44BCB2A9-427E-476F-9081-A39B3D46F610}.Release|Any CPU.ActiveCfg = Release|Any CPU

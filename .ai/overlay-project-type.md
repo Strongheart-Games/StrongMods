@@ -146,6 +146,29 @@ converted and un-parked (`DeployRoot=$(ModsDir)\Hades`; mirrors `Config`, `ModIn
 | Plain-build safety | ✅ Stages to `bin\` only; solution restore still zero NU1503 (the probe rides in `Overlay.targets` too) |
 | Live installs | ✅ Untouched (all deploys redirected) |
 
+## 4c. Phase 2 results — done 2026-07-30
+
+`StrongholdSaves` split out (the saves file `git mv`'d so the project root *is* the saves-relative tree; README
+excluded from deploy via `OverlayContentExclude`); StrongholdTweaks reduced to a four-line ordinary modlet;
+`StrongMods.sln` gained the project. **The `SavesOutputPath` protocol is fully dead** — the redirect property for
+saves-deploy testing is now `-p:SdtdSavesDir=`.
+
+**Verification caught a genuine catastrophic bug before it ever ran against real data.** With a *file-only*
+`MirrorOnDeploy` (StrongholdSaves' case — no directory declarations), MSBuild's batching expanded
+`%(_MirrorDir.Identity)` over the **empty** vector to an empty string instead of zero iterations, turning the
+deployed-mirror glob into the whole deploy root — the first V4a run **deleted the seeded runtime files** it was
+sworn to protect. Hades had passed only because its declarations include directories. Fix: empty-vector guards on
+all four batched includes, marked load-bearing in a comment. This is exactly the class of failure the seeded
+verification battery exists for.
+
+| Check | Result |
+| --- | --- |
+| V4a (after fix) | ✅ File-only mirror overlay into a seeded saves tree: config deployed, runtime KV + world save survive, exactly 3 files total; planted-stale mirror file re-asserted |
+| Hades regression | ✅ Full gauntlet re-passed with the guards in place (mixed dir+file declarations) |
+| V4b | ✅ StrongholdTweaks deploys as a plain modlet: 19 files, zero `Saves` paths, no saves behaviour left |
+| V5 | ✅ Full solution `-t:Deploy`: non-Hades mods oracle-identical; **Hades participates again** (23 files); saves file arrives via the overlay; zero warnings |
+| Live | ✅ Untouched throughout |
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

@@ -3,21 +3,6 @@
   <PropertyGroup>
     <!-- Loads late so its tweaks apply after the mods they adjust. -->
     <ModLoadPrefix>ZZZZZZZZZZ_</ModLoadPrefix>
-    <!-- Saves\ does not belong in the mod folder; it installs into the player's saves directory instead. -->
-    <ModletContentExclude>Saves\**\*</ModletContentExclude>
-    <SavesOutputPath Condition="'$(SavesOutputPath)' == ''">$(AppData)\7DaysToDie\Saves</SavesOutputPath>
   </PropertyGroup>
   <Import Project="..\build\Modlet.targets" />
-  <ItemGroup>
-    <SavesContent Include="Saves\**\*" />
-  </ItemGroup>
-  <!-- The one modlet that installs somewhere other than Mods\, so it keeps its own copy step rather than
-       complicating the shared files for a single case. Rides the explicit Deploy request (plain builds never
-       touch the saves folder); redirect with -p:SavesOutputPath=... to test the deploy itself safely.
-       Interim shape: issue #25 splits this into a StrongholdSaves overlay project. -->
-  <Target Name="CopySaves" AfterTargets="Deploy" Condition="'$(ModDeploy)' == 'true'">
-    <Copy SourceFiles="@(SavesContent)"
-          DestinationFiles="@(SavesContent->'$(SavesOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
-  </Target>
 </Project>
