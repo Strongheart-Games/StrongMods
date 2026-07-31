@@ -19,8 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="7DtD.Assemblies.Game" Version="3.1.0.13" />
-    <PackageReference Include="7DtD.Assemblies.DedicatedServer" Version="3.1.0.13" />
+    <PackageReference Include="7DtD.Assemblies.Game" Version="3.1.0.14" />
+    <PackageReference Include="7DtD.Assemblies.DedicatedServer" Version="3.1.0.14" />
   </ItemGroup>
 
 </Project>

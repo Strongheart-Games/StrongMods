@@ -354,6 +354,32 @@ nupkg re-hash; V2 and V3 here), everything under `.scratch/roundtrip/`:
   the real test, deliberately.
 - Not locally testable, deferred to phases 5/6: feed auth (no token/packages exist yet), the workflow end-to-end.
 
+**Phase 5 — done 2026-07-31 (first publish + feed setup).**
+
+- **b13 was never pushed, by retention logic:** Steam's current build is still player-version 3.1.0 (branch
+  re-point), so its package version shares the `3.1.0` retention key with b13 — pushing b13 would have uploaded
+  something scheduled for deletion. Re-vendored instead at **`V3.1.0-b14`** (label from the client log's
+  `Version: V 3.1.0 (b14)` line, logs at `%APPDATA%\7DaysToDie\logs`): buildids 24436778/24436799, exactly
+  matching Steam's public branch heads. Packed clean; pins bumped
+  (`GameAssemblies.csproj` + `game-versions.json` → 3.1.0.14); `steam_check --live` now reports both units
+  up-to-date, exit 0.
+- **Pushed by the human:** both nupkgs accepted by `nuget.pkg.github.com`. (Client quirk: NuGet's own glob
+  chokes on forward-slash patterns on Windows, and `dotnet nuget push` takes one path — a bash loop over the
+  files is the working shape; `release.cs` should push per-file, never rely on push-side globbing.)
+- **Feed posture confirmed in the UI:** both packages **Private**, **no linked repository**; the org already
+  blocks public package creation.
+- **V4 PAT-flavor record (so rotations don't re-litigate):** classic `write:packages` force-includes `repo` —
+  the UI does not allow deselecting it. Fine-grained PATs don't offer Packages permissions for this org at all
+  (not shown in the permission list) — the NuGet registry isn't covered yet; re-check at future rotations.
+  Landed on: classic write+delete+repo(forced) on the human account, short expiry, password-manager only,
+  entered via prompt (never argv/history). Read side: bot classic `read:packages` in the repo secret
+  `PACKAGES_READ_TOKEN` (repo-scoped secret deliberately — an environment would add gating ceremony that a
+  read-only token doesn't warrant).
+- **Bot access is per-package-ID, once ever** (versions inherit the package's access list): `str0ngh34rt-bot`
+  granted Read on both packages. The link-to-private-repo alternative (inherited access, zero per-package
+  clicks) was considered and rejected: it couples package visibility to a repo's visibility — a cousin of the
+  §1 leak.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
