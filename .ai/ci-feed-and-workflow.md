@@ -315,6 +315,25 @@ original ported 1:1, equivalence proven byte-for-byte, then retired).
 - Standing note for phase 5: the packed trees are **b13, already behind Steam's public branch** (§6b findings) —
   fine as pipeline proof; re-vendor at the current version before the first real publish.
 
+**Phase 3 — done 2026-07-31.** The feed-less round trip (V1 was already proven inside phase 2's post-pack
+nupkg re-hash; V2 and V3 here), everything under `.scratch/roundtrip/`:
+
+- **V2 — restore → verify → build, both units, no network:** a scratch restore-vehicle csproj with
+  `vendor/packages` as its only NuGet source (`<clear/>` + local folder) restored both packages into an isolated
+  packages folder; extracted roots have exactly the vendored-tree shape plus NuGet's own extras (`.nupkg`,
+  `.sha512`, `.nuspec`) — the lenient-verify case as designed. `pack.cs --verify-tree` passed 155/155 on both.
+  Full-solution **forced rebuilds** (`--no-incremental`, freshness confirmed via output timestamps) against each
+  extracted root: exit 0, 0 warnings (the NU1503 modlet baseline lives in restore, which was a no-op — nothing
+  new), correct layout auto-detected for both `*_Data` names, `VerifyGameInstall` satisfied, and the
+  `ModsDir`/`SdtdSavesDir` scratch redirects stayed empty — plain builds deploy nothing, as designed. The
+  consumption path is proven end-to-end before any credential, feed, or workflow exists.
+- **V3 — every tamper/refusal path fires with a readable error, exit 2:** flipped byte in a restored DLL →
+  SHA-256 mismatch naming the file and both hashes (and re-verifies clean after restoring the byte);
+  tree-at-wrong-label → coordinates-disagree refusal; `<repository>` injected into a stub → the §1 leak-guard
+  refusal.
+- Phase 4 note: the scratch restore-vehicle is the template for `build/ci/GameAssemblies.csproj` +
+  `nuget.config` — same shape, plus the GitHub source, credentials-from-env, and source mapping.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
