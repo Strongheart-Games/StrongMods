@@ -334,6 +334,26 @@ nupkg re-hash; V2 and V3 here), everything under `.scratch/roundtrip/`:
 - Phase 4 note: the scratch restore-vehicle is the template for `build/ci/GameAssemblies.csproj` +
   `nuget.config` — same shape, plus the GitHub source, credentials-from-env, and source mapping.
 
+**Phase 4 — done 2026-07-31.** The four committed CI files exist; everything locally validatable was validated:
+
+- `build/ci/GameAssemblies.csproj` — the version pins (single source of truth, per-unit), CI-only by design;
+  its header explains the bump-PR flow. Proven: restores both pins from the local package source
+  (`--configfile` override), and the solution build is untouched (the project is not in the .sln; NuGet config
+  discovery is per-project-directory, so mod restores never see `build/ci/nuget.config`).
+- `build/ci/nuget.config` — GitHub feed + nuget.org with source mapping (`7DtD.*` → feed only, `*` → nuget.org
+  for Cronos), bot-account credentials from `%PACKAGES_READ_TOKEN%`, no token material in the file. XML-comment
+  gotcha worth remembering: `-` `-` is illegal inside XML comments, hence the escaped spellings there.
+- `build/ci/game-versions.json` — seeded with the b13 published-state (truthful: those are the packed-but-not-
+  yet-pushed packages). Wiring proven: `steam_check.cs --raw <capture> --published build/ci/game-versions.json`
+  reads it and reports both units RELEASE, exit 1 — correct, since Steam is already ahead of b13.
+- `.github/workflows/build.yml` — per §5: push-to-main/PR/dispatch, `contents: read` only, per-ref concurrency,
+  fork-PR skip guard (cosmetic; the secret's absence is the enforcement), SDK pinned 10.0.x, tool selftests as
+  a first step (the tools' first Linux execution), restore → glob-the-single-version (the workflow never
+  duplicates the version number) → `--verify-tree` → plain Debug build with `ModsDir`/`SdtdSavesDir` redirects,
+  matrix over both units, `dotnet test` placeholder for #14. YAML validated by review only — phase 6's runs are
+  the real test, deliberately.
+- Not locally testable, deferred to phases 5/6: feed auth (no token/packages exist yet), the workflow end-to-end.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |

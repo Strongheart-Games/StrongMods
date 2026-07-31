@@ -1,0 +1,82 @@
+# Build the full solution against BOTH releasable units' assemblies, restored from the private GitHub Packages
+# feed. Design and rationale: .ai/ci-feed-and-workflow.md (§4 consumption, §5 workflow, §1 leak model).
+#
+# STANDING SAFETY RULES — the restored trees and packages contain LICENSED game assemblies and this repo is
+# public (plan §1):
+#   - NEVER upload artifacts from this workflow: an Actions artifact on a public repo is a public download.
+#   - NEVER run -t:Deploy here, and never combine a deploy with -p:SdtdDir (CLAUDE.md). Plain builds only.
+#   - Fork PRs skip via the `if:` below — but that guard is cosmetic. The real enforcement is that GitHub
+#     withholds secrets from fork-PR runs: an edited workflow in a fork still has no PACKAGES_READ_TOKEN and
+#     cannot reach the feed. Do not "fix" feed access by granting GITHUB_TOKEN package permissions.
+#
+# The dedicated-server leg is #21's standing compile-against-both check. Matrix is Debug x 2 units (plan §10).
+# The .NET SDK is pinned to 10.x: the C# file-based tools (build/tools/*.cs) require it.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unit: [game, dedicated-server]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Tool selftests
+        run: |
+          dotnet run build/tools/steam_check.cs -- --selftest
+          dotnet run build/tools/pack.cs -- --selftest
+
+      - name: Restore game-assembly packages
+        env:
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
+        run: >
+          dotnet restore build/ci/GameAssemblies.csproj
+          --packages .scratch/game-packages
+          --configfile build/ci/nuget.config
+
+      - name: Locate and verify the ${{ matrix.unit }} tree
+        id: tree
+        run: |
+          case "${{ matrix.unit }}" in
+            game)             id=7dtd.assemblies.game ;;
+            dedicated-server) id=7dtd.assemblies.dedicatedserver ;;
+          esac
+          dirs=(.scratch/game-packages/$id/*/)
+          if [ "${#dirs[@]}" -ne 1 ] || [ ! -d "${dirs[0]}" ]; then
+            echo "expected exactly one restored version of $id, found: ${dirs[*]}" >&2
+            exit 1
+          fi
+          tree=$(realpath "${dirs[0]}")
+          # Post-restore integrity: every file hash-matches the manifest packed with the tree (plan §4).
+          dotnet run build/tools/pack.cs -- --verify-tree "$tree"
+          echo "path=$tree" >> "$GITHUB_OUTPUT"
+
+      - name: Build solution against ${{ matrix.unit }} assemblies
+        run: >
+          dotnet build StrongMods.sln -c Debug
+          -p:SdtdDir=${{ steps.tree.outputs.path }}
+          -p:ModsDir=$RUNNER_TEMP/mods
+          -p:SdtdSavesDir=$RUNNER_TEMP/saves
+
+      # dotnet test slots in here when the test project lands (#14).
