@@ -67,17 +67,31 @@ doesn't understand is a test failure, not a skip.
 **D8 — The tests (wave 1, complete list):**
   1. *Patch targets resolve* — one test case per patch class per mod: every merged spec resolves against the
      unit under test.
-  2. *Dynamic patch targets resolve* — every `[HarmonyTargetProvider]` method (D9) is invoked and every
-     `MethodBase` it returns must be non-null.
+  2. *Dynamic patch targets resolve* — every `[PatchTargetManifest]` method (D9) is invoked and fully
+     enumerated (manifests are lazy `yield` methods — throws surface at enumeration, not invocation, per the
+     iteration-1 red-path run), and every `MethodBase` it yields must be non-null.
   3. *Coverage sanity* — every enumerated code-mod DLL loads, total patch-spec count is > 0, and at least one
-     target provider was found (guards against a refactor making either half of the suite vacuously green).
+     manifest was found (guards against a refactor making either half of the suite vacuously green).
   4. *Negative control, permanent* — a patch class defined inside the test assembly targeting a nonexistent
      member must fail resolution. The suite carries its own proof that it can fail.
+  5. *Manifest conformance* — scan mod project sources for direct `harmony.Patch(` calls; a project with any
+     must declare at least one `[PatchTargetManifest]`. The failure message is the teaching moment — it names
+     the pattern, the attribute, and the doc to read — so a future developer who rolls a new programmatic
+     patcher without publishing targets is interrupted by CI with instructions, not by archaeology (owner
+     scenario, 2026-08-01). Source-level regex is enough for wave 1; IL-level scanning is the stricter future
+     upgrade if ever needed.
 
-**D9 — Programmatic patches: a target-provider convention.** Attribute enumeration cannot see dynamic
+**D9 — Programmatic patches: a patch-target manifest convention.** Attribute enumeration cannot see dynamic
 `harmony.Patch(...)` calls, so code that patches programmatically must publish its targets through a testable
-seam: a `public static IEnumerable<MethodBase>` method tagged `[HarmonyTargetProvider]` (a new marker attribute
-in StrongMods, beside `XmlPatchFunctionAttribute`), pure resolution with no patching side effects. The test
+seam: a `public static IEnumerable<MethodBase>` method tagged `[PatchTargetManifest]` (a new marker attribute
+in StrongMods, beside `XmlPatchFunctionAttribute`), pure resolution with no patching side effects. Named to
+avoid fuzzy collision with Harmony's own `[HarmonyTargetMethod]`/`TargetMethod()` lifecycle hooks — because
+unlike those, **the attribute is inert: nothing invokes a tagged method automatically**. The patching code
+calls its own manifest; the test suite discovers manifests by attribute and invokes them headlessly. That
+inversion of the Harmony prior is the main confusion risk, so it is mitigated in three layers: the attribute's
+doc comment leads with the lifecycle ("tagging patches nothing") and embeds a usage example; a "Programmatic
+Harmony patches" docs section (StrongMods README or `Docs/`, part of iteration 2) carries the narrative; and
+the conformance test (D8 test 5) enforces the pattern with a failure message that teaches it. The test
 assembly discovers and invokes every tagged provider across all mod DLLs and asserts each returned target
 resolves (test 2 above). `ApplyExistsPatches` is refactored to consume its own provider and — per the owner's
 call — to **error on a null target instead of silently continuing** (that skip was unintentional; the fix rides
@@ -132,6 +146,12 @@ step passes, so embedded metadata matches the leg). Standing safety rules unchan
 - **R2 — Harmony public-API assumptions.** D7 names specific public members (`GetFromType`, `Merge`,
   `EnumeratorMoveNext`); if the game's 0Harmony build differs from stock Harmony 2.x surface, the glue adjusts.
   First implementation step is compiling against the real `0Harmony.dll`, which settles it immediately.
+  *Partially settled by iteration 1 (2026-08-01):* the game ships a **thin Harmony 2.13** build referencing
+  `MonoMod.Backports` 1.1.2 externally without shipping it (in-game Mono never resolves the reference lazily;
+  CoreCLR resolves it eagerly when JITting `AccessTools`), so the test project needs a `MonoMod.Backports`
+  `PackageReference`. Executing 0Harmony resolution code on .NET 10 otherwise works, proven by the headless
+  manifest runs against both units. More MonoMod pieces may surface only if the harness ever executes actual
+  patching, which wave 1 does not.
 - **R3 — Version skew between mod DLLs and the unit under test** (mods built against X, resolved against Y) is a
   *feature* here — it's exactly the game-update check — but locally it can surprise: a red test after a game
   update is the tool working. README section in the test project will say so.
@@ -141,10 +161,12 @@ step passes, so embedded metadata matches the leg). Standing safety rules unchan
 
 Two changes, sequenced:
 
-1. **StrongMods seam (D9)**: `HarmonyTargetProviderAttribute` (~15 lines) + refactoring `ApplyExistsPatches`
-   onto a provider with null-as-error (~20 lines changed). Well under the 100-line target; its own iteration.
-2. **Test project**: csproj + ~5 source files, roughly 350 lines total (new files, not edits; D10's diagnostic
-   formatting is most of the growth over the earlier estimate). Existing-file
+1. **StrongMods seam (D9)**: `PatchTargetManifestAttribute` (~35 lines with its lifecycle-first doc comment and
+   embedded example) + refactoring `ApplyExistsPatches` onto a manifest with null-as-error (~25 lines changed).
+   Well under the 100-line target; its own iteration.
+2. **Test project**: csproj + ~5 source files, roughly 400 lines total (new files, not edits; D10's diagnostic
+   formatting and the D8 conformance test are most of the growth over the earlier estimate), plus the short
+   "Programmatic Harmony patches" docs section (D9). Existing-file
    changes are small: `StrongMods.sln` entry, ~6 lines in `build.yml`, a line each in `CLAUDE.md` and
    `README.md`. Exceeds the 100-line target — hence this plan and the explicit-approval gate before
    implementation.
