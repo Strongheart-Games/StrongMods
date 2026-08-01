@@ -32,7 +32,7 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
 | `build/Deploy.targets` | The shared `Deploy` target (mirror install into the live game). Pulled in by `Mod.targets` and `Modlet.targets`, like `GamePaths.props`. |
 | `build/Overlay.props` + `build/Overlay.targets` | The overlay entry-point pair: protective-additive `Deploy` with `MirrorOnDeploy` scoped mirroring into a declared `DeployRoot`. A props/targets **sandwich** like code mods, because an overlay's body *references* shared path properties — see the `Overlay.props` header for the incident that makes the order load-bearing. Never combined with the other entry points. |
-| `build/tools/compare-eval.py` | Verification helper; not imported by MSBuild. See *Verifying* below. |
+| `build/tools/compare-eval.cs` | Verification helper; not imported by MSBuild. See *Verifying* below. |
 
 **Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a
 mistake.** `Microsoft.Common.CurrentVersion.targets` derives `OutDir`/`TargetDir` from `$(OutputPath)` *during
@@ -142,8 +142,7 @@ Publishing a new game version is one human-run command on a machine with license
 in-game version label; `--commit` pushes the pin bump to main). Version pins live in
 `build/ci/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
 `vendor`, `pack`, `push`, `release` — are C# file-based apps under `build/tools/` (`dotnet run
-build/tools/<tool>.cs -- --selftest`; #36 decided new tools are born C#, and only `compare-eval.py` remains
-Python). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
+build/tools/<tool>.cs -- --selftest`; #36 decided all tools are C# — with `compare-eval`, no Python remains). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
 retention, and GitHub latest-tag reconciliation.
 
 ### Verifying
@@ -152,8 +151,8 @@ There is no test project or linter. Two levels beyond running the game:
 
 1. **Evaluation diff, no build.** `msbuild <proj> -getProperty:... -getItem:...` prints a project's resolved settings
    as JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
-   `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.py` does the diff;
-   its docstring has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
+   `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.cs` does the diff;
+   its header comment has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
 2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. To verify the
    *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
    StrongholdSaves overlay).
