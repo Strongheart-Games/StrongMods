@@ -45,11 +45,22 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq lib32gcc-s1
           mkdir -p "$HOME/steamcmd" "$HOME/.local/bin"
-          # -f turns HTTP errors into hard failures (a bare -s once piped an error page into tar: "gzip:
-          # unexpected end of file", 2026-08-01 run); retries cover Valve's occasionally-flaky endpoint, and
-          # downloading to a file first keeps a failure attributable to curl vs tar.
-          curl -fsSL --retry 3 --retry-delay 5 -o /tmp/steamcmd_linux.tar.gz \
-            https://steamcmd.valvesoftware.com/installer/steamcmd_linux.tar.gz
+          # Mirror list, tried in order: steamcmd.valvesoftware.com (the once-documented vanity host) went
+          # NXDOMAIN — discovered 2026-08-01 when this step failed; these are the long-standing Valve CDN
+          # hosts. -f turns HTTP errors into hard failures (a bare -s piped the error into tar as "gzip:
+          # unexpected end of file"); download-to-file keeps failures attributable to curl vs tar.
+          got=""
+          for url in \
+            "https://media.steampowered.com/installer/steamcmd_linux.tar.gz" \
+            "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"; do
+            if curl -fsSL --retry 2 --retry-delay 5 -o /tmp/steamcmd_linux.tar.gz "$url"; then
+              echo "downloaded from $url"
+              got=1
+              break
+            fi
+            echo "mirror failed: $url" >&2
+          done
+          [ -n "$got" ] || { echo "all SteamCMD mirrors failed" >&2; exit 1; }
           tar -zxf /tmp/steamcmd_linux.tar.gz -C "$HOME/steamcmd"
           printf '#!/bin/sh\nexec "%s/steamcmd/steamcmd.sh" "$@"\n' "$HOME" > "$HOME/.local/bin/steamcmd"
           chmod +x "$HOME/.local/bin/steamcmd"
