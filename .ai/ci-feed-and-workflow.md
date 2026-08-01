@@ -199,7 +199,7 @@ client — close Steam first, or configure `release.cs` with a separate SteamCMD
 ~15 GB download for the base game; deltas after). Default behavior is the existing installs with the
 close-Steam warning.
 
-### 6b. Update notification: `.github/workflows/check-game-version.yml`
+### 6b. Update notification: `.github/workflows/check-for-new-game-version.yml`
 
 So the human never has to *notice* a new game version (owner request, 2026-07-31): a small scheduled workflow
 (daily cron + `workflow_dispatch`) on the public repo — free — that runs the same anonymous SteamCMD query as
@@ -280,7 +280,7 @@ Phased to the workstyle constraints; each phase is one reviewable change with it
 | 5 | **Human setup + first publish** (checklist in §7b): tokens, secret, push *by hand* (proves each piece before the orchestrator wraps them), visibility check | Feed + repo settings |
 | 6 | First CI runs on a PR branch (V5); fix what Linux discovers | Whatever V5 surfaces |
 | 7 | `build/tools/release.cs` (§6: guardrails via the `steam_check.cs` subprocess contract, orchestration, retention, state-file writes; `--steamcmd`, `--pr`) **+ port `vendor.py` → `vendor.cs`** (release must not depend on Python; §6 step 4) | 2 files (~400 lines total — human validation before implementing) |
-| 8 | `.github/workflows/check-game-version.yml` (§6b) wrapping `steam_check.cs`, **shadow mode**; V8/V9; notifications flip on only after the soak | 1 new file (~60 lines) |
+| 8 | `.github/workflows/check-for-new-game-version.yml` (§6b) wrapping `steam_check.cs`, **shadow mode**; V8/V9; notifications flip on only after the soak | 1 new file (~60 lines) |
 | 9 | Docs: CLAUDE.md *Building without the game* gains the package/CI paragraphs; results into this doc; comment + close #22; note on #21 (standing check now exists) and #20 (README CI mention) | Docs |
 
 ### 7b. Phase-4 human checklist (nothing here is agent-executable)
@@ -426,7 +426,7 @@ exercised naturally by the next version-bump PR). Run 30664311536:
   their first genuine exercise at the next real game update, watched. Push is per-file (never glob), matching
   the phase-5 quirk record.
 
-**Phase 8 — 2026-07-31 (`check-game-version.yml`, shadow mode).**
+**Phase 8 — 2026-07-31 (`check-for-new-game-version.yml`, shadow mode).**
 
 - The workflow ships exactly as §6b specified: daily cron + manual dispatch, no secrets, `contents: read` +
   `issues: write`, SteamCMD installed from Valve's Linux tarball behind a `steamcmd` wrapper on PATH (matching
