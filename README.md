@@ -28,6 +28,10 @@
 | **StrongMods** | Core modding tools: a breadth-first XML patcher and the `<foreach>` XML-patch templating engine. Other mods build on it. |
 | **StrongUtils** | A grab-bag of modding and administration tools.                                                                          |
 
+Not a mod: `Tests` holds the repo's test suite, which verifies every mod's Harmony patch targets against the
+game's assemblies (`dotnet test StrongMods.sln`) — see [Tests/README.md](Tests/README.md) for what belongs
+there and how to run it.
+
 ## Bugs and requests
 
 Please open an issue: <https://github.com/Strongheart-Games/StrongMods/issues>

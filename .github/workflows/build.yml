@@ -79,4 +79,9 @@ jobs:
           -p:ModsDir=$RUNNER_TEMP/mods
           -p:SdtdSavesDir=$RUNNER_TEMP/saves
 
-      # dotnet test slots in here when the test project lands (#14).
+      # The Harmony patch-target smoke tests (#14): every mod's patch targets must resolve against this leg's
+      # assemblies. Same -p:SdtdDir as the build, so the paths baked into the test assembly match the leg.
+      - name: Test against ${{ matrix.unit }} assemblies
+        run: >
+          dotnet test Tests/Tests.csproj -c Debug --no-restore
+          -p:SdtdDir=${{ steps.tree.outputs.path }}

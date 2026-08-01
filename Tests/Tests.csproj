@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The repo's test project (#14) — tooling, not a mod. It deliberately imports none of the build\ entry points:
+    nothing stages, nothing deploys, XML lint does not apply. It runs on modern .NET (the spike on #14 proved the
+    game's assemblies load and resolve headlessly there), so none of the net481 mod defaults apply either.
+
+    The unit under test is whatever $(SdtdDir) resolves to — live install, vendored tree, or CI package tree —
+    with the exact same precedence and layout detection the build uses (build\GamePaths.props). The resolved
+    paths are baked into the assembly as metadata below; switching units is a rebuild with -p:SdtdDir=...
+  -->
+  <Import Project="..\build\GamePaths.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ModDeploy>false</ModDeploy>
+    <!-- A repo-root-relative -p:SdtdDir=vendor/... (the documented usage) trips GamePaths.props twice: its
+         layout detection Exists() and this project's HintPath both resolve relative paths against the PROJECT
+         directory, not the invocation directory the caller meant. Anchor to the invocation directory and re-run
+         the layout detection (same two-condition logic as build\GamePaths.props) on the anchored path; absolute
+         inputs pass through all of this unchanged. -->
+    <SdtdDirAbs>$([System.IO.Path]::GetFullPath('$(SdtdDir)'))</SdtdDirAbs>
+    <SdtdManagedDir Condition="Exists('$(SdtdDirAbs)\7DaysToDieServer_Data\Managed')">$(SdtdDirAbs)\7DaysToDieServer_Data\Managed</SdtdManagedDir>
+    <SdtdManagedDir Condition="!Exists('$(SdtdDirAbs)\7DaysToDieServer_Data\Managed')">$(SdtdDirAbs)\7DaysToDie_Data\Managed</SdtdManagedDir>
+    <SdtdHarmonyDir>$([System.IO.Path]::GetFullPath('$(SdtdHarmonyDir)'))</SdtdHarmonyDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- The game's 0Harmony is a thin Harmony build: it references MonoMod.Backports without shipping it.
+         In-game Mono never resolves the reference; CoreCLR resolves it eagerly, so tests must supply it
+         (test-harness-plan.md R2). -->
+    <PackageReference Include="MonoMod.Backports" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile against — and copy beside the tests — the game's own Harmony, so [HarmonyPatch] attribute
+         instances read from mod assemblies share type identity with the HarmonyLib types used here. -->
+    <Reference Include="0Harmony">
+      <HintPath>$(SdtdHarmonyDir)\0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="SdtdManagedDir" Value="$(SdtdManagedDir)" />
+    <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\" />
+    <AssemblyMetadata Include="Configuration" Value="$(Configuration)" />
+  </ItemGroup>
+
+  <!-- Solution-scope `-t:Deploy` invokes Deploy on every project; every other project gets one from its build\
+       entry point. This project installs nothing, so its Deploy is explicitly a no-op. -->
+  <Target Name="Deploy" />
+
+</Project>

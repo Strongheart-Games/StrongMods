@@ -29,14 +29,18 @@ needed. The test project is tooling, not a mod, so the net481/LangVersion 9 rule
 **D2 — Framework: xunit** (current stable v2 line + `Microsoft.NET.Test.Sdk`), the plainest `dotnet test`
 integration. First NuGet packages in the repo beyond Cronos; fetched from nuget.org like Cronos is.
 
-**D3 — Project: `StrongMods.Tests/`**, a solution member. It imports **none** of the `build/` entry points (it is
+**D3 — Project: `Tests/`**, a solution member. (Renamed from the originally planned `StrongMods.Tests` during
+iteration-2 review: that name collided with the StrongMods core mod, and this project's vision is the single
+home for every runner-based test in the repo — including, later, #43's per-mod behavioral suites — so it is
+named for repo scope. Build-time lint, workflow checks, and tool selftests stay where they are.) It imports
+**none** of the `build/` entry points (it is
 not a mod: nothing stages, nothing deploys, XML lint doesn't apply). Two consequences handled explicitly:
   - It declares an empty `<Target Name="Deploy" />` so solution-scope `-t:Deploy` still works (every other
     project gets `Deploy` from its entry point; a solution-level target invocation fails on a project lacking it).
   - `CLAUDE.md`/`README.md` get a line each: top-level directories are mods *except* `build`, `Template*`,
-    `packages`, and `StrongMods.Tests`.
+    `packages`, and `Tests`.
 
-**D4 — Path acquisition: reuse the build's knobs, embed at build time.** `StrongMods.Tests.csproj` imports
+**D4 — Path acquisition: reuse the build's knobs, embed at build time.** `Tests.csproj` imports
 `build/GamePaths.props` (a new third importer, same pattern as the entry points) and embeds `SdtdManagedDir`,
 `SdtdHarmonyDir`, `Configuration`, and the repo root as `<AssemblyMetadata>`; tests read them via
 `AssemblyMetadataAttribute`. **The unit under test is whatever `$(SdtdDir)` resolves to** — default live game,
@@ -117,7 +121,7 @@ be easy even when the fix is hard. Therefore every resolution failure reports:
   "invoke `dotnet test` once per pinned tree" — and gets a comment saying so when this lands.
 
 **D11 — CI: fill the reserved slot.** In each matrix leg, after the solution build:
-`dotnet test StrongMods.Tests/StrongMods.Tests.csproj -c Debug -p:SdtdDir=<leg tree>` (same property the build
+`dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=<leg tree>` (same property the build
 step passes, so embedded metadata matches the leg). Standing safety rules unchanged: no artifacts uploaded, no
 `-t:Deploy`; test output prints resolution results, never ships game bytes.
 

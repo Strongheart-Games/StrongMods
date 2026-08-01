@@ -26,6 +26,19 @@ Modding tools from Strongheart.
   property is ignored by clients, enabling server-only block behavior without requiring the client to have the custom
   class.
 
+## Programmatic Harmony patches
+
+Prefer `[HarmonyPatch]` attribute classes: the repo's test suite (`Tests`) discovers them by
+enumeration and verifies their targets still exist in the game assemblies on every run. When a patch *must* be
+applied programmatically — calling `harmony.Patch(...)` directly, e.g. to reuse one transpiler across several
+targets — the call is invisible to that enumeration, so the targets have to be published instead: a
+`public static IEnumerable<MethodBase>` method tagged `[PatchTargetManifest]`, which the patching code itself
+enumerates (keeping the published and patched lists identical) and the test suite invokes headlessly. The
+attribute is inert — nothing calls a tagged method automatically. See the doc comment in
+[`PatchTargetManifestAttribute.cs`](PatchTargetManifestAttribute.cs) for the contract and
+`CaseSensitiveFilesystem.ExistsPatchTargets()` for the reference implementation; a conformance test fails any
+mod that patches programmatically without publishing a manifest.
+
 ## Installation
 
 * Copy the `StrongMods/` directory into `Mods/`, renamed so it sorts first — the build deploys it as

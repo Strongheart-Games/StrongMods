@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
-(except `build`, `Template*` and `packages`) is one independent mod, and each is a separate SDK-style C#
+(except `build`, `Template*`, `packages` and the `Tests` project) is one independent mod, and each is a separate SDK-style C#
 class-library project (`Microsoft.NET.Sdk`, `net481`), **C# LangVersion 9**. All projects are listed in
 `StrongMods.sln`. See `README.md` for the one-line description of each mod.
 
@@ -149,7 +149,7 @@ graduates into the repo is ported when it lands.
 
 ### Verifying
 
-There is no test project or linter. Two levels beyond running the game:
+Three levels beyond running the game:
 
 1. **Evaluation diff, no build.** `msbuild <proj> -getProperty:... -getItem:...` prints a project's resolved settings
    as JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
@@ -160,6 +160,12 @@ There is no test project or linter. Two levels beyond running the game:
    patch file fails the build instead of failing at game load. To verify the
    *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
    StrongholdSaves overlay).
+3. **The test suite** — `Tests` (modern .NET, not a mod; the single home for every runner-based test in the
+   repo): `dotnet test StrongMods.sln -c Debug`
+   resolves every mod's Harmony patch targets — `[HarmonyPatch]` attributes and `[PatchTargetManifest]`-published
+   programmatic targets — against the unit `$(SdtdDir)` points at (live install, or a vendored tree via
+   `-p:SdtdDir=vendor/...`). Failure messages carry the version tested and near-miss signatures, so a target lost
+   to a game update is diagnosed from the message alone. CI runs the suite against both units on every push.
 
 **StrongMods loads first**, via `<ModLoadTier>First</ModLoadTier>` (the `000000-` prefix) — the tier forces it
 ahead of other mods in load order, which matters because it replaces the XML patcher (see below).
