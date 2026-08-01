@@ -18,6 +18,19 @@ namespace Tests;
 public sealed class GameTree {
   private readonly UnitLoadContext context;
 
+  // 0Harmony is compile-time referenced with Private=false (see Tests.csproj for why nothing may be copied
+  // from the game folder), so the default context must find it at runtime: hook fallback resolution to
+  // $(SdtdHarmonyDir) once. Fires only when normal probing misses — 0Harmony itself, and nothing else in
+  // practice: its MonoMod dependencies probe successfully to the modern-TFM package copies in the output dir
+  // (the game's net4x MonoMod builds cannot execute on modern .NET).
+  static GameTree() {
+    var harmonyDir = Metadata("SdtdHarmonyDir");
+    AssemblyLoadContext.Default.Resolving += (context, name) => {
+      var path = Path.Combine(harmonyDir, name.Name + ".dll");
+      return File.Exists(path) ? context.LoadFromAssemblyPath(path) : null;
+    };
+  }
+
   private GameTree(string managedDir, IReadOnlyList<string> modBinDirs) {
     ManagedDir = managedDir;
     Root = Path.GetFullPath(Path.Combine(managedDir, "..", ".."));

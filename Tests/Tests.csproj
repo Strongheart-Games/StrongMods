@@ -30,24 +30,29 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <!-- The game's 0Harmony is a thin Harmony build: it references MonoMod assemblies without shipping them.
-         In-game Mono never resolves the references it doesn't execute; CoreCLR resolves eagerly, so tests must
-         supply them (test-harness-plan.md R2). Backports surfaces on any AccessTools call; Utils on the
-         MethodType.Enumerator resolution path (AccessTools.EnumeratorMoveNext). -->
+    <!-- The MonoMod builds shipped beside the game's thin 0Harmony are net4x and DO NOT EXECUTE on modern .NET
+         (MonoMod.Utils.ReflectionHelper's initializer trips MethodAccessException on a SignatureHelper overload
+         CoreCLR no longer exposes — found when #48 step 3 tried resolving them from the game folder). These
+         packages supply the modern-TFM builds of the same versions the game's 0Harmony references. -->
     <PackageReference Include="MonoMod.Backports" Version="1.1.2" />
     <PackageReference Include="MonoMod.Utils" Version="25.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Compile against — and copy beside the tests — the game's own Harmony, so [HarmonyPatch] attribute
-         instances read from mod assemblies share type identity with the HarmonyLib types used here. -->
+    <!-- Compile against the game's own Harmony, so [HarmonyPatch] attribute instances read from mod assemblies
+         share type identity with the HarmonyLib types used here. Private=false: nothing is copied from the game
+         folder — copying would also drag in its net4x MonoMod/Cecil siblings (present since #48's wholesale
+         vendoring), colliding with the modern-TFM package copies above. 0Harmony itself resolves at runtime from
+         $(SdtdHarmonyDir) via GameTree's static-ctor hook on the default load context. -->
     <Reference Include="0Harmony">
       <HintPath>$(SdtdHarmonyDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <AssemblyMetadata Include="SdtdManagedDir" Value="$(SdtdManagedDir)" />
+    <AssemblyMetadata Include="SdtdHarmonyDir" Value="$(SdtdHarmonyDir)" />
     <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\" />
     <AssemblyMetadata Include="Configuration" Value="$(Configuration)" />
   </ItemGroup>

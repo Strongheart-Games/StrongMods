@@ -25,6 +25,34 @@ through a `[PatchTargetManifest]` (see the StrongMods README on programmatic pat
 assemblies under test — plus a conformance test that fails any mod patching programmatically without publishing a
 manifest, and a permanent negative control proving the suite can fail.
 
+## What can be tested headlessly
+
+The mod and game assemblies are built for the game's old framework, but the test process can load **and
+execute** them. The governing rule: old-framework code runs on the modern engine until it touches something
+that isn't there. That gives three tiers:
+
+| Tier | Examples | Headless? |
+|------|----------|-----------|
+| Pure managed logic | the `<foreach>` engine, breadth-first patcher algorithms, XML handling | **Yes** — unit tests welcome; this is #43's territory |
+| Brushes the engine indirectly | anything calling `Log.*`, config singletons | **Yes, with a seam** — shim or Harmony-patch the touchpoint in the harness first |
+| Engine-dependent behavior | world, entities, rendering — anything needing a running game | **No** — that is in-game verification, a different track |
+
+## The two Harmonys
+
+Harmony and its MonoMod helpers each exist in two *flavors*: one compiled for the game's old framework (what
+the game runs on) and one for modern .NET (what the tests run on). Same versions, same behavior — different
+flavor per engine, and the old flavor of MonoMod crashes if executed on the modern engine. Who uses what:
+
+| Situation | Engine | 0Harmony used | MonoMod used |
+|-----------|--------|---------------|--------------|
+| The deployed game | Mono (old framework) | the game's own, from `Mods/0_TFP_Harmony` | the game's own, same folder |
+| `dotnet test` | modern .NET | **still the game's own** — loaded from the tree under test, so tests exercise that unit's exact Harmony | modern-flavor NuGet builds of the same versions the game's 0Harmony asks for |
+
+Two rules keep this deterministic (details in the `Tests.csproj` and `GameTree` comments): everything that must
+*execute* lives in the test process's main load context in exactly one copy, and nothing is ever copied out of
+the game folder into the build output. The test project deploys nothing, so none of this affects what the game
+itself runs.
+
 ## Running
 
 ```bash
