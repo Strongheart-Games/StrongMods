@@ -9,9 +9,11 @@
 //     dotnet run build/tools/vendor.cs -- --unit game --label V2.5-b8
 //     dotnet run build/tools/vendor.cs -- --unit dedicated-server --label V2.5-b8 [--force]
 //
-// Copies every DLL in the unit's Managed directory plus Mods/0_TFP_Harmony/0Harmony.dll into a tree that mirrors
-// the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data name; build/GamePaths.props
-// detects either layout), so the build consumes it with nothing more than -p:SdtdDir=vendor/<unit>/<label>.
+// Copies every DLL in the unit's Managed directory plus the entire Mods/0_TFP_Harmony folder into a tree that
+// mirrors the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data name;
+// build/GamePaths.props detects either layout), so the build consumes it with nothing more than
+// -p:SdtdDir=vendor/<unit>/<label>. The whole Harmony folder matters: the game's 0Harmony is a thin build whose
+// MonoMod/Cecil siblings are required to execute Harmony code outside the game (#48).
 // Always redirect -p:ModsDir when building against a vendored tree, or Debug deploys into it.
 //
 // The label is the human coordinate (the in-game "V 2.5 b8" as V2.5-b8); machine provenance — Steam buildid,
@@ -94,9 +96,9 @@ internal static class Vendor {
       throw new VendorError($"{install} does not look like a {unit} install (expected {info.DataDir}/Managed)");
     }
 
-    var harmony = Path.Combine(install, "Mods", "0_TFP_Harmony", "0Harmony.dll");
-    if (!File.Exists(harmony)) {
-      throw new VendorError($"{harmony} not found");
+    var harmonyDir = Path.Combine(install, "Mods", "0_TFP_Harmony");
+    if (!File.Exists(Path.Combine(harmonyDir, "0Harmony.dll"))) {
+      throw new VendorError($"{Path.Combine(harmonyDir, "0Harmony.dll")} not found");
     }
 
     var dest = Path.Combine(outputRootArg ?? Path.Combine(RepoRoot(), "vendor"), unit, label);
@@ -123,7 +125,11 @@ internal static class Vendor {
       VendorFile(dll, $"{info.DataDir}/Managed/{Path.GetFileName(dll)}");
     }
 
-    VendorFile(harmony, "Mods/0_TFP_Harmony/0Harmony.dll");
+    // The whole folder, not just 0Harmony.dll — see the header comment (#48).
+    foreach (var file in Directory.GetFiles(harmonyDir, "*", SearchOption.AllDirectories)
+               .OrderBy(p => p, StringComparer.Ordinal)) {
+      VendorFile(file, $"Mods/0_TFP_Harmony/{Path.GetRelativePath(harmonyDir, file).Replace('\\', '/')}");
+    }
 
     (string? acf, string? buildid, string? betakey) = SteamProvenance(info, install);
     var manifest = new Dictionary<string, object?> {
