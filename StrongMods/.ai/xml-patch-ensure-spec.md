@@ -1,0 +1,304 @@
+# Idempotent config patching — `<ensure>`
+
+**Version:** 1.0 (Draft 2)\
+**Status:** Proposed — design settled, not scheduled for implementation\
+**Applies to:** StrongMods XML patch extensions (alongside `<foreach>`)\
+**Audience:** Mod authors writing XPath config patches; StrongMods maintainers
+
+Supersedes the `<oneof>` draft. `<oneof>` survives here as a rejected-for-now alternative (§8).
+
+## 1. The problem
+
+A patch that has to work against config it does not own often needs two mutually exclusive commands to express one
+intent. From `StrongholdTweaks/Config/items.xml`:
+
+```xml
+<setattribute xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIconColor']" name="value">0,255,0,200</setattribute>
+<append xpath="/items/item[@name='schematicMaster' and not(property[@name='AltItemTypeIconColor'])]">
+  <property name="AltItemTypeIconColor" value="0,255,0,200" />
+</append>
+```
+
+Exactly one matches. The other matches nothing, and the patcher logs `did not apply` — scaring admins about intended
+behavior. The author's intent, *"make sure this property is on this item"*, has no way to be written down.
+
+## 2. What vanilla already provides
+
+Established by disassembling `Assembly-CSharp.dll` and by running the game's shipped `NCalc.dll` against the
+expressions below.
+
+- **Patch methods** are `[XmlPatchMethod("name")]` statics, or registered at runtime with
+  `XmlPatcher.addXmlFilePatchMethod(name, MethodInfo, bool requiresXpath = true)` — the hook `<foreach>` already uses.
+  Built-ins: `append`, `prepend`, `insertAfter`, `insertBefore`, `remove`, `set`, `setattribute`, `removeattribute`,
+  `csv`, `conditional`, `include`.
+- **A patch "applied" iff its method returns a count > 0.** The warning is emitted by `XmlPatcher.PatchXml` for each
+  child that returns false; `XmlPatcher.singlePatch` itself logs nothing. Any patch method that dispatches its own
+  children via `singlePatch` therefore owns its warning policy — how `<foreach>` already works.
+- **`setattribute` already upserts.** `SetAttributeByXPath` calls `XElement.SetAttributeValue`, which creates the
+  attribute when absent (`Attribute "{0}" added/overwritten by: "{1}"`). **The game can already ensure an *attribute*;
+  what it cannot do is ensure a *child element*.** That is precisely the hole this spec fills, and it is why the
+  command is named for the unsuffixed element form (§9, decision 1).
+- **`<conditional>` can express the two-branch form today.** Its `<if cond>` chain plus `<else>` is evaluated by
+  `XmlPatchConditionEvaluator`, whose `xpath(expr)` function runs against the target file *as it stands mid-patch* and
+  returns the matched node's string, or `null` for zero matches, or `"More than one match"` for 2+. It is not a
+  boolean, so it must be compared; verified against the shipped NCalc build that the `null` literal parses and
+  `xpath('…') != null` yields a proper `Boolean`:
+
+```xml
+<conditional>
+  <if cond="xpath('/items/item[@name=&quot;schematicMaster&quot;]/property[@name=&quot;AltItemTypeIconColor&quot;]') != null">
+    <setattribute xpath="…/property[@name='AltItemTypeIconColor']" name="value">0,255,0,200</setattribute>
+  </if>
+  <else>
+    <append xpath="/items/item[@name='schematicMaster']"> … </append>
+  </else>
+</conditional>
+```
+
+Warning-free and correct, but the selector is written **three times** in two quoting conventions, `xpath()` emits two
+or three `Log.Out` lines per evaluation, and a condition is one boolean for the whole document — it cannot express
+"for each item, set it if present, add it if not."
+
+## 3. Proposal: `<ensure>`
+
+A declarative command that makes a child element exist, with the given attributes, on **every** node the xpath matches.
+
+```xml
+<ensure xpath="/items/item[@name='schematicMaster']">
+  <property name="AltItemTypeIconColor" value="0,255,0,200" />
+</ensure>
+```
+
+Not "set it, or else append it" — just "this is how it should look." The patcher works out which.
+
+| Attribute  | Required | Meaning                                                                          |
+|------------|----------|----------------------------------------------------------------------------------|
+| `xpath`    | yes      | Selects the parent nodes. Every match is processed.                              |
+| `position` | no       | Where newly created children go: `append` (default) or `prepend`. See §3.5.      |
+
+### 3.1 Semantics
+
+For each node matched by `xpath`, for each template child in document order:
+
+1. Find the existing children that match the template's **identity** (§3.2).
+2. **Zero matches** — deep-clone the template and insert it per `position`.
+3. **Exactly one match** — merge: `SetAttributeValue` for every attribute on the template, leaving attributes the
+   template does not mention untouched, and leaving the element where it is (§3.5). Then apply §3.3 and §3.4.
+4. **Two or more matches** — ambiguous. Do nothing to that parent's child, warn, continue. (§3.6)
+
+The return count is the number of matched parents. Zero parents → 0 → one ordinary vanilla warning.
+
+**This makes the warning meaningful rather than suppressed.** Today's noise comes from one of two correct commands
+missing; here, the only way to warn is for the parent selector to match nothing — which is a genuine authoring error
+worth reporting. The goal was to stop false warnings; this also restores true ones.
+
+### 3.2 Identity
+
+Identity is `(tag name, key attributes)`. The default key is `@name`, falling back to `@class` when the template has
+no `@name`. Surveying vanilla config for how children are identified among their siblings:
+
+| File               | `tag, @name`                                                  | `tag, @class`      | neither                                        |
+|--------------------|---------------------------------------------------------------|--------------------|------------------------------------------------|
+| `items.xml`        | property 14692, passive_effect 3029, stat 2256, requirement 1472 | property 1214    | triggered_effect 2337, effect_group 656        |
+| `blocks.xml`       | property 49308, drop 3103                                     | property 2289      | drop 515                                       |
+| `entityclasses.xml`| property 3887, passive_effect 268, effect_group 161            | property 18        | triggered_effect 110                           |
+| `recipes.xml`      | ingredient 1970, passive_effect 565                           | —                  | effect_group 231                               |
+| `progression.xml`  | requirement 880, passive_effect 628, book 152                 | —                  | effect_group 344, level_requirements 301       |
+
+`@name` covers the overwhelming majority, and `@class` covers `<property class="Action0">`. Neither is present on
+`triggered_effect`, `effect_group`, `level_requirements` — exactly the elements whose identity is genuinely compound.
+
+**`@name` is not universally unique among siblings.** Counting parents that hold more than one same-tag, same-`@name`
+child:
+
+| File              | passive_effect | stat | drop | requirement | property |
+|-------------------|----------------|------|------|-------------|----------|
+| `items.xml`       | 523            | 282  | —    | 47          | 2        |
+| `blocks.xml`      | —              | —    | 231  | —           | 2        |
+| `progression.xml` | 88             | —    | —    | 17          | —        |
+
+For `<property>` — the case this feature exists for — `@name` is effectively a key (2 exceptions across ~64000
+elements). For `passive_effect` and `drop` it plainly is not. Hence rule 4 above: **never guess.** Two matches means
+the author's key does not identify one element, and silently updating one of them would corrupt the config in a way
+that is very hard to trace. This mirrors the exactly-one-node-or-skip rule `<foreach>` already teaches.
+
+An explicit override, as a reserved attribute on the template child, stripped before the element is written — the same
+device `foreach-name` already uses:
+
+```xml
+<ensure xpath="/items/item[@name='meleeToolRepairT3Wrench']">
+  <passive_effect ensure-key="name,operation,tags" name="EntityDamage" operation="perc_add" tags="salvaging" value="0.5" />
+</ensure>
+```
+
+A template child with neither `@name` nor `@class` and no `ensure-key` is an **error**, not a guess.
+
+### 3.3 Nested templates
+
+Recursion falls out of the algorithm — ensure the child, then apply the same rule to the template's own children
+inside it:
+
+```xml
+<ensure xpath="/items/item[@name='noteIntroToHades']">
+  <property class="Action0">
+    <property name="Sound_start" value="read_mod" />
+    <property name="Sound_in_head" value="true" />
+  </property>
+</ensure>
+```
+
+Ensures `Action0` exists, then ensures those two properties inside it, whether or not the block already existed. Note
+that `ensure` never removes: a stale child already inside `Action0` stays. That is the intended meaning.
+
+### 3.4 Text content
+
+A template child carrying non-whitespace text **and no element children** sets the text of the ensured element:
+
+```xml
+<ensure xpath="/blocks/block[@name='terrDirt']">
+  <property name="Group">Building</property>
+</ensure>
+```
+
+Vanilla `setattribute` already sources its value from element text, so authors expect text to mean something, and
+silently discarding content someone typed is the worst available outcome. The no-element-children guard is
+load-bearing: whitespace between children is everywhere in these files and must never be mistaken for content.
+
+### 3.5 Ordering
+
+**Sibling order is load-bearing in 7 Days to Die config: among duplicates, the last sibling wins.** Two consequences:
+
+- **New children default to `append`**, so what the mod declares takes effect over anything already present.
+  `position="prepend"` states the opposite intent — supply a value only if nothing later overrides it — which is how a
+  mod contributes a default that other mods, or the player's own config, may beat.
+- **Merging never moves an existing element.** `position` governs insertion only. When the key matched exactly one
+  element, its position cannot change which value wins, so relocating a node the author never asked to move would be
+  surprise for no benefit. An author who genuinely needs a node moved has `remove` plus `<ensure>`, or
+  `insertBefore`/`insertAfter`.
+
+Ordering is also why rule 4 warns rather than resolving the ambiguity by merging into the last match: for
+`<property>`, last-wins would make "merge the last one" defensible, but for `passive_effect` and `drop` — where the
+survey above shows duplicates are routine — siblings stack rather than override, and quietly editing one of a stack is
+exactly the untraceable corruption rule 4 exists to prevent.
+
+### 3.6 Diagnostics
+
+| Condition                                              | Result                                                        |
+|--------------------------------------------------------|---------------------------------------------------------------|
+| `xpath` matched ≥1 parent                              | Return that count; no warning                                 |
+| `xpath` matched 0 parents                              | Return 0 → one vanilla `did not apply` warning                |
+| A parent has 2+ children matching the key              | `Log.Warning` naming file, line, parent, and key; that child skipped, other parents unaffected |
+| `<ensure>` has no template children                    | `Log.Error`, return 0                                         |
+| Template child has no `@name`/`@class` and no `ensure-key` | `Log.Error`, return 0 (whole block; it would fail identically for every parent) |
+| Template child has an unusable `ensure-key`            | `Log.Error`, return 0                                         |
+| `position` is neither `append` nor `prepend`           | `Log.Error`, return 0                                         |
+| Non-element children (text, comments) of `<ensure>`    | Ignored                                                       |
+
+The split between per-parent warnings and whole-block errors follows `<foreach>`: data conditions warn and carry on,
+mod bugs stop the construct.
+
+### 3.7 What it does not do
+
+`<ensure>` is an upsert, not a general alternation. It cannot express "patch layout A, or if this is the older game
+build, layout B", or "remove whichever of these two nodes exists". Those remain two commands and one spurious warning.
+§8 keeps `<oneof>` on the shelf for that.
+
+## 4. Comparison
+
+|                                       | `<ensure>`                           | `<oneof>` (first-wins)                  | `<any>` (run all, warn if none)        |
+|---------------------------------------|--------------------------------------|-----------------------------------------|----------------------------------------|
+| Selector written                      | once                                 | once per alternative                    | once per alternative, plus `not(…)`    |
+| Set-based (all matches)               | natively                             | only wrapped in `<foreach>`             | yes                                    |
+| Trap                                  | ambiguous key (caught, warned)       | wrapping set-based commands silently skips the second | non-disjoint predicates double-apply |
+| Warning fires when                    | selector matched nothing (a real bug)| every alternative failed                | every alternative failed               |
+| Multiple properties per block         | yes                                  | one block each                          | one block each                         |
+| Ordering control                      | `position`, and merge never moves    | whatever the alternatives do            | same                                   |
+| Handles non-upsert alternatives       | no                                   | yes                                     | yes                                    |
+| New concepts for authors              | identity/key rule                    | none (composes known commands)          | none                                   |
+| Implementation                        | ~150 lines, pure `XDocument`         | ~50 lines, dispatch via `singlePatch`   | ~50 lines                              |
+| Offline-testable                      | fully                                | needs `singlePatch`                     | needs `singlePatch`                    |
+
+## 5. Recommendation
+
+**Build `<ensure>`; shelve `<oneof>`.**
+
+The caveat that sank `<oneof>` — that set-based upserts need a `<foreach>` wrapper or they silently do half the job —
+does not exist here: operating on every match is the definition of the command, not a wrapper you must remember. It
+removes the duplication entirely rather than relocating it, it collapses several properties into one block, and it is
+idempotent, so two mods ensuring the same property converge instead of fighting.
+
+It is also the most testable of the three, being a pure `XDocument` transformation with no `singlePatch` dispatch.
+
+The cost is one genuinely new concept — identity — and the survey in §3.2 says that concept is unavoidable for any
+design in this space. Better to name it and make ambiguity loud than to let a hidden first-match rule corrupt a config.
+
+## 6. Implementation and testing
+
+One new file, `StrongMods/XmlPatchMethodEnsure.cs`. Registration mirrors `<foreach>` in `ModApi.cs`, gated by a
+`Config.XmlPatchMethodEnsureEnabled` toggle:
+
+```csharp
+MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodEnsure), nameof(XmlPatchMethodEnsure.Ensure));
+XmlPatcher.addXmlFilePatchMethod("ensure", method);   // requiresXpath: true (the default)
+```
+
+No Harmony patch — this is purely an added patch method. Interactions:
+
+- **Breadth-first patcher:** none. Operates within one mod's pass over one file.
+- **`<foreach>`:** an `<ensure>` in a foreach body is materialized like any other command (`{…}` substitution over
+  attributes and children) and dispatched through `singlePatch`. Confirm during implementation that
+  `TryCloneWithSubstitution` recurses into template children.
+- **StrongMods absent:** "Patch type (ensure) unknown" plus a `did not apply` warning, and the block is skipped — same
+  degradation as `<foreach>`. Consumers must declare the StrongMods dependency in `ModInfo.xml`.
+
+Testing, given the repo has no test project:
+
+1. **Offline, pure.** The core is `(XElement parent, XElement template) -> void` over plain `XDocument` — no game
+   types. Cover: absent → inserted at the right end for both `position` values; present → attributes merged,
+   unmentioned attributes preserved, element not moved; two key matches → warned and untouched; nested template
+   recursion; text content set, and whitespace-only text ignored when element children are present; `@class` fallback;
+   `ensure-key` override; `ensure-key` stripped from output; missing key → error.
+2. **End-to-end, in game.** A fixture patch under `StrongMods/Docs/` covering property-present, property-absent,
+   selector-matches-nothing, ambiguous-key, `position="prepend"`, and `<ensure>` inside `<foreach>`; verified against
+   the save's `ConfigDump/items.xml` and by grepping the log for exactly the expected warnings.
+
+`XmlFile` has constructors taking a `string` and a `Stream`, so an in-memory target document is constructible without
+the filesystem — if `Assembly-CSharp`'s static initializers cooperate outside Unity, which is unverified.
+
+Documentation ships as a standalone `StrongMods/Docs/ensure.md` mirroring `Docs/foreach.md`, plus a line in
+`StrongMods/README.md`. Folding both into a combined `xml-patching.md` is a real restructuring chore and should not
+ride along with a new feature.
+
+## 7. Decisions taken
+
+1. **Name `<ensure>`**, not `<ensurechild>`. Vanilla's grammar is that unsuffixed commands operate on elements
+   (`append`, `set`, `remove`) and the noun suffix marks the attribute variants (`setattribute`, `removeattribute`).
+   Ensuring an element is therefore `<ensure>`; the attribute form the game already has is `setattribute`.
+2. **Merge only.** No `replace="true"`. Merge is what "ensure" means and the only behavior that composes when two mods
+   touch the same element; wholesale replacement is already expressible as `remove` plus `<ensure>`. If it is ever
+   added it belongs on the template child, so heterogeneous children can differ.
+3. **Template text sets element text** (§3.4).
+4. **`position="append|prepend"`, default `append`** (§3.5), because among duplicate siblings the last wins.
+5. **No `<ensureabsent>` mirror yet.** `remove` on zero matches produces the same spurious warning, but "make sure it
+   is gone" is far rarer and carries none of the identity or merge subtlety — roughly 15 lines whenever it is wanted.
+6. **Standalone doc file** (§6).
+
+## 8. Alternatives considered
+
+**`<oneof>` — ordered alternatives, first success wins, silent otherwise.** ~50 lines dispatching children through
+`singlePatch`, which owns the warning policy for free. Rejected as the answer to *this* problem because first-wins is
+per-block: wrapping two set-based commands in it applies the first to its whole match set and skips the second
+entirely, so the correct set-based form is `<oneof>` inside `<foreach>` — exactly the indirection this feature is meant
+to remove. Still the right tool for genuine alternation (§3.7); worth revisiting on demand rather than speculatively.
+
+**`<any>` — run every child, warn only if none applied.** Purely a warning-policy change, so it can never alter which
+commands run. But it keeps the duplicated `not(property[…])` predicate that makes the idiom ugly, and it fails silently
+when the predicates are *not* disjoint (both apply → duplicate element).
+
+**`optional="true"` on individual commands.** Discards the "warn if *all* fail" requirement — a typo'd selector in
+every alternative would go unreported — and requires patching `XmlPatcher.PatchXml`, since the warning is emitted there
+and the attribute is invisible to the patch method.
+
+**Extending `<conditional>` with an `xpath_exists()` boolean.** Fixes the `!= null` comparison and one layer of
+quoting, but leaves the selector written three times and the `Log.Out` spam untouched, and needs a Harmony patch on
+`XmlPatchConditionEvaluator`.
