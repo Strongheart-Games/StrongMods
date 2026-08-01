@@ -29,6 +29,7 @@ concurrency:
 
 jobs:
   build:
+    name: build & test (${{ matrix.unit }})
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     strategy:
@@ -81,7 +82,9 @@ jobs:
 
       # The Harmony patch-target smoke tests (#14): every mod's patch targets must resolve against this leg's
       # assemblies. Same -p:SdtdDir as the build, so the paths baked into the test assembly match the leg.
+      # --no-build keeps the step severable from the build above: compilation can only fail there, so a red
+      # "Test" step always means a test failure, never a build problem.
       - name: Test against ${{ matrix.unit }} assemblies
         run: >
-          dotnet test Tests/Tests.csproj -c Debug --no-restore
+          dotnet test Tests/Tests.csproj -c Debug --no-restore --no-build
           -p:SdtdDir=${{ steps.tree.outputs.path }}
