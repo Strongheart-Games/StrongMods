@@ -293,7 +293,9 @@ cycle must produce self-contained edits.
   unless explicitly requested.
 * **Git**
   * Stage only the files you intentionally modified.
-  * Do not commit, push, or rewrite Git history. These are also blocked by permission deny rules.
+  * Do not commit, push, or rewrite Git history — and do not ask to. These are blocked by permission deny rules, so
+    offering to commit claims a capability you don't have and makes the human decline something that was never on the
+    table. Committing is the human's step, not a gated one of yours.
 * **Issues**
   * File and update issues with the `gh` CLI, against
     [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues).
@@ -333,8 +335,10 @@ cycle must produce self-contained edits.
 
 * Upon a successful build, explicitly PAUSE your workflow.
 * Present a brief, clear summary of the changes made.
-* Wait for manual code review and explicit human approval before taking any further action. Do not automatically commit,
-  push, or move on to the next task.
+* End the phase with a report, not a menu. State what changed, how it was verified, and what remains uncommitted — then
+  stop. The human reviews and commits; that hand-off needs no question from you. If the phase also leaves a genuinely
+  gated action pending (something on the ask list, e.g. gh issue close), raise it separately and explicitly — never
+  blended into a list alongside things you cannot do.
 * **Each phase needs its own explicit go.** Approval of a plan authorizes nothing but the plan itself; answers to
   side questions, decision confirmations, or filed follow-up issues are not a "go" for the next phase — even a
   phase that changes no tracked files (e.g. a baseline capture). If the human's message doesn't clearly say to
