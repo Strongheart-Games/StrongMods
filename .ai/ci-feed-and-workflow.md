@@ -438,9 +438,14 @@ exercised naturally by the next version-bump PR). Run 30664311536:
 - Verdict shell logic validated locally against all three real exit codes (up-to-date, would-notify via the b13
   fixture state, query-error via a missing state file); the `set -e`/`&&`-chain interaction proven benign
   empirically.
-- **V9 status:** decision fixtures were §6b's (11 steam_check checks); a `workflow_dispatch` run after commit is
-  the remaining smoke test, then the soak clock starts. The notify-path formatting and issue steps activate
-  only after the soak — reviewed but deliberately unexercised until then.
+- **V9 status:** decision fixtures were §6b's (11 steam_check checks). The dispatch smoke test took three runs
+  to go green (2026-08-01), both failures being the SteamCMD *install* step, never the decision logic:
+  first a silent `curl -s` piping an error into tar ("gzip: unexpected end of file" — fixed with `-f`/retries
+  and download-to-file), which then revealed the real cause — **`steamcmd.valvesoftware.com` is NXDOMAIN**; the
+  once-documented vanity host no longer exists. Fixed with an ordered mirror list of the long-standing CDN
+  hosts (`media.steampowered.com`, `steamcdn-a.akamaihd.net`) that logs which mirror served. Third run:
+  **green, "up to date" in the summary — the shadow soak started 2026-08-01.** The notify-path issue steps stay
+  gated until the soak proves quiet (the flip is tracked as its own issue at phase 9).
 
 **Addendum: `push.cs` — done 2026-07-31 (§10 decision 8 has the research/experiment record).** Selftest 7
 checks (retention suite moved here from release.cs verbatim, numeric-not-lexicographic version sort,
