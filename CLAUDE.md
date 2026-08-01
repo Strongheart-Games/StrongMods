@@ -114,9 +114,9 @@ root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDT
 
 ### Building without the game
 
-`build/tools/vendor.py` copies a unit's assemblies into the gitignored `vendor/` tree
-(`vendor/game/<label>/`, `vendor/dedicated-server/<label>/` — see its docstring for labels and provenance). Any
-such tree, or a live install of either unit, works as a build root:
+`build/tools/vendor.cs` copies a unit's assemblies into the gitignored `vendor/` tree
+(`vendor/game/<label>/`, `vendor/dedicated-server/<label>/` — see its header comment for labels and provenance).
+Any such tree, or a live install of either unit, works as a build root:
 
 ```bash
 dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13
@@ -126,6 +126,25 @@ dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13
 directory differently). Building against a vendored tree is safe by default (builds stage to `bin\` only); just
 never run `-t:Deploy` with `-p:SdtdDir=` pointed at a tree. **Never commit or publish anything under `vendor/`**:
 the repo is public and those are licensed game files (`.ai/f5b-game-assembly-packages.md` §2).
+
+### CI, packages, and publishing
+
+Vendored trees also ship as **private** NuGet packages (`7DtD.Assemblies.Game`,
+`7DtD.Assemblies.DedicatedServer`) on the org's GitHub Packages feed — private always, never repo-linked; the
+contents are licensed game files. The full design and leak model live in `.ai/ci-feed-and-workflow.md`.
+`.github/workflows/build.yml` restores them (repo secret `PACKAGES_READ_TOKEN`, the bot's read token) and
+builds the whole solution against **both** units on every push — the standing compile-against-both check (#21).
+Workflows must never upload artifacts or run `-t:Deploy`. `check-for-new-game-version.yml` polls Steam's branch
+heads daily via anonymous SteamCMD and, once its shadow soak ends, files a tracking issue when a release lands.
+
+Publishing a new game version is one human-run command on a machine with licensed installs:
+`dotnet run build/tools/release.cs` (guardrails decide whether there is anything to publish; one prompt for the
+in-game version label; `--commit` pushes the pin bump to main). Version pins live in
+`build/ci/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
+`vendor`, `pack`, `push`, `release` — are C# file-based apps under `build/tools/` (`dotnet run
+build/tools/<tool>.cs -- --selftest`; #36 decided new tools are born C#, and only `compare-eval.py` remains
+Python). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
+retention, and GitHub latest-tag reconciliation.
 
 ### Verifying
 

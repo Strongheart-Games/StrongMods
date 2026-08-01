@@ -454,6 +454,15 @@ nothing-to-publish; both dry-runs correct. **Acceptance run passed (owner, 2026-
 skipped as duplicates (idempotence live), retention no-op, and both packages' latest tag — which the backfill
 had left pointing at `3.0.1.4` — reconciled to `3.1.0.14`, confirmed in the UI.
 
+**Phase 9 — done 2026-08-01 (docs + close-out).** CLAUDE.md: *Building without the game* now names `vendor.cs`,
+and a new *CI, packages, and publishing* subsection carries the feed/CI/tools story (leak rules, the one-command
+publish routine, the C#-tools inventory, feed hygiene). README deliberately untouched — #20 owns it and got a
+comment listing the CI-story candidates. #21 got the "standing check is live" note (its remaining scope:
+local dual builds, per-unit divergence handling). #39 filed to carry the NOTIFY flip after the soak
+(criteria: weeks of quiet summaries, or one real release observed round-trip). **#22 closed 2026-08-01** with
+the four-deliverables summary; follow-ups spawned across the effort: #37 (per-mod pinning), #38 (release-window
+timing), #39 (notification flip). This doc is now a record, not a tracker — status lives on the issues.
+
 **Backfill experiment — done 2026-07-31.** Both units' `V3.0.1-b4` packages published (buildids
 24117861/24117900, verified against the captured `v3.0.1` branch heads before vendoring); the feed holds
 `3.0.1.4` and `3.1.0.14` side by side — the #37 cross-key retention guarantee live. Bonus finding: the full
