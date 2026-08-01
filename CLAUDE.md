@@ -74,9 +74,8 @@ error. Only `BloodRain` actually pulls a package — Cronos, a bare `<PackageRef
 per machine. Its csproj also sets `CopyDocumentationFilesFromPackages=true` so `Cronos.xml` keeps deploying beside
 `Cronos.dll`, as it always has — the SDK skips package doc files by default.
 
-Full `MSBuild.exe` (as opposed to `dotnet build`) resolves `Microsoft.NET.Sdk` only if a .NET SDK is discoverable —
-on a machine without one in `PATH`/`Program Files`, prefix `PATH` with a bundled SDK's dotnet directory (e.g.
-Rider's `lib\ReSharperHost\windows-x64\dotnet`).
+Full `MSBuild.exe` (as opposed to `dotnet build`) resolves `Microsoft.NET.Sdk` only if a .NET SDK is discoverable
+on the machine.
 
 ### Deploying
 
