@@ -143,7 +143,9 @@ in-game version label; `--commit` pushes the pin bump to main). Version pins liv
 `build/ci/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
 `vendor`, `pack`, `push`, `release` — are C# file-based apps under `build/tools/` (`dotnet run
 build/tools/<tool>.cs -- --selftest`; #36 decided all tools are C# — with `compare-eval`, no Python remains). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
-retention, and GitHub latest-tag reconciliation.
+retention, and GitHub latest-tag reconciliation. The C# rule is about maintained code: anything checked in is C#.
+Disposable experiment scripts under `.scratch/` may use whatever is fastest (Python included); an experiment that
+graduates into the repo is ported when it lands.
 
 ### Verifying
 

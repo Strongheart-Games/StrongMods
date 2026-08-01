@@ -109,6 +109,11 @@ tools speak the same language as the codebase they serve — one language for th
    convention carried over.
 4. If rejected: the fallback is §2b (pyright-strict + ruff ANN in the #22 workflow), accepting that the
    indentation complaint goes unaddressed.
+5. **Scope refinement (owner, 2026-08-01, after the migration completed):** the decision covers *checked-in,
+   maintained* code only. Disposable experiment scripts (`.scratch/`, scratchpads) may use whatever is fastest —
+   Python included: the maintenance hazards that motivated the decision (§3) don't exist in code that is never
+   maintained, and Python's instant edit-run loop is the better fit there (§2a's cold-compile cost bites hardest
+   in exactly that scenario). An experiment that graduates into the repo is ported when it lands.
 
 ## 5. References
 
