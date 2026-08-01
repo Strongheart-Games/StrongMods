@@ -5,13 +5,17 @@
 // retention policy and fix GitHub's "latest" tag. The single push path — release.cs delegates here, and
 // backfills (.ai/ci-feed-and-workflow.md §7c) run it directly. C# file-based app; NOT imported by MSBuild.
 //
-//     dotnet run build/tools/push.cs -- [--dir <dir>] [--dry-run]     (default dir: vendor/packages)
-//     dotnet run build/tools/push.cs -- --selftest
+//     dotnet run build/tools/push.cs -- [--dir <dir>] [--dry-run] [--repush-duplicates]
+//     dotnet run build/tools/push.cs -- --selftest                     (default dir: vendor/packages)
 //
 // Behavior, in order (design: plan §6 + the 2026-07-31 latest-tag research/experiment):
 //   1. Scan the directory; read each nupkg's id+version from its embedded nuspec (never parsed from filenames).
 //   2. Push in ASCENDING version order with --skip-duplicate: re-runs are safe, and each file reports
 //      "pushed" or "skipped (already on feed)". The feed's 409-on-same-version stays our idempotency backstop.
+//      --repush-duplicates (named after the --skip-duplicate it overrides) deletes each same-version feed entry
+//      immediately before its push, so a REPACKAGED already-published version replaces the feed's copy instead
+//      of being skipped — same delete + re-push mechanics step 4 proved out. For repackaging cases like #48's
+//      Harmony-folder enrichment; only duplicates are touched, everything else pushes normally.
 //   3. Retention (per package id on the feed): keep only the highest build within each major.minor.patch,
 //      delete the rest via the Packages API (write PAT needs delete:packages). Old x.y.z keys survive — the
 //      #37 lagging-mod guarantee.
@@ -33,20 +37,22 @@ using System.Xml.Linq;
 
 var dir = (string?)null;
 var dryRun = false;
+var repushDuplicates = false;
 var selftest = false;
 for (var i = 0; i < args.Length; i++) {
   switch (args[i]) {
     case "--dir" when i + 1 < args.Length: dir = args[++i]; break;
     case "--dry-run": dryRun = true; break;
+    case "--repush-duplicates": repushDuplicates = true; break;
     case "--selftest": selftest = true; break;
     default:
-      Console.Error.WriteLine("usage: push.cs [--dir <dir>] [--dry-run] | --selftest");
+      Console.Error.WriteLine("usage: push.cs [--dir <dir>] [--dry-run] [--repush-duplicates] | --selftest");
       return 2;
   }
 }
 
 try {
-  return selftest ? Push.Selftest() : Push.Run(dir, dryRun);
+  return selftest ? Push.Selftest() : Push.Run(dir, dryRun, repushDuplicates);
 } catch (Exception e) when (e is PushError or IOException or JsonException or InvalidDataException
                             or HttpRequestException) {
   Console.Error.WriteLine($"error: {e.Message}");
@@ -61,7 +67,7 @@ internal static class Push {
     return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(src)!, "..", ".."));
   }
 
-  public static int Run(string? dirArg, bool dryRun) {
+  public static int Run(string? dirArg, bool dryRun, bool repushDuplicates) {
     var dir = Path.GetFullPath(dirArg ?? Path.Combine(RepoRoot(), "vendor", "packages"));
     List<(string File, string Id, string Version)> local = Directory.Exists(dir)
       ? Directory.GetFiles(dir, "*.nupkg").Select(f => {
@@ -79,14 +85,38 @@ internal static class Push {
         Console.WriteLine($"  would push {id} {version} ({Path.GetFileName(file)})");
       }
 
+      if (repushDuplicates) {
+        Console.WriteLine("--repush-duplicates: same-version feed entries would be deleted before their push.");
+      }
+
       Console.WriteLine("--dry-run: stopping before push/retention/reconciliation.");
       return 0;
     }
 
     var token = Environment.GetEnvironmentVariable("PACKAGES_WRITE_TOKEN") ?? PromptMasked("write PAT: ");
+    var feedCache = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
     foreach ((var file, var id, var version) in local) {
+      if (repushDuplicates) {
+        // Delete immediately before the push (not in an upfront batch) to keep the version's off-feed window
+        // as short as one push. A package id not on the feed at all is a normal first publish, not an error.
+        if (!feedCache.TryGetValue(id, out Dictionary<string, long>? onFeed)) {
+          feedCache[id] = onFeed = ListVersions(id, token, missingOk: true);
+        }
+
+        if (onFeed.TryGetValue(version, out var versionId)) {
+          DeleteVersion(id, versionId, token);
+          Console.WriteLine($"  {id} {version}: deleted from feed for re-push (--repush-duplicates)");
+        }
+      }
+
       var output = RunDotnetNugetPush(file, token);
       var skipped = output.Contains("already been pushed");
+      if (skipped && repushDuplicates) {
+        throw new PushError($"{id} {version}: push after delete was refused as duplicate - the feed did not"
+                            + " release the version number; RESTORE IT: POST"
+                            + $" /orgs/{Org}/packages/nuget/{id}/versions/<id>/restore (30-day window)");
+      }
+
       Console.WriteLine($"  {id} {version}: {(skipped ? "skipped (already on feed)" : "pushed")}");
     }
 
@@ -187,8 +217,8 @@ internal static class Push {
     return $"https://api.github.com/orgs/{Org}/packages/nuget/{id}/versions?per_page=100";
   }
 
-  private static Dictionary<string, long> ListVersions(string id, string token) {
-    return ListRaw(id, token).ToDictionary(v => v.Name, v => v.Id);
+  private static Dictionary<string, long> ListVersions(string id, string token, bool missingOk = false) {
+    return ListRaw(id, token, missingOk).ToDictionary(v => v.Name, v => v.Id);
   }
 
   /// Names in the API's own order: newest created_at first — the order the "latest" tag follows.
@@ -196,9 +226,13 @@ internal static class Push {
     return ListRaw(id, token).Select(v => v.Name).ToList();
   }
 
-  private static List<(string Name, long Id)> ListRaw(string id, string token) {
+  private static List<(string Name, long Id)> ListRaw(string id, string token, bool missingOk = false) {
     using HttpClient http = Api(token);
     HttpResponseMessage resp = http.GetAsync(VersionsUrl(id)).Result;
+    if (resp.StatusCode == System.Net.HttpStatusCode.NotFound && missingOk) {
+      return new List<(string, long)>(); // package never published — normal for a first push
+    }
+
     if (!resp.IsSuccessStatusCode) {
       throw new PushError($"listing {id} versions failed: HTTP {(int)resp.StatusCode}"
                           + $" ({resp.Content.ReadAsStringAsync().Result})");
