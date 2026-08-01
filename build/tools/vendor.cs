@@ -193,9 +193,15 @@ internal static class Vendor {
                           + "\nPass --install-dir or set SDTD_HOME.");
   }
 
-  /// buildid/betakey from the appmanifest, when the install sits in a Steam library. Absent -> nulls.
+  /// buildid/betakey from the appmanifest. Two layouts: a Steam-library install keeps it two levels up
+  /// (<library>/steamapps/appmanifest_X.acf beside common/), while a SteamCMD +force_install_dir install keeps
+  /// it INSIDE the install (<install>/steamapps/appmanifest_X.acf) — the backfill case. Absent -> nulls.
   private static (string? Acf, string? Buildid, string? Betakey) SteamProvenance(UnitInfo info, string install) {
     var acf = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(install))!, $"appmanifest_{info.AppId}.acf");
+    if (!File.Exists(acf)) {
+      acf = Path.Combine(install, "steamapps", $"appmanifest_{info.AppId}.acf");
+    }
+
     if (!File.Exists(acf)) {
       return (null, null, null);
     }

@@ -1,0 +1,105 @@
+# Daily check: has Steam's public branch moved past the published game-assembly packages? Design:
+# .ai/ci-feed-and-workflow.md §6b. Decision logic lives in build/tools/steam_check.cs (shared with release.cs);
+# this workflow only runs it and reports.
+#
+# SHADOW MODE: NOTIFY below starts 'false' — decisions go to the job summary only. After the soak proves the
+# check fires only for genuine releases (ideally through one real release), flip NOTIFY to 'true' and the
+# tracking-issue steps activate: open/update one issue when Steam is ahead, auto-close it when the published
+# state catches up.
+#
+# No secrets, no licensed content: buildids and branch names are public Steam metadata, queried anonymously.
+# A broken query fails the job red (steam_check exit 2) — it must never look like "up to date".
+
+name: Check for new game version
+
+on:
+  schedule:
+    # GitHub Actions cron is ALWAYS UTC — there is no timezone setting to choose. 13:17 UTC = 09:17 EDT /
+    # 08:17 EST on the owner's clock. The odd minute is deliberate (GitHub sheds load at :00, delaying or
+    # dropping top-of-hour scheduled runs; scheduled runs can lag minutes-to-hours regardless — this check
+    # tolerates that fine). NOTE the hour itself is provisional: captured branch-promotion timestamps show TFP
+    # releasing ~15:00-18:10 UTC on weekdays, so a 13:17 check trails a release by up to ~22 h — picking a
+    # data-backed hour is issue #38.
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  NOTIFY: 'false'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install SteamCMD
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lib32gcc-s1
+          mkdir -p "$HOME/steamcmd" "$HOME/.local/bin"
+          curl -sqL https://steamcmd.valvesoftware.com/installer/steamcmd_linux.tar.gz | tar -zx -C "$HOME/steamcmd"
+          printf '#!/bin/sh\nexec "%s/steamcmd/steamcmd.sh" "$@"\n' "$HOME" > "$HOME/.local/bin/steamcmd"
+          chmod +x "$HOME/.local/bin/steamcmd"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Query Steam and decide
+        id: check
+        run: |
+          set +e
+          out=$(dotnet run build/tools/steam_check.cs -- --live --published build/ci/game-versions.json --json)
+          code=$?
+          set -e
+          echo "$out" | tee /tmp/decisions.json
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          case "$code" in
+            0) verdict="up to date" ;;
+            1) verdict="WOULD NOTIFY (shadow mode)" && [ "$NOTIFY" = "true" ] && verdict="NOTIFYING" ;;
+            *) verdict="QUERY ERROR" ;;
+          esac
+          {
+            echo "## 7DtD build check: $verdict"
+            echo '```json'
+            cat /tmp/decisions.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # A broken query fails red; "would notify" stays green in shadow mode (the summary is the record).
+          if [ "$code" != 0 ] && [ "$code" != 1 ]; then exit 1; fi
+
+      - name: Open or update the tracking issue
+        if: env.NOTIFY == 'true' && steps.check.outputs.exit == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="New 7DtD build on Steam"
+          body="@str0ngh34rt Steam's public branch moved past the published packages.
+
+          \`\`\`json
+          $(cat /tmp/decisions.json)
+          \`\`\`
+
+          Publish with \`dotnet run build/tools/release.cs -- --commit\` (see .ai/ci-feed-and-workflow.md §6)."
+          num=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label type:tooling --label scope:repo-wide
+          fi
+
+      - name: Auto-close the tracking issue once caught up
+        if: env.NOTIFY == 'true' && steps.check.outputs.exit == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="New 7DtD build on Steam"
+          num=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$num" ]; then
+            gh issue close "$num" --comment "Published state has caught up with Steam - closing."
+          fi

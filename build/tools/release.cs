@@ -12,10 +12,10 @@
 // with no prompt, an error or a rollback aborts loudly; 2) the local install must match Steam's buildid
 // (--steamcmd updates it in place; game needs --steam-user with a cached SteamCMD login, server is anonymous;
 // close the Steam client first); 3) ONE prompt — the new label, validated (grammar; must move forward);
-// 4) vendor.cs + pack.cs per stale unit; 5) [--dry-run stops here] per-file push (never a glob: NuGet's
-// push-side globbing is unreliable on Windows) with the write PAT from PACKAGES_WRITE_TOKEN or a masked prompt;
-// 6) retention: keep only the latest build per major.minor.patch per unit, delete the rest via the GitHub API
-// (needs delete:packages); 7) update build/ci/game-versions.json + GameAssemblies.csproj — with --commit, also
+// 4) vendor.cs + pack.cs per stale unit; 5+6) [--dry-run stops here] push.cs over vendor/packages — the single
+// push path: idempotent per-file pushes, retention (latest build per major.minor.patch), and GitHub
+// latest-tag reconciliation all live there (it prompts for the write PAT itself, or reads
+// PACKAGES_WRITE_TOKEN); 7) update build/ci/game-versions.json + GameAssemblies.csproj — with --commit, also
 // commit them to the current branch and push (the owner's flow is direct-to-main; the green Build run on main is
 // the round-trip proof).
 //
@@ -48,14 +48,12 @@ for (var i = 0; i < args.Length; i++) {
 
 try {
   return selftest ? Release.Selftest() : Release.Run(dryRun, steamcmd, steamUser, commit);
-} catch (Exception e) when (e is ReleaseError or IOException or JsonException or HttpRequestException) {
+} catch (Exception e) when (e is ReleaseError or IOException or JsonException) {
   Console.Error.WriteLine($"error: {e.Message}");
   return 2;
 }
 
 internal static class Release {
-  private const string Org = "Strongheart-Games";
-  private const string FeedUrl = $"https://nuget.pkg.github.com/{Org}/index.json";
   private static readonly Regex LabelRe = new(@"^V(\d+)\.(\d+)(?:\.(\d+))?-b(\d+)$");
 
   private sealed record UnitInfo(string AppId, string InstallName, string PackageId);
@@ -153,17 +151,10 @@ internal static class Release {
       return 0;
     }
 
-    // 5. Push, one file per call.
-    var token = Environment.GetEnvironmentVariable("PACKAGES_WRITE_TOKEN") ?? PromptMasked("write PAT: ");
-    foreach ((var unit, _, _, _) in stale) {
-      var nupkg = Path.Combine(RepoRoot(), "vendor", "packages", $"{Units[unit].PackageId}.{version}.nupkg");
-      RunInherit("dotnet", new[] { "nuget", "push", nupkg, "--source", FeedUrl, "--api-key", token });
-    }
-
-    // 6. Retention (§3): keep only the latest build per major.minor.patch, per unit.
-    foreach ((var unit, _, _, _) in stale) {
-      ApplyRetention(Units[unit].PackageId, token);
-    }
+    // 5+6. Push + retention + latest-tag reconciliation: push.cs is the single push path (it prompts for the
+    // write PAT itself if PACKAGES_WRITE_TOKEN is unset).
+    RunInherit("dotnet", new[] { "run", ToolPath("push.cs"), "--", "--dir",
+      Path.Combine(RepoRoot(), "vendor", "packages") });
 
     // 7. Pins. game-versions.json is written whole (hand-formatted, one line per unit, matching the committed
     // style); the csproj gets a surgical version bump.
@@ -234,48 +225,6 @@ internal static class Release {
     }
 
     return 0;
-  }
-
-  /// The §3 policy, pure: given all version strings on the feed, which get deleted? Keep the highest build
-  /// (4th part) within each major.minor.patch; anything unparsable is kept (defensive - never delete what we
-  /// don't understand).
-  public static List<string> RetentionDeletions(IEnumerable<string> versions) {
-    var parsed = versions.Select(v => (Version: v, Parts: v.Split('.'))).ToList();
-    var byKey = parsed.Where(p => p.Parts.Length == 4 && p.Parts.All(x => int.TryParse(x, out _)))
-      .GroupBy(p => string.Join(".", p.Parts.Take(3)));
-    return byKey.SelectMany(g => g.OrderByDescending(p => int.Parse(p.Parts[3])).Skip(1))
-      .Select(p => p.Version).ToList();
-  }
-
-  private static void ApplyRetention(string packageId, string token) {
-    using var http = new HttpClient();
-    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-    http.DefaultRequestHeaders.Add("User-Agent", "StrongMods-release");
-    http.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
-    var baseUrl = $"https://api.github.com/orgs/{Org}/packages/nuget/{packageId}/versions";
-    HttpResponseMessage listResp = http.GetAsync($"{baseUrl}?per_page=100").Result;
-    if (!listResp.IsSuccessStatusCode) {
-      throw new ReleaseError($"listing {packageId} versions failed: HTTP {(int)listResp.StatusCode}"
-                             + $" ({listResp.Content.ReadAsStringAsync().Result})");
-    }
-
-    var byName = JsonDocument.Parse(listResp.Content.ReadAsStringAsync().Result).RootElement.EnumerateArray()
-      .ToDictionary(v => v.GetProperty("name").GetString()!, v => v.GetProperty("id").GetInt64());
-    List<string> deletions = RetentionDeletions(byName.Keys);
-    if (deletions.Count == 0) {
-      Console.WriteLine($"{packageId}: retention - nothing to delete ({byName.Count} version(s) on the feed).");
-      return;
-    }
-
-    foreach (var name in deletions) {
-      HttpResponseMessage delResp = http.DeleteAsync($"{baseUrl}/{byName[name]}").Result;
-      if (!delResp.IsSuccessStatusCode) {
-        throw new ReleaseError($"deleting {packageId} {name} failed: HTTP {(int)delResp.StatusCode}"
-                               + " (does the PAT have delete:packages?)");
-      }
-
-      Console.WriteLine($"{packageId}: retention - deleted {name} (superseded within its major.minor.patch).");
-    }
   }
 
   public static string BumpPin(string csproj, string packageId, string newVersion) {
@@ -359,26 +308,6 @@ internal static class Release {
     }
   }
 
-  private static string PromptMasked(string prompt) {
-    Console.Write(prompt);
-    var sb = new StringBuilder();
-    while (true) {
-      ConsoleKeyInfo k = Console.ReadKey(true);
-      if (k.Key == ConsoleKey.Enter) {
-        Console.WriteLine();
-        return sb.ToString();
-      }
-
-      if (k.Key == ConsoleKey.Backspace) {
-        if (sb.Length > 0) {
-          sb.Length--;
-        }
-      } else if (!char.IsControl(k.KeyChar)) {
-        sb.Append(k.KeyChar);
-      }
-    }
-  }
-
   // --- selftest -----------------------------------------------------------------------------------------------
 
   public static int Selftest() {
@@ -393,14 +322,7 @@ internal static class Release {
       checks++;
     }
 
-    // The V8 retention case, verbatim from the plan: keep 3.0.0.259 and 3.0.1.7, delete exactly 3.0.1.4.
-    List<string> del = RetentionDeletions(new[] { "3.0.0.259", "3.0.1.4", "3.0.1.7" });
-    Ok(del.Count == 1 && del[0] == "3.0.1.4", "retention deletes exactly the superseded build (plan V8 case)");
-    Ok(RetentionDeletions(new[] { "3.1.0.14" }).Count == 0, "retention keeps a sole version");
-    Ok(RetentionDeletions(new[] { "3.1.0.13", "3.1.0.14", "4.0.0.1" }).SequenceEqual(new[] { "3.1.0.13" }),
-      "retention preserves other major.minor.patch keys (the lagging-mod guarantee, #37)");
-    Ok(RetentionDeletions(new[] { "3.1.0.14", "weird" }).Count == 0, "unparsable versions are never deleted");
-
+    // Retention checks moved to push.cs's selftest with the code (2026-07-31: push.cs is the single push path).
     Ok(ValidateLabel("V3.1.0-b15", "V3.1.0-b14") is null, "forward label accepted");
     Ok(ValidateLabel("V4.0-b1", "V3.1.0-b14") is null, "major jump accepted (missing patch = 0)");
     Ok(ValidateLabel("V3.1.0-b14", "V3.1.0-b14") is not null, "unchanged label refused when buildid moved");

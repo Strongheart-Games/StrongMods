@@ -426,6 +426,47 @@ exercised naturally by the next version-bump PR). Run 30664311536:
   their first genuine exercise at the next real game update, watched. Push is per-file (never glob), matching
   the phase-5 quirk record.
 
+**Phase 8 — 2026-07-31 (`check-game-version.yml`, shadow mode).**
+
+- The workflow ships exactly as §6b specified: daily cron + manual dispatch, no secrets, `contents: read` +
+  `issues: write`, SteamCMD installed from Valve's Linux tarball behind a `steamcmd` wrapper on PATH (matching
+  what `steam_check.cs` looks for), `steam_check.cs --live --json` as the sole decision-maker, verdict + full
+  decisions JSON into the job summary, query errors (exit 2) fail the job red — never mistakable for quiet.
+- **Shadow mode is a one-word flip:** `NOTIFY: 'false'` at the top. The issue steps are fully implemented but
+  gated — on flip, exit 1 opens or updates a single `New 7DtD build on Steam` tracking issue @mentioning the
+  owner (with the release.cs runbook line), and exit 0 auto-closes it once the published state catches up.
+- Verdict shell logic validated locally against all three real exit codes (up-to-date, would-notify via the b13
+  fixture state, query-error via a missing state file); the `set -e`/`&&`-chain interaction proven benign
+  empirically.
+- **V9 status:** decision fixtures were §6b's (11 steam_check checks); a `workflow_dispatch` run after commit is
+  the remaining smoke test, then the soak clock starts. The notify-path formatting and issue steps activate
+  only after the soak — reviewed but deliberately unexercised until then.
+
+**Addendum: `push.cs` — done 2026-07-31 (§10 decision 8 has the research/experiment record).** Selftest 7
+checks (retention suite moved here from release.cs verbatim, numeric-not-lexicographic version sort,
+highest-version selection, nuspec-inside-nupkg identity read); release.cs re-verified at 7 checks + live
+nothing-to-publish; both dry-runs correct. **Acceptance run passed (owner, 2026-07-31):** all four files
+skipped as duplicates (idempotence live), retention no-op, and both packages' latest tag — which the backfill
+had left pointing at `3.0.1.4` — reconciled to `3.1.0.14`, confirmed in the UI.
+
+**Backfill experiment — done 2026-07-31.** Both units' `V3.0.1-b4` packages published (buildids
+24117861/24117900, verified against the captured `v3.0.1` branch heads before vendoring); the feed holds
+`3.0.1.4` and `3.1.0.14` side by side — the #37 cross-key retention guarantee live. Bonus finding: the full
+solution compiles clean against **both** 3.0.1 trees (0 warnings, 0 errors) — today's mods are
+compile-compatible one version back. The SteamCMD branch-install, `--install-dir` vendoring, and
+`force_install_dir` appmanifest-fallback paths all worked first try. What it surfaced became the push.cs
+addendum above. Original plan text follows: publish **3.0.1** packages so older-version
+builds/tests are possible before 3.2/4.0 arrives — and use it to exercise the paths a routine release can't:
+SteamCMD *branch* installs (`+app_update <id> -beta v3.0.1`) into `+force_install_dir` scratch dirs (never the
+live installs), vendoring via `--install-dir` from a non-library layout (`vendor.cs` gained the
+`<install>/steamapps/` appmanifest fallback for provenance), and — at push — live retention proving the #37
+cross-key guarantee (`3.0.1.4` and `3.1.0.14` coexist; nothing deleted). Label `V3.0.1-b4` (corroborated by the
+2026-07-17 client log's `Version: V 3.0.1 (b4)`; expected buildids from the captured `v3.0.1` branch heads:
+game 24117861, server 24117900 — verified against the downloaded appmanifests before vendoring). Pins and
+`game-versions.json` are **not** touched — they track the *current* version; 3.0.1 sits on the feed for #37-era
+consumers. Backfills are a manual vendor+pack+push routine by design; `release.cs` only ever publishes Steam's
+current head.
+
 ## 8. Verification
 
 | # | Check | Pass criterion |
@@ -476,3 +517,17 @@ The original open questions, resolved — plus the automation scope they added:
    in this doc reads as "commit to main; the Build run on main is the proof". `release.cs` ships `--commit`
    instead of the planned `--pr`. (Possible future exception the owner flagged: agent-sandbox workflows that
    hand back PRs — a `--pr` mode can be added then.)
+8. **`push.cs` is the single push path** (2026-07-31, owner-prompted after the backfill): directory semantics
+   (default `vendor/packages`), ascending-version pushes with `--skip-duplicate` (idempotent re-runs; per-file
+   pushed/skipped reporting), retention moved here from `release.cs`, and **GitHub latest-tag reconciliation**.
+   Research + experiment established the facts: GitHub's "latest" is most-recent-`created_at`, not highest
+   version (npm gets mutable dist-tags; NuGet gets no tags at all); deleting a version does NOT permanently
+   retire its number — delete + re-push of the identical nupkg works and mints a fresh `created_at`, verified
+   live on the unpinned `3.0.1.4` (id 1087174034 → 1087373330). Reconciliation therefore: if the highest
+   version isn't newest-created, delete + re-push it — only ever with the identical nupkg already in hand, with
+   a duplicate-refusal escape hatch pointing at the 30-day restore API. `release.cs` delegates its push and
+   retention steps to `push.cs` (process composition again). **Restore tested too (2026-07-31, same
+   experimental shape):** delete → restore preserves the version row completely — same id, same `created_at`,
+   only `updated_at` bumps — and the latest tag does not move. So restore is *recovery-only* (proven working,
+   which validates push.cs's escape hatch), it cannot reconcile the tag, and delete + re-push is the sole
+   reconciliation lever, by evidence rather than inference.
