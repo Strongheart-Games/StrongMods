@@ -14,13 +14,21 @@ name: Check for new game version
 
 on:
   schedule:
-    # GitHub Actions cron is ALWAYS UTC — there is no timezone setting to choose. 13:17 UTC = 09:17 EDT /
-    # 08:17 EST on the owner's clock. The odd minute is deliberate (GitHub sheds load at :00, delaying or
-    # dropping top-of-hour scheduled runs; scheduled runs can lag minutes-to-hours regardless — this check
-    # tolerates that fine). NOTE the hour itself is provisional: captured branch-promotion timestamps show TFP
-    # releasing ~15:00-18:10 UTC on weekdays, so a 13:17 check trails a release by up to ~22 h — picking a
-    # data-backed hour is issue #38.
-    - cron: '17 13 * * *'
+    # GitHub Actions cron is ALWAYS UTC — there is no timezone setting to choose. The odd minute is deliberate
+    # (GitHub sheds load at :00, delaying or dropping top-of-hour scheduled runs; scheduled runs can lag
+    # minutes-to-hours regardless — this check tolerates that fine, and lag only ever pushes it later, which
+    # here only helps).
+    #
+    # The hour is data-backed — issue #38. TFP promotes to `public` around MIDDAY US CENTRAL, their local
+    # clock rather than a fixed UTC hour, so the UTC window shifts an hour with US DST: 14 promotions since
+    # v2.0 land at 10:03-12:21 Central — 15:03-17:21 UTC in summer, but up to 18:10 UTC in winter. 20:17
+    # clears that winter edge by ~2 h, and the slack is the point: 18:17 scores a lower mean delay on this
+    # sample yet collapses if a release slips an hour, while 20:17 holds under 6.5 h mean across a -1 h..+2 h
+    # shift of every data point. Typical notice ~3 h, worst ~6 h, arriving 16:17 EDT / 15:17 EST on the
+    # owner's clock — same working day. Stable promotions are weekday-only in the sample, but the check stays
+    # daily: `public` also moves for unannounced hotfix re-points (v3.1.0 b13->b14, 2026-07-29 15:03 UTC), and
+    # emergency pushes ignore the pattern outright (the 2.4 b7 Unity security fix went out 21:03 UTC Friday).
+    - cron: '17 20 * * *'
   workflow_dispatch:
 
 permissions:
