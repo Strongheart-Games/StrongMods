@@ -55,5 +55,6 @@
   </Target>
 
   <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)XmlLint.targets" />
 
 </Project>

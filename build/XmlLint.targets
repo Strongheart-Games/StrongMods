@@ -1,0 +1,40 @@
+<Project>
+
+  <!--
+    XML well-formedness lint (#16; design: .ai/xml-lint-plan.md). Imported by all three entry points
+    (Mod.targets, Modlet.targets, Overlay.targets), so every build of every project shape checks the hand-written
+    XML it ships — ModInfo.xml and Config\**\*.xml — and a malformed file fails the build with a file(line,col)
+    error instead of failing at game load on someone else's machine.
+
+    Project XML (*.csproj, build\*.props/.targets) is deliberately NOT re-checked here: MSBuild parses those files
+    with this same parser just to run the build, every project is in the solution, and CI builds the solution on
+    every push — a second pass would add nothing (plan §2).
+
+    The task code lives in XmlLint.cs beside this file — a real .cs so IDEs treat it as C# — and stays
+    in-process: RoslynCodeTaskFactory compiles it once and caches the assembly by source hash, so the
+    steady-state cost is an assembly load plus milliseconds of parsing. The factory ships with MSBuild itself,
+    so modlets/overlays (bare <Project>, no SDK) can use it, under both dotnet build and full MSBuild.exe.
+
+    A project may add <XmlLintFile Include="..." /> items in its body to cover extra files, or set
+    -p:XmlLintEnabled=false to bypass the gate in an emergency.
+  -->
+
+  <UsingTask TaskName="XmlWellFormednessCheck" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)XmlLint.cs" />
+    </Task>
+  </UsingTask>
+
+  <!-- A target runs at most once per project, so both hooks are safe to list: code mods hit PrepareForBuild
+       (early, before compile); modlets/overlays hit their hand-rolled Build, which has no PrepareForBuild.
+       Items are declared inside the target so project evaluation is untouched. -->
+  <Target Name="XmlLint" BeforeTargets="PrepareForBuild;Build" Condition="'$(XmlLintEnabled)' != 'false'">
+    <ItemGroup>
+      <XmlLintFile Include="ModInfo.xml" Condition="Exists('$(MSBuildProjectDirectory)\ModInfo.xml')" />
+      <XmlLintFile Include="Config\**\*.xml" />
+    </ItemGroup>
+    <XmlWellFormednessCheck Files="@(XmlLintFile)" Condition="'@(XmlLintFile)' != ''" />
+  </Target>
+
+</Project>

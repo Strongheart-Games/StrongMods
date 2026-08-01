@@ -35,7 +35,11 @@ accepted: an XML file that nothing loads (none exist today under `build/`; `Loca
 One new shared file, `build/XmlLint.targets`, imported by all three entry points (`Mod.targets`,
 `Modlet.targets`, `Overlay.targets`) the same way `Deploy.targets` already is. It contains:
 
-1. **An inline MSBuild task** (`UsingTask` + `RoslynCodeTaskFactory`, ~20 lines of C#): for each input file, run an
+1. **An in-process MSBuild task** (`UsingTask` + `RoslynCodeTaskFactory`, ~20 lines of C#). At review the code
+   moved from an embedded `<Code>` fragment to a real class file, `build/XmlLint.cs`, referenced via
+   `<Code Type="Class" Source="..." />` — same compile-and-cache behavior, but IDEs treat it as C#, the
+   `[Required]` parameter lives in the class instead of a `ParameterGroup`, and `Execute()`'s return value is
+   explicit (which retires the `Success`-property fix described under *Results*). For each input file, run an
    `XmlReader` to end-of-document with `DtdProcessing.Prohibit` and `XmlResolver = null` (no file here should
    declare a DTD, and the lint must never touch the network). On `XmlException`, `Log.LogError` with the file,
    line and column — the canonical MSBuild error shape, clickable in IDEs, and it fails the build. Encoding
@@ -97,6 +101,26 @@ Well under the 100-line target. No `.csproj` changes anywhere; no evaluation-vis
    worktree (querying `OutDir`/`TargetDir` per its header). Expected: no drift — the change is targets-only.
 5. **Both toolchains** — step 2's failing build repeated with full `MSBuild.exe` if present, since IDE builds use
    it and `RoslynCodeTaskFactory` behavior is the one genuinely toolchain-sensitive piece here.
+
+### Results (2026-07-31)
+
+| Step | Result |
+| --- | --- |
+| 1. Baseline sweep | ✅ `dotnet build StrongMods.sln -c Debug` green, 0 warnings/errors — all in-scope files well-formed. Target execution positively confirmed at `-v:d` (runs before `PrepareForBuild` in code mods, before `Build` in bare projects). |
+| 2. Negative tests | ✅ F2 `--`-in-comment case fails the modlet build, exit 1, `Config\broken.xml(3,48): error : An XML comment cannot contain '--'…`; truncated doc fails likewise; `-p:XmlLintEnabled=false` passes. Scratch projects left in `.scratch/lint-test/` for inspection. |
+| 3. Entry-point coverage | ✅ All three shapes fail on broken Config XML with exit 1 (code mod / modlet / overlay scratch projects). |
+| 4. Evaluation diff | ✅ `compare-eval` vs a `HEAD` worktree on `BloodRain`, `AECInternationalMarketFixes`, `StrongholdSaves`: modlet and overlay IDENTICAL; code mod's only diffs are the worktree's absolute-path prefix in `TargetDir`/`TargetPath` (both resolve `bin\Debug\` correctly) — no drift. |
+| 5. Full `MSBuild.exe` | ⚠️ Not executable on this machine: no VS install, no `vswhere`; Rider drives SDK projects through the .NET SDK MSBuild, which is the tested toolchain. `RoslynCodeTaskFactory` is documented to work on full MSBuild ≥ 15.8; this leg stays unverified until a machine with one builds the repo. |
+
+**Defect found and fixed during step 2:** the first cut assumed the factory's generated `Execute()` returns
+`!Log.HasLoggedErrors`. It does not — a fragment that only calls `Log.LogError` returns *true*, and a bare-project
+(modlet/overlay) build then "succeeds" with 1 error and exit 0; only the SDK build path happened to fail. The fix
+is the fragment's predefined `Success` property, set explicitly (`Success = !Log.HasLoggedErrors;`), after which
+all three shapes fail with exit 1. The SDK-path masking is why the negative tests cover every entry point.
+
+Superseded at review: the fragment became the class file `build/XmlLint.cs` (§3), whose `Execute()` returns
+`!Log.HasLoggedErrors` directly — the failure mode above can no longer be expressed. Steps 1–3 were re-run against
+the class-file shape: same results (three failures with exit 1, escape hatch passes, solution green).
 
 ## 6. Handoff
 

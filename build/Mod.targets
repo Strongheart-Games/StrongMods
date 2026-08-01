@@ -81,6 +81,7 @@
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)XmlLint.targets" />
 
   <!-- Turn a missing/moved game install, or a forgotten Mod.props import, into one readable error instead of
        ~200 CS0246s or a silently wrong output folder. -->

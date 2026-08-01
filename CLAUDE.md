@@ -31,6 +31,7 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
 | `build/Deploy.targets` | The shared `Deploy` target (mirror install into the live game). Pulled in by `Mod.targets` and `Modlet.targets`, like `GamePaths.props`. |
+| `build/XmlLint.targets` + `build/XmlLint.cs` | XML well-formedness lint for each project's `ModInfo.xml` + `Config\**\*.xml`, run inside every build. Pulled in by all three entry points, like `Deploy.targets`; the `.cs` is the task body, compiled at build time by `RoslynCodeTaskFactory` — it belongs to no project. Bypass: `-p:XmlLintEnabled=false`. Project XML needs no pass — MSBuild parses it to build at all (`.ai/xml-lint-plan.md` §2). |
 | `build/Overlay.props` + `build/Overlay.targets` | The overlay entry-point pair: protective-additive `Deploy` with `MirrorOnDeploy` scoped mirroring into a declared `DeployRoot`. A props/targets **sandwich** like code mods, because an overlay's body *references* shared path properties — see the `Overlay.props` header for the incident that makes the order load-bearing. Never combined with the other entry points. |
 | `build/tools/compare-eval.cs` | Verification helper; not imported by MSBuild. See *Verifying* below. |
 
@@ -154,7 +155,9 @@ There is no test project or linter. Two levels beyond running the game:
    as JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
    `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.cs` does the diff;
    its header comment has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
-2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. To verify the
+2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. Every build also
+   lints `ModInfo.xml` and `Config\**\*.xml` for XML well-formedness (`build/XmlLint.targets`), so a malformed
+   patch file fails the build instead of failing at game load. To verify the
    *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
    StrongholdSaves overlay).
 
