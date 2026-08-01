@@ -10,6 +10,8 @@ namespace StrongMods {
   public static class CaseSensitiveFilesystem {
     private const string ModInfoFilename = "ModInfo.xml";
 
+    public const string Category = "CaseSensitiveFilesystem";
+
     public static bool Exists(string path) {
       if (string.IsNullOrEmpty(path)) {
         return false;
@@ -87,65 +89,6 @@ namespace StrongMods {
       }
     }
 
-    // Replace only specific calls to Exists() because we don't want to incur the extra but unnecessary costs of the
-    // case-sensitive checks while the game is running, only during startup and loading.
-    public static void ApplyExistsPatches(Harmony harmony) {
-      MethodInfo transpiler = AccessTools.Method(typeof(CaseSensitiveFilesystem), nameof(ReplaceFileOrDirectoryExists));
-      foreach (MethodBase target in ExistsPatchTargets()) {
-        Log.Out($"[CaseSensitiveFilesystem] Replacing Exists() calls in {target.Name}");
-        harmony.Patch(target, transpiler: new HarmonyMethod(transpiler));
-      }
-    }
-
-    // Reference implementation of the [PatchTargetManifest] pattern — see the attribute's doc comment.
-    [PatchTargetManifest]
-    public static IEnumerable<MethodBase> ExistsPatchTargets() {
-      yield return Require(
-        AccessTools.Method(typeof(Localization), nameof(Localization.LoadPatchDictionaries)),
-        $"{nameof(Localization)}.{nameof(Localization.LoadPatchDictionaries)}");
-      yield return Require(
-        GetMoveNext(AccessTools.Method(typeof(ModManager), nameof(ModManager.LoadUiAtlases))),
-        $"MoveNext of {nameof(ModManager)}.{nameof(ModManager.LoadUiAtlases)}");
-      yield return Require(
-        GetMoveNext(AccessTools.Method(typeof(ModManager), nameof(ModManager.LoadLocalizations))),
-        $"MoveNext of {nameof(ModManager)}.{nameof(ModManager.LoadLocalizations)}");
-      yield return Require(
-        AccessTools.Method(typeof(XmlPatchMethods), nameof(XmlPatchMethods.Include)),
-        $"{nameof(XmlPatchMethods)}.{nameof(XmlPatchMethods.Include)}");
-    }
-
-    private static MethodBase Require(MethodBase target, string description) {
-      if (target is null) {
-        // Throw rather than skipping: every target is expected to exist, and a silent skip hides
-        // exactly the game-update breakage the test suite looks for.
-        throw new InvalidOperationException($"[CaseSensitiveFilesystem] Patch target not found: {description}");
-      }
-
-      return target;
-    }
-
-    private static MethodInfo GetMoveNext(MethodInfo method) {
-      Type[] nestedTypes = method?.DeclaringType?.GetNestedTypes();
-      if (nestedTypes is null) {
-        return null;
-      }
-
-      foreach (Type type in nestedTypes) {
-        // The compiler-generated classes implementing IEnumerator typically have MoveNext()
-        if (!type.Name.Contains($"<{method.Name}>d__")) {
-          continue;
-        }
-
-        MethodInfo moveNextMethod = type.GetMethod("MoveNext", BindingFlags.Instance | BindingFlags.Public);
-        if (moveNextMethod != null) {
-          return moveNextMethod;
-        }
-      }
-
-      Log.Warning($"[CaseSensitiveFilesystem] No MoveNext() method found for {method.Name}");
-      return null;
-    }
-
     private static IEnumerable<CodeInstruction> ReplaceFileOrDirectoryExists(
       IEnumerable<CodeInstruction> instructions) {
       MethodInfo replacementMethod = SymbolExtensions.GetMethodInfo(() => Exists(null));
@@ -176,6 +119,43 @@ namespace StrongMods {
       }
 
       return codes.AsEnumerable();
+    }
+
+    // Replace only specific calls to Exists() because we don't want to incur the extra but unnecessary costs of the
+    // case-sensitive checks while the game is running, only during startup and loading. The four patch classes
+    // share one transpiler body, ReplaceFileOrDirectoryExists — each Transpiler is a one-line delegate to it.
+    // The two coroutine targets use MethodType.Enumerator, which resolves the compiler-generated MoveNext for us.
+
+    [HarmonyPatchCategory(Category)]
+    [HarmonyPatch(typeof(Localization), nameof(Localization.LoadPatchDictionaries))]
+    public static class LocalizationLoadPatchDictionariesPatch {
+      public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+        return ReplaceFileOrDirectoryExists(instructions);
+      }
+    }
+
+    [HarmonyPatchCategory(Category)]
+    [HarmonyPatch(typeof(ModManager), nameof(ModManager.LoadUiAtlases), MethodType.Enumerator)]
+    public static class ModManagerLoadUiAtlasesPatch {
+      public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+        return ReplaceFileOrDirectoryExists(instructions);
+      }
+    }
+
+    [HarmonyPatchCategory(Category)]
+    [HarmonyPatch(typeof(ModManager), nameof(ModManager.LoadLocalizations), MethodType.Enumerator)]
+    public static class ModManagerLoadLocalizationsPatch {
+      public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+        return ReplaceFileOrDirectoryExists(instructions);
+      }
+    }
+
+    [HarmonyPatchCategory(Category)]
+    [HarmonyPatch(typeof(XmlPatchMethods), nameof(XmlPatchMethods.Include))]
+    public static class XmlPatchMethodsIncludePatch {
+      public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+        return ReplaceFileOrDirectoryExists(instructions);
+      }
     }
   }
 }

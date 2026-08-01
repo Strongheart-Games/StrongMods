@@ -58,11 +58,6 @@ public class SmokeTests {
     return Ctx.PatchClasses.Value.Select(pc => new object[] { pc.Mod, pc.Type.FullName });
   }
 
-  public static IEnumerable<object[]> ManifestCases() {
-    return Ctx.Manifests.Value.Select(m => new object[]
-      { m.Mod, $"{m.Method.DeclaringType.FullName}.{m.Method.Name}" });
-  }
-
   [Fact]
   public void All_code_mods_are_built() {
     Assert.True(Ctx.Inventory.Value.MissingDlls.Count == 0,
@@ -72,39 +67,41 @@ public class SmokeTests {
   [Theory]
   [MemberData(nameof(PatchClassCases))]
   public void Patch_targets_resolve(string mod, string typeName) {
-    (var _, Type type) = Ctx.PatchClasses.Value.First(pc => pc.Mod == mod && pc.Type.FullName == typeName);
+    (_, Type type) = Ctx.PatchClasses.Value.First(pc => pc.Mod == mod && pc.Type.FullName == typeName);
     TargetResolver.Result result = TargetResolver.CheckType(type, Ctx.Tree.Value);
     Assert.True(result.Failures.Count == 0, string.Join("\n\n", result.Failures));
   }
 
-  [Theory]
-  [MemberData(nameof(ManifestCases))]
-  public void Manifest_targets_resolve(string mod, string manifestName) {
-    (var _, MethodInfo method) = Ctx.Manifests.Value
-      .First(m => m.Mod == mod && $"{m.Method.DeclaringType.FullName}.{m.Method.Name}" == manifestName);
-
-    // Manifests are lazy yield methods: throws surface at enumeration, not invocation, so enumerate fully.
-    try {
-      var targets = ((IEnumerable)method.Invoke(null, null)).Cast<MethodBase>().ToList();
-      Assert.True(targets.All(t => t != null),
-        $"{manifestName} yielded a null target against {Ctx.Tree.Value.Label} — manifests must throw " +
-        "descriptively instead (see PatchTargetManifestAttribute)");
-    } catch (Exception ex) when (ex is not XunitException) {
-      Exception inner = ex is TargetInvocationException tie ? tie.InnerException ?? tie : ex;
-      Assert.Fail($"{manifestName} failed against {Ctx.Tree.Value.Label} ({Ctx.Tree.Value.Root}):\n" +
-                  $"  {inner.GetType().Name}: {inner.Message}");
+  [Fact]
+  public void Manifest_targets_resolve() {
+    // Zero manifests is the expected state while no mod patches programmatically (#44 removed the last
+    // site); this is a Fact rather than a Theory because xunit fails a Theory whose MemberData is empty.
+    // Any manifest that does exist must enumerate fully (manifests are lazy yield methods: throws surface
+    // at enumeration, not invocation) and yield no nulls.
+    foreach ((_, MethodInfo method) in Ctx.Manifests.Value) {
+      var manifestName = $"{method.DeclaringType.FullName}.{method.Name}";
+      try {
+        var targets = ((IEnumerable)method.Invoke(null, null)).Cast<MethodBase>().ToList();
+        Assert.True(targets.All(t => t != null),
+          $"{manifestName} yielded a null target against {Ctx.Tree.Value.Label} — manifests must throw " +
+          "descriptively instead (see PatchTargetManifestAttribute)");
+      } catch (Exception ex) when (ex is not XunitException) {
+        Exception inner = ex is TargetInvocationException tie ? tie.InnerException ?? tie : ex;
+        Assert.Fail($"{manifestName} failed against {Ctx.Tree.Value.Label} ({Ctx.Tree.Value.Root}):\n" +
+                    $"  {inner.GetType().Name}: {inner.Message}");
+      }
     }
   }
 
   [Fact]
   public void Coverage_sanity() {
-    // Guards against a refactor making the suite vacuously green: the repo demonstrably contains patches
-    // and at least one manifest (CaseSensitiveFilesystem.ExistsPatchTargets), so finding none means the
-    // discovery broke, not that the mods went patchless.
+    // Guards against a refactor making the suite vacuously green: the repo demonstrably contains patches,
+    // so finding none means the discovery broke, not that the mods went patchless. (No manifest-count
+    // assertion: zero manifests is the correct state since #44 — the conformance test below guards the
+    // pattern instead.)
     Assert.True(Ctx.PatchClasses.Value.Count > 0, "No [HarmonyPatch] classes found in any mod DLL");
     var totalSpecs = Ctx.PatchClasses.Value.Sum(pc => TargetResolver.CheckType(pc.Type, Ctx.Tree.Value).SpecCount);
     Assert.True(totalSpecs > 0, "Patch classes found but zero resolvable specs derived from them");
-    Assert.True(Ctx.Manifests.Value.Count > 0, "No [PatchTargetManifest] methods found in any mod DLL");
   }
 
   [Fact]
@@ -122,19 +119,21 @@ public class SmokeTests {
   public void Programmatic_patchers_publish_manifests() {
     // A project calling harmony.Patch(...) directly is invisible to attribute enumeration; it must publish
     // its targets. This failure message is deliberately the documentation (plan D8 test 5).
+    // Line-based so comment lines don't count: PatchTargetManifestAttribute's own doc-comment example
+    // contains `harmony.Patch(...)` and must not flag StrongMods.
     var patchCall = new Regex(@"\.Patch\s*\(");
     var offenders = new List<string>();
     foreach (ModInventory.CodeMod mod in Ctx.Inventory.Value.Mods) {
       var callSites = ModInventory.SourceFiles(mod)
-        .Where(f => patchCall.IsMatch(File.ReadAllText(f)))
+        .Where(f => File.ReadLines(f).Any(line => !line.TrimStart().StartsWith("//") && patchCall.IsMatch(line)))
         .Select(f => Path.GetRelativePath(mod.Dir, f)).ToList();
       if (callSites.Count > 0 && Ctx.Manifests.Value.All(m => m.Mod != mod.Name)) {
         offenders.Add($"{mod.Name} calls harmony.Patch(...) directly ({string.Join(", ", callSites)}) but " +
-                      "publishes no [PatchTargetManifest]. Tag a public static IEnumerable<MethodBase> " +
-                      "method that yields every patch target (throwing on any it cannot resolve), and " +
-                      "enumerate it from your patching code — see StrongMods/PatchTargetManifestAttribute.cs " +
-                      "for the contract and CaseSensitiveFilesystem.ExistsPatchTargets for the reference " +
-                      "implementation.");
+                      "publishes no [PatchTargetManifest]. Prefer converting to [HarmonyPatch] classes in a " +
+                      "config-gated [HarmonyPatchCategory] (see #44); if the patch must stay programmatic, " +
+                      "tag a public static IEnumerable<MethodBase> method that yields every patch target " +
+                      "(throwing on any it cannot resolve) and enumerate it from your patching code — " +
+                      "see StrongMods/PatchTargetManifestAttribute.cs for the contract and example.");
       }
     }
 

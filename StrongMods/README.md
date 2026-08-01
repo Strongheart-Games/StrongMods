@@ -14,9 +14,9 @@ Modding tools from Strongheart.
 * On case-insensitive filesystems (Windows) it enforces the case-sensitivity rules a Linux server would apply, logging
   path-casing mismatches and unloading mods whose `ModInfo.xml` casing is wrong — so a mod that would break on a Linux
   dedicated server breaks the same way locally.
-* Validates the `<Dependencies>` extension to `ModInfo.xml`: mods can declare the game versions and other mods
-  (with NuGet-style version ranges like `[1.2,2.0)`) they require, and StrongMods unloads any mod whose requirements
-  are not met — completely, before its code, XML patches, or localization take effect — with a clear log message like
+* Validates the `<Dependencies>` extension to `ModInfo.xml`: mods can declare the game versions and other mods (with
+  NuGet-style version ranges like `[1.2,2.0)`) they require, and StrongMods unloads any mod whose requirements are not
+  met — completely, before its code, XML patches, or localization take effect — with a clear log message like
   `SomeMod requires StrongUI [1.2,2.0), found 1.1`. Unloading cascades to dependents. Mods whose folders sort before
   `000000-StrongMods` load too early to be unloaded; their violations are still reported. See
   [`Docs/dependencies.md`](Docs/dependencies.md) for how to declare dependencies in your mod.
@@ -28,16 +28,16 @@ Modding tools from Strongheart.
 
 ## Programmatic Harmony patches
 
-Prefer `[HarmonyPatch]` attribute classes: the repo's test suite (`Tests`) discovers them by
-enumeration and verifies their targets still exist in the game assemblies on every run. When a patch *must* be
-applied programmatically — calling `harmony.Patch(...)` directly, e.g. to reuse one transpiler across several
-targets — the call is invisible to that enumeration, so the targets have to be published instead: a
-`public static IEnumerable<MethodBase>` method tagged `[PatchTargetManifest]`, which the patching code itself
-enumerates (keeping the published and patched lists identical) and the test suite invokes headlessly. The
-attribute is inert — nothing calls a tagged method automatically. See the doc comment in
-[`PatchTargetManifestAttribute.cs`](PatchTargetManifestAttribute.cs) for the contract and
-`CaseSensitiveFilesystem.ExistsPatchTargets()` for the reference implementation; a conformance test fails any
-mod that patches programmatically without publishing a manifest.
+Prefer `[HarmonyPatch]` attribute classes: the repo's test suite (`Tests`) discovers them by enumeration and verifies
+their targets still exist in the game assemblies on every run. When a patch *must* be applied programmatically — calling
+`harmony.Patch(...)` directly, e.g. to reuse one transpiler across several targets — the call is invisible to that
+enumeration, so the targets have to be published instead: a
+`public static IEnumerable<MethodBase>` method tagged `[PatchTargetManifest]`, which the patching code itself enumerates
+(keeping the published and patched lists identical) and the test suite invokes headlessly. The attribute is inert —
+nothing calls a tagged method automatically. See the doc comment in
+[`PatchTargetManifestAttribute.cs`](PatchTargetManifestAttribute.cs) for the contract and a usage example; a conformance
+test fails any mod that patches programmatically without publishing a manifest. The repo currently has no programmatic
+patch site — the last one was converted to categorized attribute patches (#44) — which is the preferred state.
 
 ## Installation
 
@@ -53,9 +53,9 @@ mod that patches programmatically without publishing a manifest.
 * All other deployments:
   * Deploy to host (in single-player this is your game)
   * EAC must be disabled
-* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, case-sensitivity
-  checks, dependency validation) is toggled in code and all are on by default, except the case-sensitivity checks
-  which only activate on a case-insensitive filesystem
+* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, case-sensitivity checks,
+  dependency validation) is toggled in code and all are on by default, except the case-sensitivity checks which only
+  activate on a case-insensitive filesystem
 
 ## Changelog
 
@@ -63,8 +63,8 @@ mod that patches programmatically without publishing a manifest.
 
 * Added `<Dependencies>` validation: mods can declare required game versions and mods in `ModInfo.xml`; violators are
   unloaded (or reported, when they load before StrongMods). See `.ai/modinfo-dependencies-v1-spec.md` for the spec.
-* Extracted the mod-unloading machinery (`ModUnloader`) shared by the case-sensitivity checks and dependency
-  validation; unload log messages now include the reason
+* Extracted the mod-unloading machinery (`ModUnloader`) shared by the case-sensitivity checks and dependency validation;
+  unload log messages now include the reason
 
 ### 0.0.1
 

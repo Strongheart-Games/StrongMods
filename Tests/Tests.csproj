@@ -30,10 +30,12 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <!-- The game's 0Harmony is a thin Harmony build: it references MonoMod.Backports without shipping it.
-         In-game Mono never resolves the reference; CoreCLR resolves it eagerly, so tests must supply it
-         (test-harness-plan.md R2). -->
+    <!-- The game's 0Harmony is a thin Harmony build: it references MonoMod assemblies without shipping them.
+         In-game Mono never resolves the references it doesn't execute; CoreCLR resolves eagerly, so tests must
+         supply them (test-harness-plan.md R2). Backports surfaces on any AccessTools call; Utils on the
+         MethodType.Enumerator resolution path (AccessTools.EnumeratorMoveNext). -->
     <PackageReference Include="MonoMod.Backports" Version="1.1.2" />
+    <PackageReference Include="MonoMod.Utils" Version="25.0.6" />
   </ItemGroup>
 
   <ItemGroup>
