@@ -93,7 +93,30 @@ XML coverage for free.
 
 ## Results
 
-### B. (pending)
+### B. vendor.cs edited; no-touch verification passed (2026-08-02)
+
+The change is 15 lines across two files: `vendor.cs` gains a `Data/Config` existence check beside the Managed
+and Harmony ones, a wholesale copy loop in the Harmony loop's idiom, and a rewritten header paragraph; CLAUDE.md's
+one-line description of the tool now says "assemblies and vanilla `Data/Config`". Nothing else was touched —
+`pack.cs`/`push.cs`/`release.cs`/`GamePaths.props`/CI were confirmed content-agnostic during scoping (§2) and the
+run below exercised all of them unmodified.
+
+Vendored the live game b14 install to `.scratch/59-verify/vendor` (nothing tracked or live written):
+
+| Check | Result |
+| --- | --- |
+| Tree | **228 files, 80.9 MB** (was 169 / 48.9 MB) — the issue's ~82 MB estimate, confirmed |
+| Manifest diff vs the in-place tree | **0 removed, 0 changed, 59 added** — every pre-existing entry byte-identical (size + SHA-256), additions confined to `Data/Config/`, `BlockUpdates.csv` → `worldglobal.xml` |
+| `pack.cs --verify-tree` | 228/228 hash-match, buildid 24436778 |
+| `dotnet build StrongMods.sln -c Debug -p:SdtdDir=<scratch tree>` | Build succeeded, 0 warnings, 0 errors |
+| `dotnet test -p:SdtdDir=<scratch tree>` | **126/126 passed** |
+
+The enriched tree is still point-and-go as a build root, which was the property at risk. Capture shape matches
+the issue's table exactly: 54 XML (incl. the three `XUi_*` subdirs) + `Localization.csv` + 4 other files; all
+filenames plain ASCII with no path characters that NuGet would object to.
+
+Diff helper: `.scratch/59-verify/manifest-diff.cs` (disposable, deleted at the end of phase C — the repo's
+"maintained code is C#" rule means nothing here graduates).
 
 ### C. (pending)
 
