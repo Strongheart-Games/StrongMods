@@ -102,7 +102,7 @@ deploys by construction.
   comment records the verified sort facts (the game's comparison is culture-aware, not ordinal). Raw
   `<ModLoadPrefix>` remains the escape hatch; setting both is a build error.
 - `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
-- `<ModDeploy>false</ModDeploy>` marks a project that never deploys (both templates; `Hades`).
+- `<IsDeployable>false</IsDeployable>` marks a project that never deploys (both templates; `Tests`).
 - `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch.
   Plain builds no longer need it for safety. Do not combine `-t:Deploy` with `-p:SdtdDir=` (a vendored tree
   would receive the deploy).
@@ -259,7 +259,7 @@ New `.cs` files are picked up automatically by the SDK's glob — no csproj edit
 around (`.ai\**` is excluded). Deviate from the defaults only where needed, between the two imports: `ModLoadTier`
 for load order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
 
-The templates set `<ModDeploy>false</ModDeploy>` inside a `<!--#if (IsTemplate) -->` block so they never install
+The templates set `<IsDeployable>false</IsDeployable>` inside a `<!--#if (IsTemplate) -->` block so they never install
 themselves into the game. `dotnet new` strips that block, so generated projects deploy normally — leave it alone.
 
 A new mod also needs a `mod:<Name>` issue label, and only a human can create it (see *Issues* below) — ask for it
