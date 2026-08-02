@@ -54,6 +54,14 @@
     </ItemGroup>
   </Target>
 
+  <!-- `dotnet test` on the solution forwards VSTest to every project. SDK projects inherit the target from
+       Microsoft.TestPlatform.ImportAfter.targets (auto-imported by Microsoft.Common.targets) and no-op it for
+       anything without IsTestProject=true; a bare <Project> never sees that import, so without this the whole
+       command fails with MSB4057 (issue #51). Same shape as the restore probe above, and as the no-op Deploy in
+       Tests.csproj: a project that cannot participate in a solution-wide target says so with an empty target
+       rather than an error. -->
+  <Target Name="VSTest" />
+
   <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
   <Import Project="$(MSBuildThisFileDirectory)XmlLint.targets" />
 

@@ -66,6 +66,23 @@ What this change must show:
 Once the `_Dump` situation in §4 resolves, `dotnet test StrongMods.sln -c Debug` should exit 0 — that is the
 issue's stated acceptance criterion and the natural moment to confirm it.
 
+### Results (2026-08-02)
+
+`_Dump` was already gone by implementation time (the #43 thread removed it), so the issue's **full** acceptance
+criterion could be demonstrated after all, not just the narrower one §3 was hedged toward.
+
+| Check | Result |
+| --- | --- |
+| 1. Errors gone | ✅ `dotnet test StrongMods.sln -c Debug`: `MSB4057` 11 → **0**, and 0 errors of any kind. **Exit code 0** — the issue's stated criterion, met in full |
+| 2. No new test failures | ✅ 116 passed / 0 failed, identical to the baseline captured immediately before the edit. `git status Tests/` was byte-identical before and after, so no drift from the concurrent #43 work confounds the comparison |
+| 3. Build unaffected | ✅ `dotnet build StrongMods.sln -c Debug`: succeeded, 0 warnings, 0 errors |
+| 4. Deploy unaffected | ✅ Redirected solution `-t:Deploy`: 28 mod folders + 1 StrongholdSaves file, matching the #24 baseline exactly |
+| 5. Evaluation diff | ✅ All 32 projects vs a `HEAD` worktree. Every diff is worktree-path noise in the absolute `TargetDir`/`TargetPath`; no evaluated property changed. The **12 non-SDK projects — the 9 modlets, 2 overlays, and the modlet template, i.e. exactly the files this change affects — show zero diffs at all**, which is the sharpest form of the no-op claim |
+
+Adding a target changes no evaluated property, which is why check 5 is clean by construction; it is run anyway
+because "obviously a no-op" is the class of claim that has bitten this build system before (`Overlay.props`' empty
+`$(ModsDir)` incident).
+
 ## 4. Coordination — findings in `Tests/`, not touched
 
 The spike surfaced two things in the in-flight foreach effort's territory. Both are **reported, not acted on**;
