@@ -4,8 +4,13 @@
     Per-machine build overrides.
 
     To use: copy this file to Local.props in the repo root and edit. Local.props is gitignored, so your local paths
-    never reach the repo. It is picked up by build\GamePaths.props, which every project reaches through either
-    build\Mod.props (code mods) or build\Modlet.targets (modlets).
+    never reach the repo. It is picked up by build\GamePaths.props, which every project reaches through its shape's
+    entry point (build\Mod.props, build\Modlet.targets, build\Overlay.props) — plus Tests\Tests.csproj, which
+    imports it directly.
+
+    USE ABSOLUTE PATHS IN THIS FILE. A relative value would change meaning with whatever directory each build
+    happens to be invoked from — acceptable for a one-off command line (-p:SdtdDir=vendor/game/..., resolved
+    against the directory you run from; see build\GamePaths.props), never for per-machine config.
 
     Precedence for the install path, highest first:
       1. -p:SdtdDir=...              on the MSBuild command line
@@ -22,8 +27,10 @@
     <!-- Only needed if the dedicated server is not at "<SdtdDir> Dedicated Server". -->
     <!-- <SdtdServerDir>D:\Games\steamapps\common\7 Days To Die Dedicated Server</SdtdServerDir> -->
 
-    <!-- Build without deploying: send Debug output somewhere other than the live game's Mods folder. -->
-    <!-- <ModsDir>C:\Temp\sdtd-verify</ModsDir> -->
+    <!-- Permanent redirect for the Deploy target: -t:Deploy installs into $(ModsDir)\<mod folder>. Plain builds
+         never touch it — they stage to bin\ only — so this matters only when deploying. Point it inside the
+         repo's gitignored .scratch\ on a machine that should never install into a live game: -->
+    <!-- <ModsDir>C:\path\to\StrongMods\.scratch\deploy</ModsDir> -->
 
   </PropertyGroup>
 

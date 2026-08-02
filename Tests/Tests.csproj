@@ -15,15 +15,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsDeployable>false</IsDeployable>
-    <!-- A repo-root-relative -p:SdtdDir=vendor/... (the documented usage) trips GamePaths.props twice: its
-         layout detection Exists() and this project's HintPath both resolve relative paths against the PROJECT
-         directory, not the invocation directory the caller meant. Anchor to the invocation directory and re-run
-         the layout detection (same two-condition logic as build\GamePaths.props) on the anchored path; absolute
-         inputs pass through all of this unchanged. -->
-    <SdtdDirAbs>$([System.IO.Path]::GetFullPath('$(SdtdDir)'))</SdtdDirAbs>
-    <SdtdManagedDir Condition="Exists('$(SdtdDirAbs)\7DaysToDieServer_Data\Managed')">$(SdtdDirAbs)\7DaysToDieServer_Data\Managed</SdtdManagedDir>
-    <SdtdManagedDir Condition="!Exists('$(SdtdDirAbs)\7DaysToDieServer_Data\Managed')">$(SdtdDirAbs)\7DaysToDie_Data\Managed</SdtdManagedDir>
-    <SdtdHarmonyDir>$([System.IO.Path]::GetFullPath('$(SdtdHarmonyDir)'))</SdtdHarmonyDir>
   </PropertyGroup>
 
   <ItemGroup>

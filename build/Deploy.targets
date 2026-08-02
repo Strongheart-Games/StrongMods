@@ -16,8 +16,14 @@
     example: its Worlds\ holds ~400 MB of world binaries authored outside this repo.
 
     Deploying while $(SdtdDir) points at a vendored tree would "install" into the tree — do not combine
-    -t:Deploy with -p:SdtdDir. Relative -p:ModsDir values resolve against the invocation directory; prefer
-    absolute paths or repo-root-relative invocations.
+    -t:Deploy with -p:SdtdDir.
+
+    PASS -p:ModsDir AS AN ABSOLUTE PATH. A relative one does NOT resolve against the invocation directory (this
+    comment claimed it did until 2026-08-02; measured, it does not). _DeployDir below is computed while the
+    Deploy target runs, and MSBuild points the working directory at each PROJECT while running that project's
+    targets — so -p:ModsDir=.scratch/deploy silently writes a .scratch\deploy folder beside EVERY deploying
+    project instead of one at the repo root. #52 fixes it by anchoring to $(MSBuildStartupDirectory), the same
+    way build\GamePaths.props anchors a relative -p:SdtdDir (#46); this note goes when that lands.
   -->
 
   <!--

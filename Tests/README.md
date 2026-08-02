@@ -85,16 +85,14 @@ builds every mod and runs the suite against the default unit (the live game inst
 one property away (paths are baked in at build time, so switching triggers a rebuild of this project):
 
 ```bash
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=C:\path\to\vendor\dedicated-server\V3.1.0-b14
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=C:\path\to\vendor\game\V3.0.1-b4
+dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/dedicated-server/V3.1.0-b14
+dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/game/V3.0.1-b4
 ```
 
-**Give `SdtdDir` an absolute path until #46 lands.** A repo-root-relative one (`vendor/game/…`, as CLAUDE.md
-shows) resolves against each *project's* directory rather than the invocation directory, and the mod projects
-now in this project's build graph have no protection against that — the build fails with `NETSDK1052`. #46
-fixes it centrally in `build/GamePaths.props`, after which the relative form works everywhere.
+A relative path is resolved against the directory you run from (`build/GamePaths.props`), so run these from the
+repo root.
 
-CI runs the suite against both units on every push, and passes absolute paths already.
+CI runs the suite against both units on every push.
 
 ## Reading a failure
 

@@ -158,8 +158,9 @@ Three levels beyond running the game:
 2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. Every build also
    lints `ModInfo.xml` and `Config\**\*.xml` for XML well-formedness (`build/XmlLint.targets`), so a malformed
    patch file fails the build instead of failing at game load. To verify the
-   *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=.scratch/...` (and `-p:SdtdSavesDir=` for the
-   StrongholdSaves overlay).
+   *deploy step* itself, run `-t:Deploy` with `-p:ModsDir=<abs>\.scratch\...` (and `-p:SdtdSavesDir=<abs>` for
+   the StrongholdSaves overlay). **Both must be absolute until #52 lands** — a relative value resolves against
+   each *project's* directory at deploy time, scattering the deploy beside all 29 of them.
 3. **The test suite** — `Tests` (modern .NET, not a mod; the single home for every runner-based test in the
    repo): `dotnet test StrongMods.sln -c Debug`
    resolves every mod's Harmony patch targets — `[HarmonyPatch]` attributes and `[PatchTargetManifest]`-published
@@ -280,7 +281,8 @@ cycle must produce self-contained edits.
   in those locations outside of that build path without explicit human approval, and use a redirected build (see
   *Scratch space* below) whenever deploying is not the goal. Treat everything else on the machine as out of scope.
 * **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected
-  verification builds (`-p:ModsDir=.scratch/deploy`, `-p:SavesOutputPath=.scratch/saves`), baseline `git worktree`s,
+  verification builds (`-p:ModsDir` and `-p:SdtdSavesDir`, both pointed at absolute paths inside `.scratch\`;
+  see *Verifying* for why absolute), baseline `git worktree`s,
   captured evaluation JSON, experiment output. Never use `C:\Temp` or other out-of-scope locations. Anything under
   `.scratch/` may be deleted at any time; clean up worktrees with `git worktree remove` before deleting their
   directories so git's metadata does not dangle.
