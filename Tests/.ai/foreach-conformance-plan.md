@@ -108,6 +108,24 @@ possibly vendoring the real dependency mods for testing)? The end state is per-m
 runtime complement to #41's structural lint. Explicitly cut to its own issue if the earlier waves surface
 enough friction or the findings backlog deserves its own tracking.
 
+**D6 (added after wave B3, from #51) — fixture projects must order their own dependencies, and a test says so.**
+A helper assembly under `Tests\` that compiles against a repo project via `HintPath` into its `bin\` has nothing
+in the build graph ordering that project first: it passes on any machine where the sibling was ever built and
+fails on a clean checkout (reproduced: 5× `CS0246`). The fix is a `ProjectReference` carrying
+`ReferenceOutputAssembly="false"` (orders without changing what is compiled) plus
+`SkipGetTargetFrameworkProperties="true"` (skips the TFM check — needed here because the fixture is
+netstandard2.0 and StrongMods is net481). Documentation alone would not hold, because the trap is inherited by
+copy-paste, so `Tests\ProjectConventionTests.cs` scans every repo `.csproj` and fails with the fix inline —
+the same enforce-don't-document choice as #44's manifest conformance test. The full fixture-project checklist
+lives in `Tests/README.md`.
+
+**D7 (added after wave B3) — diagnostic probes must not leave a failing suite behind.** Reading the engine's
+real messages before asserting on them is what keeps this suite's assertions non-vacuous, and every wave has
+used it. But the wave-B3 probe (`_Dump`, an `Assert.True(false, …)` dumping messages) sat in the working tree
+long enough for a parallel session to see a red suite on a green SHA (#51's first finding). The technique
+stays; the red does not. Probes write their output to `.scratch\` and pass, or live in a scratch runner —
+never an intentionally failing test in `Tests\`.
+
 ## 4. Iterations (each gated, each ≤ the size limits)
 
 1. **Spikes S1+S2** (scratch, no tracked changes) → results logged here.
@@ -115,9 +133,13 @@ enough friction or the findings backlog deserves its own tracking.
    per D1), plus the "Writing a loop" + "Filling in values" sections as the first conformance classes. Proves
    the whole path; likely the largest single iteration (~250 lines, mostly fixtures).
 3. **Wave B — the conformance matrix**: remaining spec sections in 2–3 iterations (bind tables, functions,
-   dynamic names, error/skip semantics, gotchas).
-4. **Wave C — patcher tests** (D4).
-5. **Wave D — go/no-go decision with the owner, then the exploratory pass and findings triage** (D5). Findings
+   dynamic names, error/skip semantics, gotchas). *Ran as B2 (functions) and B3 (failure modes and gotchas);
+   with wave A2 that completes every section of the spec.*
+4. **Wave B4 — fixture-project hygiene** (D6, D7): the FunctionMod ordering fix, the convention test that
+   generalizes it, and the documentation. No new spec coverage; inserted after #51 surfaced the trap, because
+   every later wave that adds a fixture would otherwise inherit it.
+5. **Wave C — patcher tests** (D4).
+6. **Wave D — go/no-go decision with the owner, then the exploratory pass and findings triage** (D5). Findings
    that turn into mod-behavior changes (graceful-failure guards) are separate per-mod iterations or issues,
    never bundled into the test change.
 
