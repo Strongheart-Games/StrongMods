@@ -9,11 +9,12 @@
 //     dotnet run build/tools/vendor.cs -- --unit game --label V2.5-b8
 //     dotnet run build/tools/vendor.cs -- --unit dedicated-server --label V2.5-b8 [--force]
 //
-// Copies every DLL in the unit's Managed directory plus the entire Mods/0_TFP_Harmony folder into a tree that
-// mirrors the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data name;
-// build/GamePaths.props detects either layout), so the build consumes it with nothing more than
-// -p:SdtdDir=vendor/<unit>/<label>. The whole Harmony folder matters: the game's 0Harmony is a thin build whose
-// MonoMod/Cecil siblings are required to execute Harmony code outside the game (#48).
+// Copies every DLL in the unit's Managed directory, plus the entire Mods/0_TFP_Harmony and Data/Config folders,
+// into a tree that mirrors the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data
+// name; build/GamePaths.props detects either layout), so the build consumes it with nothing more than
+// -p:SdtdDir=vendor/<unit>/<label>. Whole folders, never a cherry-pick: the game's 0Harmony is a thin build
+// whose MonoMod/Cecil siblings are required to execute Harmony code outside the game (#48), and Data/Config is
+// the vanilla XML/CSV that patch-application and localization tests read through $(SdtdDir) (#59).
 // Always redirect -p:ModsDir when building against a vendored tree, or Debug deploys into it.
 //
 // The label is the human coordinate (the in-game "V 2.5 b8" as V2.5-b8); machine provenance — Steam buildid,
@@ -101,6 +102,11 @@ internal static class Vendor {
       throw new VendorError($"{Path.Combine(harmonyDir, "0Harmony.dll")} not found");
     }
 
+    var configDir = Path.Combine(install, "Data", "Config");
+    if (!Directory.Exists(configDir)) {
+      throw new VendorError($"{configDir} not found");
+    }
+
     var dest = Path.Combine(outputRootArg ?? Path.Combine(RepoRoot(), "vendor"), unit, label);
     if (Directory.Exists(dest)) {
       if (!force) {
@@ -129,6 +135,12 @@ internal static class Vendor {
     foreach (var file in Directory.GetFiles(harmonyDir, "*", SearchOption.AllDirectories)
                .OrderBy(p => p, StringComparer.Ordinal)) {
       VendorFile(file, $"Mods/0_TFP_Harmony/{Path.GetRelativePath(harmonyDir, file).Replace('\\', '/')}");
+    }
+
+    // Vanilla XML/CSV, wholesale for the same reason — see the header comment (#59).
+    foreach (var file in Directory.GetFiles(configDir, "*", SearchOption.AllDirectories)
+               .OrderBy(p => p, StringComparer.Ordinal)) {
+      VendorFile(file, $"Data/Config/{Path.GetRelativePath(configDir, file).Replace('\\', '/')}");
     }
 
     (string? acf, string? buildid, string? betakey) = SteamProvenance(info, install);

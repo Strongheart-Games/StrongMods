@@ -114,7 +114,7 @@ root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDT
 
 ### Building without the game
 
-`build/tools/vendor.cs` copies a unit's assemblies into the gitignored `vendor/` tree
+`build/tools/vendor.cs` copies a unit's assemblies and vanilla `Data/Config` into the gitignored `vendor/` tree
 (`vendor/game/<label>/`, `vendor/dedicated-server/<label>/` — see its header comment for labels and provenance).
 Any such tree, or a live install of either unit, works as a build root:
 
