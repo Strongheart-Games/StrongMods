@@ -24,6 +24,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The HintPath supplies the reference; the ProjectReference exists ONLY to order StrongMods ahead of
+         this project. Without it nothing in the graph does, and a clean checkout fails with CS0246 on the
+         attribute (#51). ReferenceOutputAssembly=false keeps the ordering while leaving the reference to the
+         HintPath, and SkipGetTargetFrameworkProperties skips the TFM-compatibility check that would otherwise
+         reject a netstandard2.0 project pointing at a net481 one. -->
+    <ProjectReference Include="..\..\StrongMods\StrongMods.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true" />
     <Reference Include="StrongMods">
       <HintPath>..\..\StrongMods\bin\$(Configuration)\StrongMods.dll</HintPath>
       <Private>false</Private>
