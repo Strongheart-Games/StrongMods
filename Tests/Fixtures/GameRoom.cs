@@ -69,7 +69,14 @@ public sealed class GameRoom {
     object target = NewXmlFile(targetXml, "target.xml");
     object patchFile = NewXmlFile(patchXml, "patch.xml");
     XElement patchElement = Document(patchFile).Root!;
-    var applied = (bool)singlePatch.Invoke(null, new[] { target, patchElement, patchFile, fixtureMod })!;
+    bool applied;
+    try {
+      applied = (bool)singlePatch.Invoke(null, new[] { target, patchElement, patchFile, fixtureMod })!;
+    } catch (TargetInvocationException e) when (e.InnerException != null) {
+      // Tests assert on the game's own failures, not on reflection's wrapper around them.
+      throw e.InnerException;
+    }
+
     return new PatchOutcome(applied, Normalize(Document(target)), captured.ToList());
   }
 

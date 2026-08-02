@@ -1,4 +1,5 @@
-﻿using Tests.Fixtures;
+﻿using System;
+using Tests.Fixtures;
 using Xunit;
 
 namespace Tests.Foreach;
@@ -66,6 +67,46 @@ public class LoopBasicsTests {
 
     Assert.True(result.Applied, string.Join("\n", result.Logs));
     Assert.Contains("""<pair item="alpha" part="1" /><pair item="alpha" part="2" />""", result.Xml);
+  }
+
+  [Fact]
+  public void As_must_not_start_with_a_digit() {
+    // Spec: as is "Letters, digits, underscores; must not start with a digit."
+    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+      <foreach xpath="/items/item" as="2fast">
+        <append xpath="/items"><nope /></append>
+      </foreach>
+      """);
+
+    Assert.DoesNotContain("<nope", result.Xml);
+    Assert.Contains(result.Errors, e => e.Contains("is not a valid binding name"));
+  }
+
+  [Fact]
+  public void As_is_required() {
+    // Spec reference table: as is required. foreach itself rejects the omission.
+    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+      <foreach xpath="/items/item">
+        <append xpath="/items"><nope /></append>
+      </foreach>
+      """);
+
+    Assert.DoesNotContain("<nope", result.Xml);
+    Assert.Contains(result.Errors, e => e.Contains("missing required as attribute"));
+  }
+
+  [Fact]
+  public void Xpath_is_required_and_enforced_by_the_patcher_itself() {
+    // Spec reference table: xpath is required — but the rejection comes from vanilla dispatch, one layer
+    // above foreach: StrongMods registers foreach as a patch command that requires an xpath, so the patcher
+    // throws before the engine is ever called. Recorded as an exception, not a logged error, deliberately.
+    Exception thrown = Assert.ThrowsAny<Exception>(() => GameRoom.Instance.Value.Apply(ThreeItems, """
+      <foreach as="item">
+        <append xpath="/items"><nope /></append>
+      </foreach>
+      """));
+
+    Assert.Contains("'xpath' attribute", thrown.Message);
   }
 
   [Fact]
