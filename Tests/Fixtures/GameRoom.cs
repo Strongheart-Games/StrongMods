@@ -28,6 +28,9 @@ public sealed record PatchOutcome(bool Applied, string Xml, IReadOnlyList<LogEnt
 ///   Expensive to build (loads ~50 MB of assemblies, runs initializers); one per test session.
 /// </summary>
 public sealed class GameRoom {
+  /// <summary>The mod name &lt;function&gt; references resolve against; see Tests\FunctionMod.</summary>
+  public const string FixtureModName = "Tests.FunctionMod";
+
   public static readonly Lazy<GameRoom> Instance = new(() => new GameRoom());
 
   private readonly List<LogEntry> captured = new();
@@ -42,11 +45,13 @@ public sealed class GameRoom {
     var stubDir = GameTree.Metadata("UnityStubDir");
     var strongModsDir = Path.Combine(GameTree.Metadata("RepoRoot"), "StrongMods", "bin",
       GameTree.Metadata("Configuration"));
-    var context = new StubbedUnitContext(stubDir, new[] { managedDir, strongModsDir });
+    var functionModDir = GameTree.Metadata("FunctionModDir");
+    var context = new StubbedUnitContext(stubDir, new[] { managedDir, strongModsDir, functionModDir });
 
     Assembly acs = context.LoadFromAssemblyPath(Path.Combine(managedDir, "Assembly-CSharp.dll"));
     Assembly logLibrary = context.LoadFromAssemblyPath(Path.Combine(managedDir, "LogLibrary.dll"));
     Assembly strongMods = context.LoadFromAssemblyPath(Path.Combine(strongModsDir, "StrongMods.dll"));
+    Assembly functionMod = context.LoadFromAssemblyPath(Path.Combine(functionModDir, FixtureModName + ".dll"));
 
     xmlFileType = acs.GetType("XmlFile")!;
     xmlDocField = xmlFileType.GetField("XmlDoc")!;
@@ -57,6 +62,43 @@ public sealed class GameRoom {
 
     SubscribeToLog(logLibrary);
     SeedPatchMethods(acs, strongMods, patcher);
+    RegisterFixtureMod(acs, functionMod);
+  }
+
+  /// <summary>
+  ///   Presents the fixture mod to the game as a loaded mod, which is how a &lt;function&gt; reference of the
+  ///   form "Class.Method, ModName" finds an assembly at all (the engine asks ModManager.GetMod). Nothing
+  ///   else about mod loading is simulated — this is exactly the lookup the reference performs.
+  /// </summary>
+  private static void RegisterFixtureMod(Assembly acs, Assembly functionMod) {
+    Type modType = acs.GetType("Mod")!;
+    object mod = Activator.CreateInstance(modType)!;
+    SetMember(modType, mod, "Name", FixtureModName);
+    SetMember(modType, mod, "allAssemblies", new List<Assembly> { functionMod });
+
+    object loadedMods = acs.GetType("ModManager")!
+      .GetField("loadedMods", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!
+      .GetValue(null)!;
+    MethodInfo add = loadedMods.GetType().GetMethods()
+      .First(m => m.Name == "Add" && m.GetParameters().Length == 2);
+    add.Invoke(loadedMods, new[] { FixtureModName, mod });
+  }
+
+  private static void SetMember(Type type, object instance, string name, object value) {
+    const BindingFlags Instance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+    MemberInfo member = type.GetMember(name, Instance).First();
+    switch (member) {
+      case PropertyInfo property when property.CanWrite:
+        property.SetValue(instance, value);
+        break;
+      case FieldInfo field:
+        field.SetValue(instance, value);
+        break;
+      default:
+        type.GetField($"<{name}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+          .SetValue(instance, value);
+        break;
+    }
   }
 
   /// <summary>

@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The "C# mod" the <function> spec section requires: patch functions must be tagged [XmlPatchFunction] and
+    live in a mod's own assembly, so conformance tests need a real one. Fixtures\GameRoom.cs loads this beside
+    the game's assemblies and registers it with ModManager as a loaded mod named Tests.FunctionMod, which is
+    what a <function method="...,Tests.FunctionMod"> reference resolves against.
+
+    Compiled against StrongMods.dll rather than carrying its own copy of the attribute: the engine's check is
+    typed (GetCustomAttribute<XmlPatchFunctionAttribute>()), so the identity has to be the same one the room
+    loads. netstandard2.0 keeps it loadable by either runtime and needs no framework reference assemblies —
+    the functions here only touch string.
+
+    Not a shipped mod: no ModInfo.xml, no build\ entry points, never deployed.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Tests.FunctionMod</AssemblyName>
+    <RootNamespace>Tests.FunctionMod</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsDeployable>false</IsDeployable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="StrongMods">
+      <HintPath>..\..\StrongMods\bin\$(Configuration)\StrongMods.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="Deploy" />
+
+</Project>

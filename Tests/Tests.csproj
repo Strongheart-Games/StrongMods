@@ -14,7 +14,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <ModDeploy>false</ModDeploy>
+    <IsDeployable>false</IsDeployable>
     <!-- A repo-root-relative -p:SdtdDir=vendor/... (the documented usage) trips GamePaths.props twice: its
          layout detection Exists() and this project's HintPath both resolve relative paths against the PROJECT
          directory, not the invocation directory the caller meant. Anchor to the invocation directory and re-run
@@ -51,10 +51,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Stubs\ is its own project. The SDK's glob would otherwise compile its sources AND its generated
-         obj\ files into this assembly (duplicate-attribute errors the moment Stubs\obj exists). -->
+    <!-- Stubs\ and FunctionMod\ are their own projects. The SDK's glob would otherwise compile their sources
+         AND their generated obj\ files into this assembly (duplicate-attribute errors the moment those
+         obj\ folders exist). -->
     <Compile Remove="Stubs\**" />
     <None Remove="Stubs\**" />
+    <Compile Remove="FunctionMod\**" />
+    <None Remove="FunctionMod\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,11 +66,16 @@
          shadow the real Unity types their patch-target signatures need. The conformance room loads it by
          path (UnityStubDir below); see Stubs\UnityStub.csproj. -->
     <ProjectReference Include="Stubs\UnityStub.csproj" ReferenceOutputAssembly="false" />
+    <!-- Same deal for the fixture mod: build it, but keep it out of this output directory. It must load into
+         the conformance room, where StrongMods lives, or its [XmlPatchFunction] would be a different type
+         than the one the engine checks for. -->
+    <ProjectReference Include="FunctionMod\FunctionMod.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <AssemblyMetadata Include="SdtdManagedDir" Value="$(SdtdManagedDir)" />
     <AssemblyMetadata Include="UnityStubDir" Value="$(MSBuildProjectDirectory)\Stubs\bin\$(Configuration)" />
+    <AssemblyMetadata Include="FunctionModDir" Value="$(MSBuildProjectDirectory)\FunctionMod\bin\$(Configuration)" />
     <AssemblyMetadata Include="SdtdHarmonyDir" Value="$(SdtdHarmonyDir)" />
     <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\" />
     <AssemblyMetadata Include="Configuration" Value="$(Configuration)" />
