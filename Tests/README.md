@@ -25,6 +25,27 @@ through a `[PatchTargetManifest]` (see the StrongMods README on programmatic pat
 assemblies under test — plus a conformance test that fails any mod patching programmatically without publishing a
 manifest, and a permanent negative control proving the suite can fail.
 
+The `<foreach>` spec conformance suite (#43), covering every clause of `StrongMods/Docs/foreach.md`, and
+`ProjectConventionTests`, which reads the repo's `.csproj` files rather than running anything.
+
+## Adding a fixture project
+
+Some tests need a helper assembly rather than a helper class — `Stubs\` (a stand-in `UnityEngine.CoreModule`) and
+`FunctionMod\` (a real mod carrying `[XmlPatchFunction]` methods) are the two so far. Both are separate projects
+nested under `Tests\`, and both need the same three things:
+
+1. **`<ProjectReference … ReferenceOutputAssembly="false" />` from `Tests.csproj`.** Builds the fixture, but keeps
+   it out of the test output directory — anything sitting there is reachable by the *smoke* tests' load context,
+   which must keep seeing the real game assemblies. The conformance room loads fixtures by path instead
+   (`AssemblyMetadata` carries the directory).
+2. **`<Compile Remove="…\**" />` in `Tests.csproj`.** Otherwise the SDK's glob compiles the nested project's
+   sources *and* its generated `obj\` files into the test assembly. This one hides: it only breaks once that
+   `obj\` folder exists, so the first build after adding a project succeeds and the second fails.
+3. **A `ProjectReference` to every repo project it compiles against**, even when the reference itself comes from a
+   `HintPath` — `ReferenceOutputAssembly="false"` orders the build without changing what is compiled, and
+   `SkipGetTargetFrameworkProperties="true"` is needed when the two target different frameworks. Without it
+   nothing orders the dependency and a clean checkout can fail (#51). `ProjectConventionTests` enforces this one.
+
 ## What can be tested headlessly
 
 The mod and game assemblies are built for the game's old framework, but the test process can load **and
@@ -64,11 +85,16 @@ builds every mod and runs the suite against the default unit (the live game inst
 one property away (paths are baked in at build time, so switching triggers a rebuild of this project):
 
 ```bash
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/dedicated-server/V3.1.0-b14
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/game/V3.0.1-b4
+dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=C:\path\to\vendor\dedicated-server\V3.1.0-b14
+dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=C:\path\to\vendor\game\V3.0.1-b4
 ```
 
-CI runs the suite against both units on every push.
+**Give `SdtdDir` an absolute path until #46 lands.** A repo-root-relative one (`vendor/game/…`, as CLAUDE.md
+shows) resolves against each *project's* directory rather than the invocation directory, and the mod projects
+now in this project's build graph have no protection against that — the build fails with `NETSDK1052`. #46
+fixes it centrally in `build/GamePaths.props`, after which the relative form works everywhere.
+
+CI runs the suite against both units on every push, and passes absolute paths already.
 
 ## Reading a failure
 
