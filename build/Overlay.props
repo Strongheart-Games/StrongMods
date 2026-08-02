@@ -19,7 +19,7 @@
 
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+    <IsDeployable Condition="'$(IsDeployable)' == ''">true</IsDeployable>
   </PropertyGroup>
 
 </Project>

@@ -169,6 +169,10 @@ both toolchains now build the full solution with **zero warnings** — which als
 warnings-as-errors in CI someday. Failure mode if NuGet ever changes this internal contract: the warnings return,
 nothing breaks.
 
+**Property rename (2026-08-02, [#24](https://github.com/Strongheart-Games/StrongMods/issues/24)):** the capability
+gate this doc calls `ModDeploy` is now **`IsDeployable`**, spelled after the SDK's `IsPackable`/`IsPublishable`.
+Behavior is unchanged; `ModDeploy` above is the historical name. Rationale in `.ai/is-deployable-rename.md`.
+
 ## 5. Risks
 
 | Risk | Assessment | Mitigation |

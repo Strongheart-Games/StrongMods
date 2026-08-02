@@ -102,7 +102,22 @@ property with an obsolete example would be knowingly shipping a wrong line.
    still loads.
 6. **Final sweep.** `grep -r ModDeploy` returns hits only in `ModDeployName` and the four frozen `.ai/` docs.
 
-Results get recorded here before the phase pauses.
+### Results (2026-08-02)
+
+| Check | Result |
+| --- | --- |
+| 1. Evaluation diff | ✅ All 32 solution projects vs a `HEAD` worktree. Every diff is either the two expected gate keys or worktree-path noise. `OutputPath`, `OutDir`, `ModDeployName`, `ModsDir`, `DeployRoot`, `ModStagingDir`, `ModLoadPrefix` identical everywhere — none appears in any diff. `TargetDir`/`TargetPath` differ only by the `.scratch\baseline-24\` prefix (they are absolute; `OutDir` is relative, hence clean — the trap the `compare-eval` header warns about, seen from the other side) |
+| 1b. Gate map preserved | ✅ Baseline `ModDeploy` and post-change `IsDeployable` read `false` for exactly the same three projects — `Template7DtDMod`, `Template7DtDModlet`, `Tests` — and `true` for the other 29. `ModDeploy` now evaluates empty in all 32 |
+| 2. Full build | ✅ `dotnet build StrongMods.sln -c Debug`: exit 0, **0 warnings**, 0 errors |
+| 3. Redirected deploy | ✅ Solution `-t:Deploy` into `.scratch/`: 28 mod folders + the one `StrongholdSaves` file (`StrongMods\custom_chat_commands.xml`) = 29 deploying projects. Neither template nor `Tests` produced anything — the gate holds under its new name |
+| 4. Scaffolding | ✅ Both templates installed, instantiated, uninstalled (machine left as found). Generated `.csproj`s contain **no** `IsDeployable` line — stripped to the canonical 4-line mod / 3-line modlet shapes — and evaluate `IsDeployable` = `true`, `ModDeploy` = empty |
+| 5. Test suite | ✅ `dotnet test StrongMods.sln -c Debug`: 94 passed, 0 failed |
+| 6. Final sweep | ✅ No live build file or `.csproj` mentions the old name. Remaining hits are `ModDeployName`, the four frozen `.ai/` docs, and the deliberate historical references in this doc and `f4-deploy-target.md` |
+
+Noted, not acted on: `dotnet test` on the solution emits 11 `MSB4057: The target "VSTest" does not exist`
+errors — the non-SDK modlet and overlay projects have no `VSTest` target for `dotnet test` to forward to. The
+count is **11 both before and after** this change, so it is pre-existing and unrelated; the run still passes.
+Worth its own issue, not this one.
 
 ## 6. Out of scope
 

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <!-- The template project itself is scaffolding, not a shippable mod, so it must never install into the game.
          `dotnet new` strips this block when generating a project, so generated mods deploy normally. -->
-    <ModDeploy>false</ModDeploy>
+    <IsDeployable>false</IsDeployable>
   </PropertyGroup>
 <!--#endif -->
   <Import Project="..\build\Mod.targets" />

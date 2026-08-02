@@ -12,8 +12,8 @@
     deploy. The mirror is strictly scoped to the mod's own deploy folder.
 
     Mirroring assumes this repo manages the whole deploy folder. A project that deploys into a directory with
-    content the repo does not manage is an Overlay, not a Mod — see issue #25. Hades is parked with
-    <ModDeploy>false</ModDeploy> until it converts (issue #25); its Worlds\ holds unmanaged world binaries.
+    content the repo does not manage is an Overlay, not a Mod — use build\Overlay.targets instead. Hades is the
+    example: its Worlds\ holds ~400 MB of world binaries authored outside this repo.
 
     Deploying while $(SdtdDir) points at a vendored tree would "install" into the tree — do not combine
     -t:Deploy with -p:SdtdDir. Relative -p:ModsDir values resolve against the invocation directory; prefer
@@ -54,9 +54,10 @@
 
   <PropertyGroup>
     <ModDeployName Condition="'$(ModDeployName)' == ''">$(ModLoadPrefix)$(MSBuildProjectName)</ModDeployName>
-    <!-- Per-project capability gate: <ModDeploy>false</ModDeploy> marks a project that must never install into
-         the game — the dotnet new templates do this, and Hades pending #25. (Renaming this property: #24.) -->
-    <ModDeploy Condition="'$(ModDeploy)' == ''">true</ModDeploy>
+    <!-- Per-project capability gate, spelled after the SDK's own IsPackable/IsPublishable:
+         <IsDeployable>false</IsDeployable> marks a project that must never install into the game. Both dotnet new
+         templates set it (scaffolding, not shippable) and so does Tests (tooling, not a mod). -->
+    <IsDeployable Condition="'$(IsDeployable)' == ''">true</IsDeployable>
   </PropertyGroup>
 
   <Target Name="_ValidateModLoadTier" BeforeTargets="Build;Deploy">
@@ -66,7 +67,7 @@
            Text="$(MSBuildProjectName) sets unknown ModLoadTier '$(ModLoadTier)'. Valid tiers: First, AfterDependencies, Last, LocalConfig — see the map in build\Deploy.targets." />
   </Target>
 
-  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(IsDeployable)' == 'true'">
     <PropertyGroup>
       <_StagingDir Condition="'$(ModStagingDir)' != ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(ModStagingDir)'))</_StagingDir>
       <_StagingDir Condition="'$(_StagingDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutDir)'))</_StagingDir>

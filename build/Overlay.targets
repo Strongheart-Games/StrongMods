@@ -27,7 +27,7 @@
     load-bearing) and this file after.
 
     Extension points, set between the two imports: <DeployRoot>, <MirrorOnDeploy> items,
-    <OverlayContentExclude> extra staging excludes, <ModDeploy>false</ModDeploy> to never deploy (renaming: #24).
+    <OverlayContentExclude> extra staging excludes, <IsDeployable>false</IsDeployable> to never deploy.
   -->
 
   <PropertyGroup>
@@ -59,7 +59,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(ModDeploy)' == 'true'">
+  <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(IsDeployable)' == 'true'">
     <Error Condition="'$(ModsDir)' == ''"
            Text="build\Overlay.props was not imported by $(MSBuildProjectFile). Add &lt;Import Project=&quot;..\build\Overlay.props&quot; /&gt; as the first element of the project, BEFORE the properties that reference shared paths." />
     <Error Condition="'$(DeployRoot)' == ''"
