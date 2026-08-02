@@ -1,0 +1,169 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
+using System.Xml.Linq;
+
+namespace Tests.Fixtures;
+
+public enum LogLevel { Error = 0, Assert = 1, Warning = 2, Info = 3, Exception = 4 }
+
+public sealed record LogEntry(LogLevel Level, string Message);
+
+public sealed record PatchOutcome(bool Applied, string Xml, IReadOnlyList<LogEntry> Logs) {
+  public IEnumerable<string> Warnings => Logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Message);
+  public IEnumerable<string> Errors => Logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Message);
+}
+
+/// <summary>
+///   The game's assemblies loaded with our stub UnityEngine.CoreModule standing in for the real one, which is
+///   what makes game code that logs runnable outside the game: the real CoreModule's engine-internal callback
+///   registration throws in LogLibrary's Log initializer, poisoning the type, and everything that logs — the
+///   whole XML patcher — dies with it (#43 plan §2).
+///   Deliberately a separate room from <see cref="GameTree" />: the smoke tests keep the REAL CoreModule so
+///   patch targets whose signatures use Unity types still resolve. Nothing crosses between them.
+///   Expensive to build (loads ~50 MB of assemblies, runs initializers); one per test session.
+/// </summary>
+public sealed class GameRoom {
+  public static readonly Lazy<GameRoom> Instance = new(() => new GameRoom());
+
+  private readonly List<LogEntry> captured = new();
+  private readonly object fixtureMod;
+  private readonly FieldInfo xmlDocField;
+  private readonly Type xmlFileType;
+  private readonly MethodInfo singlePatch;
+
+  private GameRoom() {
+    // Touching GameTree first installs its default-context hook for 0Harmony, which StrongMods needs.
+    var managedDir = GameTree.Metadata("SdtdManagedDir");
+    var stubDir = GameTree.Metadata("UnityStubDir");
+    var strongModsDir = Path.Combine(GameTree.Metadata("RepoRoot"), "StrongMods", "bin",
+      GameTree.Metadata("Configuration"));
+    var context = new StubbedUnitContext(stubDir, new[] { managedDir, strongModsDir });
+
+    Assembly acs = context.LoadFromAssemblyPath(Path.Combine(managedDir, "Assembly-CSharp.dll"));
+    Assembly logLibrary = context.LoadFromAssemblyPath(Path.Combine(managedDir, "LogLibrary.dll"));
+    Assembly strongMods = context.LoadFromAssemblyPath(Path.Combine(strongModsDir, "StrongMods.dll"));
+
+    xmlFileType = acs.GetType("XmlFile")!;
+    xmlDocField = xmlFileType.GetField("XmlDoc")!;
+    fixtureMod = Activator.CreateInstance(acs.GetType("Mod")!)!;
+    Type patcher = acs.GetType("XmlPatcher")!;
+    singlePatch = patcher.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+      .First(m => m.Name == "singlePatch");
+
+    SubscribeToLog(logLibrary);
+    SeedPatchMethods(acs, strongMods, patcher);
+  }
+
+  /// <summary>
+  ///   Applies one patch command to one document and reports what happened — the whole surface the
+  ///   conformance tests need. Both XML strings are documents in their own right: the patch is a single
+  ///   command element such as <c>&lt;foreach …&gt;…&lt;/foreach&gt;</c>.
+  /// </summary>
+  public PatchOutcome Apply(string targetXml, string patchXml) {
+    captured.Clear();
+    object target = NewXmlFile(targetXml, "target.xml");
+    object patchFile = NewXmlFile(patchXml, "patch.xml");
+    XElement patchElement = Document(patchFile).Root!;
+    var applied = (bool)singlePatch.Invoke(null, new[] { target, patchElement, patchFile, fixtureMod })!;
+    return new PatchOutcome(applied, Normalize(Document(target)), captured.ToList());
+  }
+
+  private object NewXmlFile(string xml, string filename) =>
+    Activator.CreateInstance(xmlFileType, xml, "fixtures", filename, true)!;
+
+  private XDocument Document(object xmlFile) => (XDocument)xmlDocField.GetValue(xmlFile)!;
+
+  /// <summary>
+  ///   Vanilla patching narrates every change into the document as XML comments. Useful in-game, noise in an
+  ///   assertion, so tests see the document without them.
+  /// </summary>
+  private static string Normalize(XDocument document) {
+    var copy = new XDocument(document);
+    copy.DescendantNodes().OfType<XComment>().Remove();
+    return copy.ToString(SaveOptions.DisableFormatting);
+  }
+
+  /// <summary>
+  ///   Captures the game's own log output so tests can assert the spec'd skip-warnings and errors. Subscribes
+  ///   to the extended callback for the unformatted message (the plain one carries a timestamp prefix). The
+  ///   handler declares the LogType parameter as int: delegate binding accepts an enum's underlying type, and
+  ///   the enum itself lives in the room, out of this assembly's compile-time reach.
+  /// </summary>
+  private void SubscribeToLog(Assembly logLibrary) {
+    Type log = logLibrary.GetType("Log")!;
+    RuntimeHelpers.RunClassConstructor(log.TypeHandle);
+    EventInfo callbacks = log.GetEvent("LogCallbacksExtended")!;
+    MethodInfo handler = typeof(GameRoom).GetMethod(nameof(OnLog), BindingFlags.NonPublic | BindingFlags.Instance)!;
+    callbacks.AddEventHandler(null, Delegate.CreateDelegate(callbacks.EventHandlerType!, this, handler));
+  }
+
+  private void OnLog(string formatted, string plain, string trace, int type, DateTime timestamp, long uptime) {
+    captured.Add(new LogEntry((LogLevel)type, plain));
+  }
+
+  /// <summary>
+  ///   Fills the patch-command registry by hand. In-game, XmlPatcher's initializer discovers the commands by
+  ///   scanning every type for [XmlPatchMethod]; in here that scan comes up empty, because the stub CoreModule
+  ///   only satisfies the types our paths touch and the scan needs all of them. So register the same vanilla
+  ///   commands the scan would have found, plus foreach exactly as StrongMods' ModApi registers it.
+  /// </summary>
+  private static void SeedPatchMethods(Assembly acs, Assembly strongMods, Type patcher) {
+    MethodInfo add = patcher.GetMethods(BindingFlags.Public | BindingFlags.Static)
+      .First(m => m.Name == "addXmlFilePatchMethod" && m.GetParameters()[1].ParameterType == typeof(MethodInfo));
+    Type attribute = acs.GetType("XmlPatchMethodAttribute")!;
+    FieldInfo patchName = attribute.GetField("PatchName")!;
+    FieldInfo requiresXpath = attribute.GetField("RequiresXpath")!;
+
+    foreach (MethodInfo method in acs.GetType("XmlPatchMethods")!
+               .GetMethods(BindingFlags.Public | BindingFlags.Static)) {
+      foreach (object attr in method.GetCustomAttributes(attribute, false)) {
+        add.Invoke(null, new[] { patchName.GetValue(attr), method, requiresXpath.GetValue(attr) });
+      }
+    }
+
+    MethodInfo foreachMethod = strongMods.GetType("StrongMods.XmlPatchMethodForeach")!.GetMethod("Foreach")!;
+    add.Invoke(null, new object[] { "foreach", foreachMethod, true });
+  }
+
+  /// <summary>
+  ///   Resolution order: our stub first (so it shadows the real CoreModule in here), then the host (framework
+  ///   assemblies must unify with the runtime's own, and 0Harmony must stay the single shared copy), then the
+  ///   unit's directories for the game's assemblies and the mod DLLs.
+  /// </summary>
+  private sealed class StubbedUnitContext : AssemblyLoadContext {
+    private readonly string stubDir;
+    private readonly IReadOnlyList<string> unitDirs;
+
+    public StubbedUnitContext(string stubDir, IReadOnlyList<string> unitDirs) : base("stubbed-unit") {
+      this.stubDir = stubDir;
+      this.unitDirs = unitDirs;
+    }
+
+    protected override Assembly Load(AssemblyName name) {
+      var stub = Path.Combine(stubDir, name.Name + ".dll");
+      if (File.Exists(stub)) {
+        return LoadFromAssemblyPath(stub);
+      }
+
+      try {
+        return Default.LoadFromAssemblyName(name);
+      } catch (Exception) {
+        // not a framework or host-provided assembly — fall through to the unit's own
+      }
+
+      foreach (var dir in unitDirs) {
+        var path = Path.Combine(dir, name.Name + ".dll");
+        if (File.Exists(path)) {
+          return LoadFromAssemblyPath(path);
+        }
+      }
+
+      return null;
+    }
+  }
+}

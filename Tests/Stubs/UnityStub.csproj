@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Builds UnityEngine.CoreModule.dll — a stand-in the conformance fixtures load INSTEAD of the game's real
+    one (Fixtures\GameRoom.cs explains why: the real CoreModule's engine-internal callback registration kills
+    LogLibrary's Log initializer headlessly, and every game code path that logs dies with it).
+
+    netstandard2.0 so either runtime can load it: modern .NET today, and a net4x host if the apply-only patch
+    testing parked in the #43 plan (§2b) ever happens.
+
+    Never referenced at compile time and never copied into the test output: a stub reachable by the SMOKE
+    tests' load context would shadow the real Unity types their patch-target signatures need. Tests.csproj
+    depends on it for build ordering only and locates the DLL by path.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>UnityEngine.CoreModule</AssemblyName>
+    <RootNamespace>UnityEngine</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Predictable path for the AssemblyMetadata in Tests.csproj. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <Target Name="Deploy" />
+
+</Project>

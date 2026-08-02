@@ -51,7 +51,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Stubs\ is its own project. The SDK's glob would otherwise compile its sources AND its generated
+         obj\ files into this assembly (duplicate-attribute errors the moment Stubs\obj exists). -->
+    <Compile Remove="Stubs\**" />
+    <None Remove="Stubs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Build ordering only. ReferenceOutputAssembly=false keeps the stub out of this project's compile
+         references AND out of its output directory — a stub reachable by the smoke tests' load context would
+         shadow the real Unity types their patch-target signatures need. The conformance room loads it by
+         path (UnityStubDir below); see Stubs\UnityStub.csproj. -->
+    <ProjectReference Include="Stubs\UnityStub.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyMetadata Include="SdtdManagedDir" Value="$(SdtdManagedDir)" />
+    <AssemblyMetadata Include="UnityStubDir" Value="$(MSBuildProjectDirectory)\Stubs\bin\$(Configuration)" />
     <AssemblyMetadata Include="SdtdHarmonyDir" Value="$(SdtdHarmonyDir)" />
     <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\" />
     <AssemblyMetadata Include="Configuration" Value="$(Configuration)" />
