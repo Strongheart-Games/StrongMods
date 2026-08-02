@@ -63,7 +63,14 @@ public sealed class GameRoom {
     SubscribeToLog(logLibrary);
     SeedPatchMethods(acs, strongMods, patcher);
     RegisterFixtureMod(acs, functionMod);
+    Cache = new PatcherCache(strongMods.GetType("StrongMods.BreadthFirstXmlPatcher")!, xmlFileType, xmlDocField);
   }
+
+  /// <summary>Builds one of the game's XmlFile objects from a string, in the room's own type identity.</summary>
+  public object CreateXmlFile(string xml, string filename) => NewXmlFile(xml, filename);
+
+  /// <summary>The document a room-typed XmlFile holds, as text with the patch-trace comments stripped.</summary>
+  public string XmlOf(object xmlFile) => Normalize(Document(xmlFile));
 
   /// <summary>
   ///   Presents the fixture mod to the game as a loaded mod, which is how a &lt;function&gt; reference of the
@@ -102,11 +109,34 @@ public sealed class GameRoom {
   }
 
   /// <summary>
+  ///   The breadth-first patcher's cache of pre-patched documents, which is also what cross-file
+  ///   <c>source=</c> resolution reads.
+  /// </summary>
+  public PatcherCache Cache { get; private set; }
+
+  /// <summary>
   ///   Applies one patch command to one document and reports what happened — the whole surface the
   ///   conformance tests need. Both XML strings are documents in their own right: the patch is a single
   ///   command element such as <c>&lt;foreach …&gt;…&lt;/foreach&gt;</c>.
+  ///   <paramref name="sources" /> seeds the patcher cache (name without <c>.xml</c> → document) for the
+  ///   duration of the call, which is how a patch reaches another config file with <c>source=</c>.
   /// </summary>
-  public PatchOutcome Apply(string targetXml, string patchXml) {
+  public PatchOutcome Apply(string targetXml, string patchXml,
+                            IReadOnlyDictionary<string, string> sources = null) {
+    if (sources != null) {
+      foreach ((var name, var xml) in sources) {
+        Cache.Seed(name, NewXmlFile(xml, name + ".xml"));
+      }
+    }
+
+    try {
+      return ApplyCore(targetXml, patchXml);
+    } finally {
+      Cache.Clear();
+    }
+  }
+
+  private PatchOutcome ApplyCore(string targetXml, string patchXml) {
     captured.Clear();
     object target = NewXmlFile(targetXml, "target.xml");
     object patchFile = NewXmlFile(patchXml, "patch.xml");
