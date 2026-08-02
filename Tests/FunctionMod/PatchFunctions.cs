@@ -34,5 +34,11 @@ namespace Tests.FunctionMod {
     public static string Untagged(string value) {
       return value;
     }
+
+    /// <summary>Tagged but wrongly shaped: the contract requires a string return.</summary>
+    [XmlPatchFunction]
+    public static int NotAString(string value) {
+      return value.Length;
+    }
   }
 }
