@@ -110,6 +110,11 @@ deploys by construction.
 - `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch.
   Plain builds no longer need it for safety, and since the two-root split `-p:SdtdDir` cannot move the deploy
   destination: a deploy during a vendor-mode build goes to the normal install, never into the tree.
+- Deploy verifies the **destination install's version** (#37): its `Assembly-CSharp.dll` must hash-match one
+  of the mod's declared `SdtdTestVersions` trees, else the deploy is refused with the declared list in the
+  message. The unit follows the destination (a server-targeted deploy checks server trees). Redirected
+  destinations with no game assembly above them skip the check. Escape hatch:
+  `-p:SdtdSkipInstallVersionCheck=true`.
 - `Clean` touches only the `bin\` staging, never a live install. Removing a deployed mod entirely is a manual act.
 - Release deploys too: `-c Release -t:Deploy`.
 

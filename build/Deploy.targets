@@ -91,6 +91,55 @@
              Text="  $(MSBuildProjectName): game tree from vendor\ (SdtdTreeSource=vendor is a TEMPORARY escape — packages is canonical)" />
   </Target>
 
+  <!-- #37: a live install must not receive a mod that does not declare support for its version. The subject
+       is the DESTINATION install — client or dedicated server, whichever layout sits above $(ModsDir) — and
+       its identity is the hash of its Assembly-CSharp.dll, compared against the same file in each declared
+       (SdtdTestVersions) tree under the selected source. The unit follows the DESTINATION, not $(SdtdUnit): a
+       modlet redirected to the server's Mods is checked against server trees. A destination with no game
+       assembly above it — a .scratch redirect, the saves tree — is not an install and is not checked.
+       Escape hatch: -p:SdtdSkipInstallVersionCheck=true. Overlay.targets carries an adapted copy (the entry
+       points never combine); keep the two in sync. -->
+  <Target Name="_VerifyInstallVersion" BeforeTargets="Deploy"
+          Condition="'$(IsDeployable)' == 'true' AND '$(SdtdSkipInstallVersionCheck)' != 'true'">
+    <PropertyGroup>
+      <_DeployInstallRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildStartupDirectory)', '$(ModsDir)', '..'))</_DeployInstallRoot>
+      <_DeployDataDir Condition="Exists('$(_DeployInstallRoot)7DaysToDieServer_Data\Managed\Assembly-CSharp.dll')">7DaysToDieServer_Data</_DeployDataDir>
+      <_DeployDataDir Condition="'$(_DeployDataDir)' == '' AND Exists('$(_DeployInstallRoot)7DaysToDie_Data\Managed\Assembly-CSharp.dll')">7DaysToDie_Data</_DeployDataDir>
+      <_DeployInstallAsm Condition="'$(_DeployDataDir)' != ''">$(_DeployInstallRoot)$(_DeployDataDir)\Managed\Assembly-CSharp.dll</_DeployInstallAsm>
+      <_DeployTargetUnit Condition="'$(_DeployDataDir)' == '7DaysToDieServer_Data'">dedicated-server</_DeployTargetUnit>
+      <_DeployTargetUnit Condition="'$(_DeployDataDir)' == '7DaysToDie_Data'">game</_DeployTargetUnit>
+      <_DeployTargetPackageId Condition="'$(_DeployTargetUnit)' == 'dedicated-server'">7dtd.assemblies.dedicatedserver</_DeployTargetPackageId>
+      <_DeployTargetPackageId Condition="'$(_DeployTargetUnit)' == 'game'">7dtd.assemblies.game</_DeployTargetPackageId>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DeployInstallAsm)' != ''">
+      <_DeclaredVersion Include="$(SdtdTestVersions)" />
+      <!-- Label -> package version via the registry map (the GamePaths.props lookup, batched); a label with
+           no row leaves the sentinel behind, whose path simply never exists. Empty-vector guards per the
+           Overlay.targets lesson: an empty @() batch expands to ONE empty string, not zero iterations. -->
+      <_DeclaredVersion>
+        <PackageVersion>$([System.Text.RegularExpressions.Regex]::Replace(';$(SdtdGameVersionMap);', '^.*;%(Identity)=([^;]+);.*$', '$1'))</PackageVersion>
+      </_DeclaredVersion>
+      <_CandidatePath Include="@(_DeclaredVersion->'$(SdtdPackagesDir)\$(_DeployTargetPackageId)\%(PackageVersion)\$(_DeployDataDir)\Managed\Assembly-CSharp.dll')"
+                      Condition="'$(SdtdTreeSource)' == 'packages' AND '@(_DeclaredVersion)' != ''" />
+      <_CandidatePath Include="@(_DeclaredVersion->'$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\vendor'))\$(_DeployTargetUnit)\%(Identity)\$(_DeployDataDir)\Managed\Assembly-CSharp.dll')"
+                      Condition="'$(SdtdTreeSource)' == 'vendor' AND '@(_DeclaredVersion)' != ''" />
+      <_CandidateAsm Include="@(_CandidatePath)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+    <GetFileHash Files="$(_DeployInstallAsm)" Condition="'$(_DeployInstallAsm)' != ''">
+      <Output TaskParameter="Hash" PropertyName="_DeployInstallAsmHash" />
+    </GetFileHash>
+    <GetFileHash Files="@(_CandidateAsm)" Condition="'@(_CandidateAsm)' != ''">
+      <Output TaskParameter="Items" ItemName="_CandidateAsmHashed" />
+    </GetFileHash>
+    <ItemGroup>
+      <_MatchingVersion Include="@(_CandidateAsmHashed)" Condition="'%(_CandidateAsmHashed.FileHash)' == '$(_DeployInstallAsmHash)'" />
+    </ItemGroup>
+    <Error Condition="'$(_DeployInstallAsm)' != '' AND '@(_CandidateAsm)' == ''"
+           Text="$(MSBuildProjectName): the deploy destination is a live $(_DeployTargetUnit) install ($(_DeployInstallRoot)), but none of its declared versions [$(SdtdTestVersions)] have a $(SdtdTreeSource) tree on this machine to verify it against. Restore the declared versions:  dotnet restore build/GameAssemblies.csproj --packages packages --configfile build/GameAssemblies.nuget.config  — or force with -p:SdtdSkipInstallVersionCheck=true (#37)." />
+    <Error Condition="'$(_DeployInstallAsm)' != '' AND '@(_CandidateAsm)' != '' AND '@(_MatchingVersion)' == ''"
+           Text="$(MSBuildProjectName) declares support for [$(SdtdTestVersions)], but the $(_DeployTargetUnit) install at $(_DeployInstallRoot) matches none of them — its Assembly-CSharp.dll differs from every declared version's tree. Deploying onto a game version the mod does not support is #37's failure mode. Verify the mod on this version and update SdtdTestVersions (or the repo default), or force with -p:SdtdSkipInstallVersionCheck=true." />
+  </Target>
+
   <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(IsDeployable)' == 'true'">
     <PropertyGroup>
       <_StagingDir Condition="'$(ModStagingDir)' != ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(ModStagingDir)'))</_StagingDir>

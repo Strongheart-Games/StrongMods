@@ -418,6 +418,43 @@ Not verifiable from this machine (pushing is outside the agent's permissions): t
 Actions, the feed-backed restore, and the advisory lane's continue-on-error rendering in the UI. The first
 push to main is the round-trip proof; every step's bash was executed locally verbatim.
 
+**Closed 2026-08-03:** the run on `d44d511` completed **success** — feed-backed registry restore,
+restored-set guard, both blocking unit legs, and the advisory lane, all green on Actions.
+
+### Phase 5 results (2026-08-03)
+
+**Design as implemented.** `_VerifyInstallVersion` (`build/Deploy.targets`, adapted copy in
+`build/Overlay.targets` per its self-contained doctrine): the subject is the **destination** install — the
+layout found above `$(ModsDir)` (mods/modlets) or two levels above `$(DeployRoot)` (overlays) — identified by
+the **hash of its `Assembly-CSharp.dll`** (`GetFileHash`, built-in) compared against the same file in each
+`SdtdTestVersions` tree under the selected source. Points worth recording:
+
+- **The unit follows the destination, not `$(SdtdUnit)`**: a modlet redirected to the server's `Mods` is
+  checked against server trees — the check reads which `*_Data` layout the destination has.
+- **No game assembly above the destination → not an install → silent skip.** That one rule covers `.scratch`
+  redirects and the saves overlay (its probe lands in AppData) with zero special cases.
+- **Unverifiable is an error, not a shrug**: a live install with no declared trees restored refuses with the
+  restore command — silently skipping would turn "unverifiable" into "unverified".
+- Escape hatch: `-p:SdtdSkipInstallVersionCheck=true`. Hash-identity means content is version — no manifest
+  parsing, no buildid chains, ground truth only.
+- The batched candidate expansion carries the Overlay.targets empty-vector guards (an empty `@()` batch
+  expands to one empty string, not zero iterations — the 2026-07-30 lesson).
+
+| Check | Result |
+| --- | --- |
+| Refusal (fake install ≠ declared tree, hermetic fixtures) | Exit ≠ 0, teaching message; **nothing copied** — refusal precedes the mirror |
+| Acceptance (install hash-matches a declared tree) | Deploys normally |
+| Escape hatch on a mismatch | Deploys through |
+| Unverifiable (live install, empty packages root) | Refuses with the restore command |
+| Guard neutralized (`BeforeTargets="_NeverRuns"`) | Both refusal tests **fail** — the tests pin the guard, not the happy path; reverted, `git diff` clean |
+| Overlay copy, live demo (synthetic overlay + fake install) | Refusal fires on mismatch; deploys on match |
+| Real overlays + a modlet, redirected into `.scratch` | All deploy — the skip path holds for every shape |
+| Full suite | 142/142 (was 139) |
+| Live installs vs declared trees (read-only sha256) | **Both** live units hash-match the declared `3.1.0.14` trees — real deploys pass the new gate today |
+
+No live install was deployed to; the live-install check was a read-only hash comparison. Changed ~200 lines
+against the plan's ~70 — the by-now-familiar overage: two synchronized target copies plus teaching prose.
+
 ## 6. Verification approach
 
 - **Phases 1–2:** `compare-eval` against a `HEAD` worktree for one project of each shape, plus `Tests`. Phase 1

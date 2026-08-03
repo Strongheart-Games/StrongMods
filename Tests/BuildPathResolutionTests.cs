@@ -157,6 +157,68 @@ public class BuildPathResolutionTests {
       "regardless of what packages\\ holds.");
   }
 
+  [Fact]
+  public void Deploy_refuses_a_live_install_on_an_undeclared_version() {
+    // #37's failure mode: a live install whose Assembly-CSharp.dll matches NONE of the mod's declared
+    // versions must not receive the deploy. The check compares the destination's assembly hash against the
+    // declared trees under the selected source — all fabricated here, so the test needs no restore.
+    using var space = new Workspace();
+    (_, var version) = DefaultDeclaration();
+    var install = space.FakeInstall("install", "assemblies of some OTHER game version");
+    var packs = space.FakeDeclaredTree("packs", version, "assemblies of the declared version");
+
+    (var exitCode, var log) = space.Run("msbuild", space.ModletProject(), "-nologo", "-t:Deploy",
+      "-p:Configuration=Debug", $"-p:ModsDir={install}\\Mods", $"-p:SdtdPackagesDir={packs}",
+      "-nodeReuse:false");
+
+    Assert.True(exitCode != 0 && log.Contains("matches none of them"),
+      $"Deploy into an install on an UNDECLARED version must refuse with the teaching error (#37) — got exit " +
+      $"{exitCode}:\n{log}");
+    Assert.False(Directory.Exists(Path.Combine(install, "Mods", ProbeName)),
+      "the refusal must fire BEFORE the copy — a rejected deploy may not leave a partial mod folder behind.");
+  }
+
+  [Fact]
+  public void Deploy_accepts_a_declared_version_install_and_the_escape_hatch_forces_a_mismatch() {
+    using var space = new Workspace();
+    (_, var version) = DefaultDeclaration();
+    var install = space.FakeInstall("install", "assemblies of the declared version");
+    var packs = space.FakeDeclaredTree("packs", version, "assemblies of the declared version");
+    var project = space.ModletProject();
+
+    (var exitCode, var log) = space.Run("msbuild", project, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      $"-p:ModsDir={install}\\Mods", $"-p:SdtdPackagesDir={packs}", "-nodeReuse:false");
+    Assert.True(exitCode == 0 && File.Exists(Path.Combine(install, "Mods", ProbeName, "ModInfo.xml")),
+      $"An install hash-matching a declared version's tree must deploy normally — got exit {exitCode}:\n{log}");
+
+    File.WriteAllText(Path.Combine(install, "7DaysToDie_Data", "Managed", "Assembly-CSharp.dll"),
+      "assemblies of some OTHER game version");
+    (exitCode, log) = space.Run("msbuild", project, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      $"-p:ModsDir={install}\\Mods", $"-p:SdtdPackagesDir={packs}",
+      "-p:SdtdSkipInstallVersionCheck=true", "-nodeReuse:false");
+    Assert.True(exitCode == 0,
+      $"-p:SdtdSkipInstallVersionCheck=true is the explicit escape hatch and must deploy through a mismatch " +
+      $"— got exit {exitCode}:\n{log}");
+  }
+
+  [Fact]
+  public void Deploy_errors_when_no_declared_tree_exists_to_verify_a_live_install_against() {
+    // A live install with NOTHING to compare against is an error, not a shrug: silently skipping would turn
+    // "unverifiable" into "unverified", and the message teaches the restore command.
+    using var space = new Workspace();
+    var install = space.FakeInstall("install", "assemblies of some game version");
+    var packs = Path.Combine(space.InvocationDir, "empty-packs");
+    Directory.CreateDirectory(packs);
+
+    (var exitCode, var log) = space.Run("msbuild", space.ModletProject(), "-nologo", "-t:Deploy",
+      "-p:Configuration=Debug", $"-p:ModsDir={install}\\Mods", $"-p:SdtdPackagesDir={packs}",
+      "-nodeReuse:false");
+
+    Assert.True(exitCode != 0 && log.Contains("to verify it against"),
+      $"A live install with no declared trees restored must refuse as UNVERIFIABLE, teaching the restore " +
+      $"command — got exit {exitCode}:\n{log}");
+  }
+
   /// <summary>The repo default declaration, read from build\GameVersions.props so a version bump never
   ///   rots these tests: the label plus its registry package version.</summary>
   private static (string Label, string Version) DefaultDeclaration() {
@@ -198,6 +260,25 @@ public class BuildPathResolutionTests {
       var managed = Path.Combine(InvocationDir, name, dataFolder, "Managed");
       Directory.CreateDirectory(managed);
       File.WriteAllBytes(Path.Combine(managed, "mscorlib.dll"), Array.Empty<byte>());
+    }
+
+    /// <summary>A fake live install (game layout) whose Assembly-CSharp.dll holds the given content — the
+    ///   deploy version check identifies an install by that file's hash, so content IS version.</summary>
+    internal string FakeInstall(string name, string assemblyContent) {
+      var root = Path.Combine(InvocationDir, name);
+      var managed = Path.Combine(root, "7DaysToDie_Data", "Managed");
+      Directory.CreateDirectory(managed);
+      File.WriteAllText(Path.Combine(managed, "Assembly-CSharp.dll"), assemblyContent);
+      return root;
+    }
+
+    /// <summary>A fake restored-packages root holding one declared game tree at the given version.</summary>
+    internal string FakeDeclaredTree(string name, string packageVersion, string assemblyContent) {
+      var root = Path.Combine(InvocationDir, name);
+      var managed = Path.Combine(root, "7dtd.assemblies.game", packageVersion, "7DaysToDie_Data", "Managed");
+      Directory.CreateDirectory(managed);
+      File.WriteAllText(Path.Combine(managed, "Assembly-CSharp.dll"), assemblyContent);
+      return root;
     }
 
     /// <summary>
