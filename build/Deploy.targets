@@ -18,12 +18,13 @@
     Deploying while $(SdtdDir) points at a vendored tree would "install" into the tree — do not combine
     -t:Deploy with -p:SdtdDir.
 
-    PASS -p:ModsDir AS AN ABSOLUTE PATH. A relative one does NOT resolve against the invocation directory (this
-    comment claimed it did until 2026-08-02; measured, it does not). _DeployDir below is computed while the
-    Deploy target runs, and MSBuild points the working directory at each PROJECT while running that project's
-    targets — so -p:ModsDir=.scratch/deploy silently writes a .scratch\deploy folder beside EVERY deploying
-    project instead of one at the repo root. #52 fixes it by anchoring to $(MSBuildStartupDirectory), the same
-    way build\GamePaths.props anchors a relative -p:SdtdDir (#46); this note goes when that lands.
+    A relative -p:ModsDir resolves against the directory the command was run from — the same rule
+    build\GamePaths.props applies to a relative -p:SdtdDir (#46). _DeployDir below names
+    $(MSBuildStartupDirectory) to make that so, and the anchor is load-bearing rather than decorative: it is
+    computed while the Deploy target RUNS, and MSBuild points the working directory at each PROJECT while
+    running that project's targets. Left implicit, -p:ModsDir=.scratch/deploy wrote a .scratch\deploy folder
+    beside EVERY deploying project and nothing at the repo root, reporting success (#52). An absolute value —
+    every real deploy, and CI — discards the anchor and passes through unchanged.
   -->
 
   <!--
@@ -77,7 +78,8 @@
     <PropertyGroup>
       <_StagingDir Condition="'$(ModStagingDir)' != ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(ModStagingDir)'))</_StagingDir>
       <_StagingDir Condition="'$(_StagingDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutDir)'))</_StagingDir>
-      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(ModsDir)', '$(ModDeployName)'))</_DeployDir>
+      <!-- $(MSBuildStartupDirectory) first: see the header. Absolute $(ModsDir) discards it. -->
+      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(MSBuildStartupDirectory)', '$(ModsDir)', '$(ModDeployName)'))</_DeployDir>
     </PropertyGroup>
     <ItemGroup>
       <_StagedFile Include="$(_StagingDir)**\*" />

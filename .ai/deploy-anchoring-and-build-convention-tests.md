@@ -72,6 +72,24 @@ here, filed as #52" stays accurate as history.
 
 Live installs are never targeted during this phase — every deploy is redirected into `.scratch\`.
 
+### Phase 1 results (2026-08-02)
+
+Environment: repo root, no `Local.props`, `SDTD_HOME` unset, live client install, `dotnet` 10 driving MSBuild.
+
+| Check | Invocation | Result |
+| --- | --- | --- |
+| Evaluation no-op | `compare-eval` vs a `HEAD` worktree: DynamicFeralSense (mod), AECInternationalMarketFixes (modlet), Hades + StrongholdSaves (overlays) | Three IDENTICAL; DynamicFeralSense's only diff is the worktree-location prefix on `TargetDir`/`TargetPath`. `_DeployDir` is target-local and never appears — the point of the phase |
+| Relative redirect, whole solution | `-t:Deploy -p:ModsDir=.scratch/p52-deploy -p:SdtdSavesDir=.scratch/p52-saves` from the repo root | 28 mod folders at the repo-root redirect plus the StrongholdSaves overlay content; **zero** stray per-project `.scratch` directories; `git status` clean but for the four edited files |
+| The same command on `HEAD` | run inside the baseline worktree | Reproduced: `0 Error(s)`, nothing at the invocation root, **29** scattered per-project `.scratch` folders. The check is not vacuous |
+| Invocation-dir anchoring | cwd `.scratch\p52-subdir\`, one modlet by absolute path, `-p:ModsDir=out` | Landed at `.scratch\p52-subdir\out\…` — follows the invocation, not the repo root and not the project |
+| Absolute redirect unchanged | mod + both overlays, `-p:ModsDir=<abs>\mods -p:SdtdSavesDir=<abs>\saves` | Each landed in exactly one folder at the redirect; the anchor is discarded as designed |
+| `C:\Hades` guard survives | `-p:DeployRoot=\Hades` on Hades | Still the readable driveless-`DeployRoot` error. The anchor cannot rescue a rooted-but-driveless path (`Path.Combine` discards the base) and the guard runs ahead of it either way |
+| Full build, live install | `dotnet build StrongMods.sln -c Debug` | 0 warnings, 0 errors |
+| Full suite | `dotnet test StrongMods.sln -c Debug` | 130/130 |
+
+No live install was written to: every `-t:Deploy` in this phase carried a redirect, and the plain build stages
+to `bin\` only.
+
 ---
 
 ## Phase 2 — #53: a regression test for invocation-relative resolution

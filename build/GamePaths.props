@@ -35,8 +35,9 @@
 
          $(MSBuildStartupDirectory) is named explicitly rather than left to the process working directory:
          MSBuild points the working directory at each PROJECT while running that project's targets, so
-         anything cwd-relative means different things at evaluation and at execution time (that is exactly why
-         a relative -p:ModsDir scatters deploys into every project folder). NormalizePath, not
+         anything cwd-relative means different things at evaluation and at execution time — for exactly this
+         reason a relative -p:ModsDir scattered deploys into every project folder until #52 anchored its
+         target-time consumption site the same way. NormalizePath, not
          NormalizeDirectory: the latter appends a trailing slash, which would break the string concatenation
          in SdtdServerDir just below. An absolute override passes through unchanged. -->
     <_SdtdRoot Condition="'$(SdtdDir)' != ''">$([MSBuild]::NormalizePath('$(MSBuildStartupDirectory)', '$(SdtdDir)'))</_SdtdRoot>

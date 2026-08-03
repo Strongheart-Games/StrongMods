@@ -76,7 +76,12 @@
            Text="Overlay project $(MSBuildProjectName) has DeployRoot '$(DeployRoot)' — a rooted-but-driveless path, which means a property reference in it evaluated empty. Is the Overlay.props import missing or below the DeployRoot definition?" />
     <PropertyGroup>
       <_StagingDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutputPath)'))</_StagingDir>
-      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(DeployRoot)'))</_DeployDir>
+      <!-- Anchored at the invocation directory, like build\Deploy.targets' _DeployDir (see its header for why
+           a target-time relative path would mean the PROJECT's directory). Overlays build DeployRoot out of
+           $(ModsDir) or $(SdtdSavesDir), so a relative -p: override for either arrives here. The driveless
+           guard above runs first and is unaffected: an empty property reference still errors rather than
+           being quietly anchored. -->
+      <_DeployDir>$([MSBuild]::NormalizeDirectory('$(MSBuildStartupDirectory)', '$(DeployRoot)'))</_DeployDir>
     </PropertyGroup>
     <ItemGroup>
       <!-- Partition the declarations: directories mirror recursively, files mirror individually. -->
