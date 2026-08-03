@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    The restore vehicle for the private game-assembly packages — never built, never in StrongMods.sln. Since
-    the declared-version flip (#23) it serves local development AND CI: builds resolve each mod's declared
-    version under packages\, and this project is what puts the trees there.
+    The restore vehicle for the private game-assembly packages — never built, never in StrongMods.sln. It
+    serves local development and CI alike: builds resolve each mod's declared version under a packages root,
+    and this project is what puts the trees there.
 
       dotnet restore build/GameAssemblies.csproj -\-packages packages -\-configfile build/GameAssemblies.nuget.config
 
@@ -11,19 +11,31 @@
     NuGet registry. CI restores to an isolated folder instead of packages\; a publisher verifying pre-push can
     restore from the local nupkgs: -s vendor/packages.)
 
-    The Version attributes below pin what a DEFAULT build consumes; release.cs step 7 writes them after a
-    publish, and the Build & Test run on main after the bump commit is the round-trip proof. The units version
-    independently (a server-only hotfix bumps only the server package). Additional declared versions (per-mod
-    pins, test versions) join the restore set in #23 phase 4 — the PackageDownload exact-version-list spike.
+    PackageDownload, not PackageReference, and the version list is DERIVED from the registry
+    (build\GameVersions.props' SdtdGameVersionMap) rather than pinned here — the registry is the single place
+    versions live, this file cannot drift from it, and PackageDownload takes an exact-version list
+    ("[3.1.0.14];[3.0.1.4]"), so every declared version restores in ONE command (#23 phase 4; spike result in
+    .ai/declared-game-versions.md). Restoring the whole registry — dev and test labels alike — is what lets
+    per-mod pins and, later, per-version test legs work with no extra restore machinery.
+
+    The map is unit-agnostic (labels name a game version; FourPart is deterministic per label), so both units
+    download the same version list. A unit-skewed release — one unit published at a label the other never got —
+    would fail this restore loudly for the absent unit; that is deliberate surfacing, not an oversight
+    (recorded in the phase-4 results).
   -->
+
+  <Import Project="$(MSBuildThisFileDirectory)GameVersions.props" />
 
   <PropertyGroup>
     <TargetFramework>net481</TargetFramework>
+    <!-- "label=version;..." -> "version;..." -> "[version];[...]": strip the labels, bracket each version. -->
+    <_SdtdPackageVersions>$([System.Text.RegularExpressions.Regex]::Replace('$(SdtdGameVersionMap)', '[^=;]+=', ''))</_SdtdPackageVersions>
+    <_SdtdPackageVersionList>[$(_SdtdPackageVersions.Replace(';', '];['))]</_SdtdPackageVersionList>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="7DtD.Assemblies.Game" Version="3.1.0.14" />
-    <PackageReference Include="7DtD.Assemblies.DedicatedServer" Version="3.1.0.14" />
+    <PackageDownload Include="7DtD.Assemblies.Game" Version="$(_SdtdPackageVersionList)" />
+    <PackageDownload Include="7DtD.Assemblies.DedicatedServer" Version="$(_SdtdPackageVersionList)" />
   </ItemGroup>
 
 </Project>

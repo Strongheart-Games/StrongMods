@@ -15,9 +15,13 @@
 // 4) vendor.cs + pack.cs per stale unit; 5+6) [--dry-run stops here] push.cs over vendor/packages — the single
 // push path: idempotent per-file pushes, retention (latest build per major.minor.patch), and GitHub
 // latest-tag reconciliation all live there (it prompts for the write PAT itself, or reads
-// PACKAGES_WRITE_TOKEN); 7) update build/ci/game-versions.json + build/GameAssemblies.csproj — with --commit, also
-// commit them to the current branch and push (the owner's flow is direct-to-main; the green Build run on main is
-// the round-trip proof).
+// PACKAGES_WRITE_TOKEN); 7) update build/ci/game-versions.json — with --commit, also commit it to the current
+// branch and push (the owner's flow is direct-to-main; the green Build run on main is the round-trip proof).
+//
+// Publishing does NOT touch the declarations (build/GameVersions.props). Since #23, what CI and local builds
+// consume is declared there — and a registry row nothing declares is a dead pin the closure test rejects, so
+// adopting a published version is a human edit (add/rename the map row, bump defaults or per-mod pins), not a
+// release side effect. Step 7 prints the reminder.
 //
 // Exit codes: 0 = success (including "nothing to publish"), 2 = error/abort. Never 1 (steam_check owns that).
 
@@ -156,8 +160,8 @@ internal static class Release {
     RunInherit("dotnet", new[] { "run", ToolPath("push.cs"), "--", "--dir",
       Path.Combine(RepoRoot(), "vendor", "packages") });
 
-    // 7. Pins. game-versions.json is written whole (hand-formatted, one line per unit, matching the committed
-    // style); the csproj gets a surgical version bump.
+    // 7. Published state. game-versions.json is written whole (hand-formatted, one line per unit, matching
+    // the committed style). Declarations are deliberately NOT touched — see the header.
     var state = JsonDocument.Parse(File.ReadAllText(versionsPath)).RootElement.EnumerateObject()
       .ToDictionary(p => p.Name, p => p.Value.EnumerateObject().ToDictionary(f => f.Name, f => f.Value.GetString()!));
     foreach ((var unit, var steamBuildid, _, _) in stale) {
@@ -170,23 +174,27 @@ internal static class Release {
         $"  \"{u.Key}\": {{ " + string.Join(", ", u.Value.Select(f => $"\"{f.Key}\": \"{f.Value}\"")) + " }"))
       + "\n}\n", new UTF8Encoding(false));
 
-    var csprojPath = Path.Combine(RepoRoot(), "build", "GameAssemblies.csproj");
-    var csproj = File.ReadAllText(csprojPath);
-    foreach ((var unit, _, _, _) in stale) {
-      csproj = BumpPin(csproj, Units[unit].PackageId, version);
-    }
-
-    File.WriteAllText(csprojPath, csproj, new UTF8Encoding(false));
-    Console.WriteLine($"Pins updated to {version} for [{string.Join(", ", stale.Select(s => s.Unit))}].");
+    Console.WriteLine($"Published state recorded: {label} ({version}) for"
+                      + $" [{string.Join(", ", stale.Select(s => s.Unit))}].");
+    Console.WriteLine($"{label} is on the feed but NOT yet declared. To consume it, edit"
+                      + " build/GameVersions.props:");
+    Console.WriteLine($"  - add/rename the SdtdGameVersionMap row '{label}={version}' (a same-line bump"
+                      + " REPLACES the old label everywhere it appears - retention deletes the superseded"
+                      + " package);");
+    Console.WriteLine("  - bump the SdtdDevVersion/SdtdTestVersions defaults, or a mod's pin, when adopting."
+                      + " The closure test (Tests) walks you through what disagrees.");
+    Console.WriteLine("  For a SAME-LINE bump, commit that rename TOGETHER with game-versions.json: retention"
+                      + " has already deleted the superseded package, so main stays red until the registry"
+                      + " stops naming it.");
 
     if (commit) {
-      RunInherit("git", new[] { "add", versionsPath, csprojPath });
+      RunInherit("git", new[] { "add", versionsPath });
       RunInherit("git", new[] { "commit", "-m", $"Publish {label} game-assembly packages" });
       RunInherit("git", new[] { "push" });
       Console.WriteLine("Committed and pushed - the Build run on main is the round-trip proof.");
     } else {
-      Console.WriteLine("Now commit build/ci/game-versions.json and build/GameAssemblies.csproj"
-                        + " (or re-run with --commit); the Build run is the round-trip proof.");
+      Console.WriteLine("Now commit build/ci/game-versions.json (or re-run with --commit); the Build run is"
+                        + " the round-trip proof.");
     }
 
     return 0;
@@ -225,15 +233,6 @@ internal static class Release {
     }
 
     return 0;
-  }
-
-  public static string BumpPin(string csproj, string packageId, string newVersion) {
-    var re = new Regex($"(<PackageReference Include=\"{Regex.Escape(packageId)}\" Version=\")[^\"]+(\")");
-    if (!re.IsMatch(csproj)) {
-      throw new ReleaseError($"no <PackageReference> for {packageId} found in GameAssemblies.csproj");
-    }
-
-    return re.Replace(csproj, $"${{1}}{newVersion}$2");
   }
 
   private static void UpdateViaSteamCmd(string unit, string install, string? steamUser) {
@@ -329,20 +328,8 @@ internal static class Release {
     Ok(ValidateLabel("V3.1.0-b13", "V3.1.0-b14") is not null, "backward label refused");
     Ok(ValidateLabel("3.1.0-b15", "V3.1.0-b14") is not null, "bad grammar refused");
 
-    const string fixture = "  <ItemGroup>\n"
-                           + "    <PackageReference Include=\"7DtD.Assemblies.Game\" Version=\"3.1.0.14\" />\n"
-                           + "    <PackageReference Include=\"7DtD.Assemblies.DedicatedServer\" Version=\"3.1.0.14\" />\n"
-                           + "  </ItemGroup>\n";
-    var bumped = BumpPin(fixture, "7DtD.Assemblies.Game", "3.1.0.15");
-    Ok(bumped.Contains("\"7DtD.Assemblies.Game\" Version=\"3.1.0.15\"")
-       && bumped.Contains("\"7DtD.Assemblies.DedicatedServer\" Version=\"3.1.0.14\""),
-      "csproj bump touches only the requested package id");
-    try {
-      BumpPin(fixture, "7DtD.Assemblies.Nonexistent", "1.0.0.0");
-      Ok(false, "bump of unknown package id must throw");
-    } catch (ReleaseError) {
-      Ok(true, "bump of unknown package id throws");
-    }
+    // BumpPin and its checks are gone (#23 phase 4): the csproj derives its PackageDownload list from the
+    // registry, and adopting a published version is a declaration edit, not a release side effect.
 
     Console.WriteLine($"selftest: {checks} checks passed");
     return 0;

@@ -369,6 +369,55 @@ Suite: 139/139 (was 135) against the packages default, and 139/139 with `-p:Sdtd
 Changed lines ~190 across the two test files — over the plan's ~120 estimate; the overage is message prose,
 which in this suite is the deliverable.
 
+### Phase 4 results (2026-08-03)
+
+**The matrix reshaped — decision 3 is satisfied by fewer jobs than the plan sketched.** The plan imagined a
+job per declared dev version × unit. Post-flip that's redundant: a single build per unit passing
+`-p:SdtdPackagesDir` + `-p:SdtdUnit` (and **no** `-p:SdtdDir`) lets every project resolve its own declaration,
+so every declared (version × unit) combination is exercised inside the two per-unit jobs — mixed versions in
+one invocation, which is #37's headline capability. **Demonstrated locally**: with DisableLAN pinned to
+`V3.0.1-b4`, one solution build compiled it against `3.0.1.4` and everything else against `3.1.0.14`, zero
+errors. The blocking matrix therefore stays `[game, dedicated-server]`, now per-pin meaningful.
+
+**The PackageDownload spike passed.** `build/GameAssemblies.csproj` is now pure `PackageDownload` with its
+exact-version list **derived from the registry map** (`[3.1.0.14];[3.0.1.4]` via two property functions) — one
+source of truth, no drift channel. One restore landed both versions × both units; `pack.cs --verify-tree`
+228/228 per tree. Spiked against the local folder source (`-s vendor/packages`); the feed round-trip is what
+the first CI run on main proves. Known limitation, deliberate: the map is unit-agnostic, so a unit-skewed
+release (one unit published at a label the other never got) fails the restore loudly — surfacing, not
+silence.
+
+**Publishing ≠ adopting, and release.cs now says so.** `BumpPin` and its selftest checks are gone: the csproj
+carries no versions to bump, and a registry row nothing declares is a dead pin the closure test rejects — so
+adopting a published version is inherently a human declaration edit. Step 7 records `game-versions.json` and
+prints the exact edits (map row, defaults/pins), including the same-line-bump warning: retention deletes the
+superseded package at publish time, so the declaration rename must ride the same commit or main goes red
+until it does.
+
+**Workflow** (`.github/workflows/build-and-test.yml`): blocking `build` per unit — selftests (now including
+`release.cs`), registry restore, a **restored-set-equals-registry** guard plus per-tree hash verification
+(replacing the "exactly one version directory" glob), build, test, all via `SdtdPackagesDir`/`SdtdUnit`.
+Non-blocking `advisory` per unit (`continue-on-error: true`): computes the newest registry version
+(`sort -V` on package versions) and forces everything onto it with a global `-p:SdtdDevVersion` — globals
+beat leading-block pins by MSBuild's own rules, demonstrated locally against the pinned DisableLAN.
+
+| Check | Result |
+| --- | --- |
+| Derived `PackageDownload` list | `-getItem` shows `Version="[3.1.0.14];[3.0.1.4]"`, straight from the map |
+| One restore, whole registry | Both versions × both units under `.scratch/p4-dl`; 4× `--verify-tree` 228/228 |
+| Restored-set guard (workflow bash, run locally) | `restored set == registry` for both unit ids |
+| CI-shaped blocking build, both units | 0 warnings, 0 errors, no `-p:SdtdDir` anywhere |
+| Mixed-declaration build (DisableLAN pinned) | One invocation, two game versions, 0 errors |
+| Advisory override vs a pin | Global `-p:SdtdDevVersion` resolves the pinned mod to the newest tree |
+| Advisory newest-computation snippet | `V3.1.0-b14` from the live map |
+| CI-shaped test step, both units | 139/139 and 139/139 |
+| Default local suite | 139/139 |
+| `release.cs --selftest` | 5 checks (was 7; the two `BumpPin` checks retired with the function) |
+
+Not verifiable from this machine (pushing is outside the agent's permissions): the workflow YAML executing on
+Actions, the feed-backed restore, and the advisory lane's continue-on-error rendering in the UI. The first
+push to main is the round-trip proof; every step's bash was executed locally verbatim.
+
 ## 6. Verification approach
 
 - **Phases 1–2:** `compare-eval` against a `HEAD` worktree for one project of each shape, plus `Tests`. Phase 1

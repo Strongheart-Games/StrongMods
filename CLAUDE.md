@@ -141,15 +141,21 @@ and the deploy destination derives from the install root, never from `-p:SdtdDir
 Vendored trees also ship as **private** NuGet packages (`7DtD.Assemblies.Game`,
 `7DtD.Assemblies.DedicatedServer`) on the org's GitHub Packages feed — private always, never repo-linked; the
 contents are licensed game files. The full design and leak model live in `.ai/ci-feed-and-workflow.md`.
-`.github/workflows/build-and-test.yml` restores them (repo secret `PACKAGES_READ_TOKEN`, the bot's read token) and
-builds the whole solution against **both** units on every push — the standing compile-against-both check (#21).
-Workflows must never upload artifacts or run `-t:Deploy`. `check-for-new-game-version.yml` polls Steam's branch
+`.github/workflows/build-and-test.yml` restores the **whole registry** (repo secret `PACKAGES_READ_TOKEN`, the
+bot's read token; `build/GameAssemblies.csproj` derives its `PackageDownload` list from
+`build/GameVersions.props`) and builds the solution against **both** units on every push, each project
+resolving its own declared version — the standing compile-against-both check (#21), per-pin meaningful (#37).
+A separate non-blocking **advisory** lane builds everything against the newest registry version — the
+migration board during a transition; red there never gates main. Workflows must never upload artifacts or run
+`-t:Deploy`. `check-for-new-game-version.yml` polls Steam's branch
 heads daily via anonymous SteamCMD and, once its shadow soak ends, files a tracking issue when a release lands.
 
 Publishing a new game version is one human-run command on a machine with licensed installs:
 `dotnet run build/tools/release.cs` (guardrails decide whether there is anything to publish; one prompt for the
-in-game version label; `--commit` pushes the pin bump to main). Version pins live in
-`build/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
+in-game version label; `--commit` pushes the published-state record to main). **Publishing ≠ adopting**:
+consumed versions are declared in `build/GameVersions.props` (and per-mod pins), edited by a human when
+adopting — a registry row nothing declares is a dead pin the closure test rejects, which is why `release.cs`
+prints the reminder instead of editing declarations. Published state lives in `build/ci/game-versions.json`. The tools — `steam_check`,
 `vendor`, `pack`, `push`, `release` — are C# file-based apps under `build/tools/` (`dotnet run
 build/tools/<tool>.cs -- --selftest`; #36 decided all tools are C# — with `compare-eval`, no Python remains). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
 retention, and GitHub latest-tag reconciliation. The C# rule is about maintained code: anything checked in is C#.

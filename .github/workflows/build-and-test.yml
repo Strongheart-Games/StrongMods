@@ -1,15 +1,26 @@
 # Build the full solution against BOTH releasable units' assemblies, restored from the private GitHub Packages
-# feed. Design and rationale: .ai/ci-feed-and-workflow.md (§4 consumption, §5 workflow, §1 leak model).
+# feed. Design and rationale: .ai/ci-feed-and-workflow.md (§4 consumption, §5 workflow, §1 leak model) and
+# .ai/declared-game-versions.md (declared versions, #23).
 #
 # STANDING SAFETY RULES — the restored trees and packages contain LICENSED game assemblies and this repo is
 # public (plan §1):
 #   - NEVER upload artifacts from this workflow: an Actions artifact on a public repo is a public download.
-#   - NEVER run -t:Deploy here, and never combine a deploy with -p:SdtdDir (CLAUDE.md). Plain builds only.
+#   - NEVER run -t:Deploy here. Plain builds only. (Since the two-root split, -p:SdtdDir cannot even reach the
+#     deploy destination; the redirects below are belt and braces.)
 #   - Fork PRs skip via the `if:` below — but that guard is cosmetic. The real enforcement is that GitHub
 #     withholds secrets from fork-PR runs: an edited workflow in a fork still has no PACKAGES_READ_TOKEN and
 #     cannot reach the feed. Do not "fix" feed access by granting GITHUB_TOKEN package permissions.
 #
-# The dedicated-server leg is #21's standing compile-against-both check. Matrix is Debug x 2 units (plan §10).
+# Since #23, no job passes -p:SdtdDir: the restore covers the WHOLE registry (build/GameVersions.props —
+# PackageDownload derives its exact-version list from it), the build gets a packages root and a unit, and
+# EVERY project resolves its own declared version — so one build per unit exercises every declared
+# (version × unit) combination, mixed versions and all (#37), and the dedicated-server leg remains #21's
+# standing compile-against-both check.
+#
+# The advisory lane is the migration board during a version transition (#37): it forces everything onto the
+# NEWEST registry version via a global -p:SdtdDevVersion (globals beat per-mod pins) and is non-blocking by
+# continue-on-error — a red advisory job means "these mods aren't on <newest> yet", never a red main.
+#
 # The .NET SDK is pinned to 10.x: the C# file-based tools (build/tools/*.cs) require it.
 
 name: Build & Test
@@ -47,8 +58,9 @@ jobs:
         run: |
           dotnet run build/tools/steam_check.cs -- --selftest
           dotnet run build/tools/pack.cs -- --selftest
+          dotnet run build/tools/release.cs -- --selftest
 
-      - name: Restore game-assembly packages
+      - name: Restore the declared game-assembly versions
         env:
           PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
         run: >
@@ -56,35 +68,80 @@ jobs:
           --packages .scratch/game-packages
           --configfile build/GameAssemblies.nuget.config
 
-      - name: Locate and verify the ${{ matrix.unit }} tree
-        id: tree
+      - name: Verify the restored set is exactly the registry
         run: |
+          map=$(dotnet msbuild build/GameVersions.props -nologo -getProperty:SdtdGameVersionMap)
+          expected=$(echo "$map" | tr ';' '\n' | cut -d= -f2 | sort)
           case "${{ matrix.unit }}" in
             game)             id=7dtd.assemblies.game ;;
             dedicated-server) id=7dtd.assemblies.dedicatedserver ;;
           esac
-          dirs=(.scratch/game-packages/$id/*/)
-          if [ "${#dirs[@]}" -ne 1 ] || [ ! -d "${dirs[0]}" ]; then
-            echo "expected exactly one restored version of $id, found: ${dirs[*]}" >&2
+          actual=$(ls .scratch/game-packages/$id | sort)
+          if [ "$expected" != "$actual" ]; then
+            echo "restored versions of $id do not match the registry:" >&2
+            echo "  registry: $(echo $expected)" >&2
+            echo "  restored: $(echo $actual)" >&2
             exit 1
           fi
-          tree=$(realpath "${dirs[0]}")
-          # Post-restore integrity: every file hash-matches the manifest packed with the tree (plan §4).
-          dotnet run build/tools/pack.cs -- --verify-tree "$tree"
-          echo "path=$tree" >> "$GITHUB_OUTPUT"
+          # Post-restore integrity: every file of every tree hash-matches the manifest packed with it (plan §4).
+          for tree in .scratch/game-packages/$id/*/; do
+            dotnet run build/tools/pack.cs -- --verify-tree "$(realpath "$tree")"
+          done
 
-      - name: Build solution against ${{ matrix.unit }} assemblies
+      - name: Build solution (each project resolves its declared version)
         run: >
           dotnet build StrongMods.sln -c Debug
-          -p:SdtdDir=${{ steps.tree.outputs.path }}
+          -p:SdtdPackagesDir=$GITHUB_WORKSPACE/.scratch/game-packages
+          -p:SdtdUnit=${{ matrix.unit }}
           -p:ModsDir=$RUNNER_TEMP/mods
           -p:SdtdSavesDir=$RUNNER_TEMP/saves
 
       # The Harmony patch-target smoke tests (#14): every mod's patch targets must resolve against this leg's
-      # assemblies. Same -p:SdtdDir as the build, so the paths baked into the test assembly match the leg.
+      # assemblies. Same properties as the build, so the paths baked into the test assembly match the leg.
       # --no-build keeps the step severable from the build above: compilation can only fail there, so a red
       # "Test" step always means a test failure, never a build problem.
-      - name: Test against ${{ matrix.unit }} assemblies
+      - name: Test (declared versions, ${{ matrix.unit }})
         run: >
           dotnet test Tests/Tests.csproj -c Debug --no-restore --no-build
-          -p:SdtdDir=${{ steps.tree.outputs.path }}
+          -p:SdtdPackagesDir=$GITHUB_WORKSPACE/.scratch/game-packages
+          -p:SdtdUnit=${{ matrix.unit }}
+
+  # Non-blocking migration board (#37): everything against the NEWEST registry version. Red here answers
+  # "which mods aren't on <newest> yet?" — it never gates main (continue-on-error) and runs only where the
+  # blocking lane runs (same fork-PR fence).
+  advisory:
+    name: advisory — newest version (${{ matrix.unit }})
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        unit: [game, dedicated-server]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore the declared game-assembly versions
+        env:
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
+        run: >
+          dotnet restore build/GameAssemblies.csproj
+          --packages .scratch/game-packages
+          --configfile build/GameAssemblies.nuget.config
+
+      - name: Build everything against the newest registry version
+        run: |
+          map=$(dotnet msbuild build/GameVersions.props -nologo -getProperty:SdtdGameVersionMap)
+          # Newest = highest package version; its label is what -p:SdtdDevVersion must carry.
+          newest=$(echo "$map" | tr ';' '\n' | sort -t= -k2,2 -V | tail -1 | cut -d= -f1)
+          echo "newest registry version: $newest"
+          dotnet build StrongMods.sln -c Debug \
+            -p:SdtdDevVersion=$newest \
+            -p:SdtdPackagesDir=$GITHUB_WORKSPACE/.scratch/game-packages \
+            -p:SdtdUnit=${{ matrix.unit }} \
+            -p:ModsDir=$RUNNER_TEMP/mods \
+            -p:SdtdSavesDir=$RUNNER_TEMP/saves
