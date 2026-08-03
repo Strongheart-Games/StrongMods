@@ -108,6 +108,24 @@ possibly vendoring the real dependency mods for testing)? The end state is per-m
 runtime complement to #41's structural lint. Explicitly cut to its own issue if the earlier waves surface
 enough friction or the findings backlog deserves its own tracking.
 
+**D8 (added during wave D) — entry points are read from IL, not from the loaded type.** The set of patchable
+documents is `WorldStaticData.xmlsToLoad`, and *touching* it headlessly is impossible: the type's initializer
+pulls in Unity engine types (`Color`, then `Vector2`, then `Unity.Profiling.ProfilerMarker` — an unbounded
+chase). `Tests\Fixtures\EntryPoints.cs` reads the names out of the `.cctor`'s IL with Mono.Cecil instead: one
+`newobj XmlLoadInfo(string _xmlName, …)` per entry, first `ldstr` in each run is the name. No execution, no
+stub growth, and version-accurate for whichever unit is under test — which matters, because the list changes
+between game versions (`sandbox_overrides` arrived in 3.0). This is the counter-example to D1's stubbing
+approach: stub when a *few* engine touchpoints block otherwise-pure code, inspect when the initializer is the
+engine.
+
+**D9 (added during wave D) — patch-application expectations are declared with reasons, and checked in both
+directions.** The default is that a mod's patch applies to vanilla with no error or warning; any exception is
+declared in `PatchApplicationTests` with a reason and an issue number. The tests then assert **both** that
+nothing undeclared logs *and* that every declaration is still earning its place — a declared exception that
+goes quiet, or whose patch no longer exists, fails. Without the second half the list becomes a suppression
+file that silently outlives its reasons; with it, landing #60 or fixing #62 makes the suite tell you to delete
+the entry.
+
 **D6 (added after wave B3, from #51) — fixture projects must order their own dependencies, and a test says so.**
 A helper assembly under `Tests\` that compiles against a repo project via `HintPath` into its `bin\` has nothing
 in the build graph ordering that project first: it passes on any machine where the sibling was ever built and
@@ -139,9 +157,61 @@ never an intentionally failing test in `Tests\`.
    generalizes it, and the documentation. No new spec coverage; inserted after #51 surfaced the trap, because
    every later wave that adds a fixture would otherwise inherit it.
 5. **Wave C — patcher tests** (D4).
-6. **Wave D — go/no-go decision with the owner, then the exploratory pass and findings triage** (D5). Findings
+6. **Wave D — go/no-go decision with the owner, then the exploratory pass and findings triage** (D5, D8, D9).
+   Ran as: prerequisite (#59), exploratory survey, owner triage, then the conversion to declared-expectation
+   tests. Findings
    that turn into mod-behavior changes (graceful-failure guards) are separate per-mod iterations or issues,
    never bundled into the test change.
+
+## 4b. Results ledger
+
+What each wave actually delivered, measured. Suite counts are cumulative and identical on the live install and
+both `V3.1.0-b14` vendored units unless noted.
+
+| Wave | Landed | Suite | Notes |
+| --- | --- | --- | --- |
+| Spikes | — | 68 | §2, §2b |
+| A | `Stubs\`, `Fixtures\GameRoom`, first 9 conformance tests | 77 | Two assertions hardened after dumping the engine's real messages |
+| A2 | 9 more clauses of the first two spec sections | 86 | Found that `xpath`'s presence is enforced by vanilla dispatch, not foreach |
+| B | `<bind>` — 8 clauses | 94 | The resolved-once test needed the body to mutate the document to be meaningful |
+| B2 | `<function>` — 10 clauses, plus `Tests\FunctionMod` | 104 | Positive tests needed a real mod assembly registered with `ModManager` |
+| B3 | Failure modes and gotchas — 12 clauses | 116 | **Every section of `foreach.md` now covered: 48 clauses, zero spec/implementation divergences** |
+| B4 | `ProjectConventionTests`, FunctionMod ordering fix | 117 | Surfaced #46's third failure mode as a side effect |
+| C | `Fixtures\PatcherCache`, 6 cache/prefix tests, 3 cross-file tests | 126 | Coroutine itself stays out of scope — needs the game (#49) |
+| D | `Fixtures\PatchPipeline`, `PatchApplicationTests` (4 tests) | 130 | See below |
+
+### Wave D outcome
+
+Of **52 mod patch files** across 18 mods, applied to the unit's real vanilla XML:
+
+- **41 apply with no error or warning.**
+- **9 log, all declared with reasons**: 6 target another mod's content (#61), 2 are the paired
+  `setattribute`+`append` idiom (#60), 1 is a documented `<foreach>` skip.
+- **1 is dead** — `StrongholdTweaks/Config/XUi/windows.xml` sits at a path matching no entry point, so the
+  game never opens it and never complains (#62). Found by the survey, not by anyone noticing the UI tweak
+  missing.
+
+Two of my own conclusions were wrong before measurement corrected them, both worth remembering:
+
+1. The two StrongholdTweaks warnings were first classified as **silent no-op bugs**. They are the documented
+   paired idiom — `xml-patch-ensure-spec.md` §1 quotes one of them verbatim as its motivating example. The
+   mods are correct; the language lacks the word. (Owner called this before I checked.)
+2. The first survey derived entry points **from the filesystem** — "is there a vanilla file with this name?".
+   Wrong: entry points come from `xmlsToLoad` and are path-qualified (`XUi_InGame/windows`). Under the correct
+   model, the base-name "collision" I reported dissolves, `items_xmas_cooking.xml` is correctly not an entry
+   point (its `<include>` is found), and the XUi file is revealed as genuinely dead rather than "unreliable".
+
+The exploratory instrument (`_Survey.cs`) was deleted once its findings became the tests above; its last
+report is in `.scratch\wave-d-survey.md` and its findings are in #60, #61 and #62.
+
+### Prerequisite this wave forced
+
+Patch application needs the game's `Data\Config`, which vendored trees did not carry — running it against a
+live install would have been a **third live-install dependency and the first on the CI path**, giving up the
+game-free property #15 and #48 established. #59 extended `vendor.cs` to capture `Data\Config` wholesale
+(+33 MB per package, `Localization.csv` included: ten of our mods ship one). `SdtdConfigDir` joined
+`build\GamePaths.props` as a first-class path. Wave D therefore runs in CI and across the version matrix,
+which is where it earns its keep — vanilla XML restructuring on a game update is a top breakage class.
 
 ## 5. Verification
 
@@ -154,11 +224,13 @@ resolution direction, before the affected test is finalized.
 
 - **R1 — resolved negative, consequence contained** (see §2 S1b): no Harmony patch application on .NET 10;
   nothing in waves A–D needs it after the D1 rewrite.
-- **R2 — Spec drift discovered en masse.** If clause-by-clause testing surfaces many divergences, the effort
-  becomes a spec-vs-implementation reconciliation project. Mitigation: the divergence rule + owner checkpoints
-  per iteration keep that visible and steerable rather than silently absorbed.
+- **R2 — did not materialise.** All 48 spec clauses matched the implementation; not one divergence was found
+  across every section of `foreach.md`. The reconciliation project this risk anticipated never started.
 - **R3 — resolved positive** (see §2): `singlePatch` works end to end in the stub room with manual registry
   setup.
-- **R4 (new) — stub growth.** The stub grew member-by-member during the spike (~12 so far); engine code paths
-  not yet exercised may demand more. Each addition is a two-line empty shape; the risk is tedium, not
-  viability. The stub's header documents that it is exercise-driven, not a Unity API surface.
+- **R4 — bounded in practice, with a limit found.** The stub stayed at its original ~12 members through every
+  wave; no conformance test needed more. Wave D found where the approach stops paying: `WorldStaticData`'s
+  initializer needs an unbounded chase of engine types, so that path is read from IL instead (D8). Rule of
+  thumb: stub a few touchpoints, inspect an engine-shaped initializer.
+- **R5 (new) — a live-install dependency on the CI path**, raised when wave D needed vanilla config. Resolved
+  before it landed by extending the vendored trees (#59) rather than reaching for the install; see §4b.
