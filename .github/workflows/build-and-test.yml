@@ -12,7 +12,7 @@
 # The dedicated-server leg is #21's standing compile-against-both check. Matrix is Debug x 2 units (plan §10).
 # The .NET SDK is pinned to 10.x: the C# file-based tools (build/tools/*.cs) require it.
 
-name: Build
+name: Build & Test
 
 on:
   push:

@@ -132,7 +132,7 @@ the repo is public and those are licensed game files (`.ai/f5b-game-assembly-pac
 Vendored trees also ship as **private** NuGet packages (`7DtD.Assemblies.Game`,
 `7DtD.Assemblies.DedicatedServer`) on the org's GitHub Packages feed — private always, never repo-linked; the
 contents are licensed game files. The full design and leak model live in `.ai/ci-feed-and-workflow.md`.
-`.github/workflows/build.yml` restores them (repo secret `PACKAGES_READ_TOKEN`, the bot's read token) and
+`.github/workflows/build-and-test.yml` restores them (repo secret `PACKAGES_READ_TOKEN`, the bot's read token) and
 builds the whole solution against **both** units on every push — the standing compile-against-both check (#21).
 Workflows must never upload artifacts or run `-t:Deploy`. `check-for-new-game-version.yml` polls Steam's branch
 heads daily via anonymous SteamCMD and, once its shadow soak ends, files a tracking issue when a release lands.
