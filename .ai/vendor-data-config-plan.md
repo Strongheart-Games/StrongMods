@@ -175,6 +175,18 @@ Deviation from the plan: `.scratch/59-verify/manifest-diff.cs` and the `before/`
 kept until close-out rather than deleted here, so phase D has the baseline on hand if a push needs re-checking.
 The 80 MB scratch tree and the extracted package root are deleted.
 
-### D. (pending)
+### D. Owner ran the repush; feed holds the enriched packages (2026-08-02)
+
+`push.cs --repush-duplicates` (owner-run, write PAT via the masked prompt): four deleted-then-pushed pairs in
+ascending version order — DedicatedServer 3.0.1.4, 3.1.0.14, then Game 3.0.1.4, 3.1.0.14 — no retention
+deletions (each version is the highest build in its `major.minor.patch`, nothing was eligible), and both
+latest tags already correct at 3.1.0.14. Same shape as #48's run. Feed footprint per phase C: 95.6 MB across
+four packages, ~⅕ of the free tier.
+
+**CI round-trip: pending by construction.** The latest run on main (`399b2c4`, success) restored *before* the
+repush landed — its verify-tree logged **169/169**, i.e. the old packages. The bot cannot trigger or re-run
+workflows (Triage role; a direct feed-metadata query 403s the same way), so the round-trip proof arrives with
+the next push to main — which the commit of this very section triggers. Phase E checks that run for
+**228/228** on both units before the close-out comment claims the round trip.
 
 ### E. (pending)
