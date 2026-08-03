@@ -13,6 +13,7 @@
       "Bash(git mv *)",
 
       "Bash(gh auth status *)",
+      "Bash(gh label list *)",
       "Bash(gh issue list *)",
       "Bash(gh issue view *)",
       "Bash(gh issue comment *)",
