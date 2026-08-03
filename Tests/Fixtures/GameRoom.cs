@@ -38,6 +38,7 @@ public sealed class GameRoom {
   private readonly FieldInfo xmlDocField;
   private readonly Type xmlFileType;
   private readonly MethodInfo singlePatch;
+  private readonly MethodInfo patchXmlMethod;
 
   private GameRoom() {
     // Touching GameTree first installs its default-context hook for 0Harmony, which StrongMods needs.
@@ -59,6 +60,8 @@ public sealed class GameRoom {
     Type patcher = acs.GetType("XmlPatcher")!;
     singlePatch = patcher.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
       .First(m => m.Name == "singlePatch");
+    patchXmlMethod = patcher.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+      .First(m => m.Name == "PatchXml" && m.GetParameters().Length == 4);
 
     SubscribeToLog(logLibrary);
     SeedPatchMethods(acs, strongMods, patcher);
@@ -66,8 +69,33 @@ public sealed class GameRoom {
     Cache = new PatcherCache(strongMods.GetType("StrongMods.BreadthFirstXmlPatcher")!, xmlFileType, xmlDocField);
   }
 
+  /// <summary>
+  ///   The unit's own <c>Data\Config</c> — the vanilla XML and Localization.csv that mod patches are applied
+  ///   on top of. Carried by vendored trees and the CI packages since #59, so this resolves wherever the
+  ///   suite runs.
+  /// </summary>
+  public string VanillaConfigDir { get; } = GameTree.Metadata("SdtdConfigDir");
+
   /// <summary>Builds one of the game's XmlFile objects from a string, in the room's own type identity.</summary>
   public object CreateXmlFile(string xml, string filename) => NewXmlFile(xml, filename);
+
+  /// <summary>
+  ///   Applies a whole patch <em>file</em> — every command in it — to a target document, the way the patcher's
+  ///   phase 2 does (<c>XmlPatcher.PatchXml</c>), rather than the single command <see cref="Apply" /> takes.
+  ///   The target is mutated in place; the return value is what the game logged while doing it.
+  /// </summary>
+  public IReadOnlyList<LogEntry> ApplyPatchFile(object targetFile, string patchXml, string patchFileName) {
+    captured.Clear();
+    object patchFile = NewXmlFile(patchXml, patchFileName);
+    XElement patchRoot = Document(patchFile).Root!;
+    try {
+      patchXmlMethod.Invoke(null, new[] { targetFile, patchRoot, patchFile, fixtureMod });
+    } catch (TargetInvocationException e) when (e.InnerException != null) {
+      throw e.InnerException;
+    }
+
+    return captured.ToList();
+  }
 
   /// <summary>The document a room-typed XmlFile holds, as text with the patch-trace comments stripped.</summary>
   public string XmlOf(object xmlFile) => Normalize(Document(xmlFile));

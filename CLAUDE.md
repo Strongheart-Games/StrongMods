@@ -26,7 +26,7 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 
 | File | Role |
 | --- | --- |
-| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(ModsDir)`, `$(SdtdSavesDir)`. Not imported directly by projects — the entry points below pull it in. |
+| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(SdtdConfigDir)`, `$(ModsDir)`, `$(SdtdSavesDir)`. Not imported directly by projects — the entry points below pull it in. |
 | `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |

@@ -53,6 +53,11 @@
          build without deploying) or overridden per project (PrismaCoreFixes deploys to the dedicated server but
          still compiles against the client's Harmony). -->
     <SdtdHarmonyDir Condition="'$(SdtdHarmonyDir)' == ''">$(_SdtdRoot)\Mods\0_TFP_Harmony</SdtdHarmonyDir>
+    <!-- The game's own XML (items.xml, blocks.xml, the XUi_* folders) and Localization.csv — what mod patches
+         are applied ON TOP OF. Unlike Managed, this path is the same for both units, so it needs no layout
+         detection. Vendored trees and the CI packages carry it since #59, which is what lets patch-application
+         and localization be tested without a game install. -->
+    <SdtdConfigDir Condition="'$(SdtdConfigDir)' == ''">$(_SdtdRoot)\Data\Config</SdtdConfigDir>
     <!-- Deploy root. A project targeting the dedicated server overrides this with $(SdtdServerDir)\Mods. -->
     <ModsDir Condition="'$(ModsDir)' == ''">$(_SdtdRoot)\Mods</ModsDir>
     <!-- The game's save-data root (client). Overlay projects deploying into Saves\ use this as their DeployRoot. -->
