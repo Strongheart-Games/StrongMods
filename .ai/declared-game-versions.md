@@ -254,6 +254,39 @@ legs arrive with no new restore machinery.
 Per-declaration testing means a tree per declared version and mods grouped by declaration — a real change to
 `GameTree` and `ModInventory`. It gets its own plan when phases 1–5 have landed.
 
+## 5b. Phase 1 results (2026-08-03)
+
+Environment: repo root, no `Local.props` (probes create and delete a temporary one), `SDTD_HOME` unset, live
+client install, vendored `V3.1.0-b14` trees present, `dotnet` 10.
+
+Implementation notes. `SdtdInstallDir` resolves legacy-first: `$(SdtdDir)` is captured into
+`_SdtdDirPreLocal` *before* the `Local.props` import, which is what lets a legacy `<SdtdDir>` in
+`Local.props` (always meant "where the game is installed") be told apart from a `-p:SdtdDir` game-tree
+redirect arriving from outside. Install-side derivations (`SdtdServerDir`, `ModsDir`) moved from `_SdtdRoot`
+to the new `_SdtdInstallRoot`; game-tree derivations are untouched. `SdtdDir` still defaults to
+`$(SdtdInstallDir)`, so default-invocation evaluation is byte-identical — the flip is phase 2's. Prose made
+true in the same commit (the #52 lesson): the `Deploy.targets` header's "do not combine `-t:Deploy` with
+`-p:SdtdDir`" is now the split's guarantee instead of a warning, and CLAUDE.md's three mentions likewise.
+
+| Check | Result |
+| --- | --- |
+| Default-invocation no-op: `compare-eval` vs `HEAD` worktree — DynamicFeralSense, AECInternationalMarketFixes, Hades, StrongholdSaves, Tests (baseline Tests restored first, per the #46 pitfall) | 3× IDENTICAL; DynamicFeralSense and Tests differ only in the worktree-location prefix on `TargetDir`/`TargetPath` |
+| The split, under `-p:SdtdDir=vendor/game/V3.1.0-b14` | Game-tree side (`SdtdManagedDir`, `SdtdHarmonyDir`, `SdtdConfigDir`) byte-identical to baseline (follows the redirect); `ModsDir` re-anchored live install (baseline: `vendor\...\Mods` — the footgun, visible); `SdtdServerDir` re-anchored (baseline: nonsense `"...V3.1.0-b14 Dedicated Server"`) |
+| Legacy `<SdtdDir>` in `Local.props` | Feeds the install root; game tree follows — behavior identical to `HEAD` |
+| Legacy `Local.props` **plus** `-p:SdtdDir=vendor/...` | Game tree = vendor; install falls to the machine default — the documented migration edge (custom install path needs the new spelling to survive a combined invocation) |
+| New `<SdtdInstallDir>` spelling | Both roots follow it, as the default chain intends |
+| `-p:SdtdDir=` explicitly empty | Evaluation survives (R2 guard preserved); bogus path still produces the one readable `Mod.targets` error |
+| Full solution build, live install | 0 warnings, 0 errors |
+| Full suite, live install | 135/135 |
+| Full suite, `-p:SdtdDir=vendor/dedicated-server/V3.1.0-b14` | 135/135 — `BuildPathResolutionTests`' relative-path and layout-detection pins hold across the split |
+| Redirected deploy (`-t:Deploy -p:ModsDir=<abs .scratch>`) | Lands in exactly one folder at the redirect — global override still beats the install derivation |
+
+No live install was written to; the one `-t:Deploy` was redirected into `.scratch\`. Noted, not fixed
+(pre-existing, out of scope): `vendor.cs`'s header line "Always redirect `-p:ModsDir` when building against a
+vendored tree, or Debug deploys into it" was already stale (#13 ended build-time deploys) and is doubly moot
+after the split — phase 2 touches that header anyway. `build-and-test.yml`'s "never combine a deploy with
+`-p:SdtdDir`" comment is now redundant-but-true; left alone.
+
 ## 6. Verification approach
 
 - **Phases 1–2:** `compare-eval` against a `HEAD` worktree for one project of each shape, plus `Tests`. Phase 1

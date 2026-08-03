@@ -26,7 +26,7 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 
 | File | Role |
 | --- | --- |
-| `build/GamePaths.props` | The **one** place the game install path lives. Defines `$(SdtdDir)`, `$(SdtdServerDir)`, `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(SdtdConfigDir)`, `$(ModsDir)`, `$(SdtdSavesDir)`. Not imported directly by projects — the entry points below pull it in. |
+| `build/GamePaths.props` | The **one** place 7DtD paths live, split into two roots (#23): the **game tree** `$(SdtdDir)` — what everything compiles and tests against; `-p:SdtdDir` redirects it — deriving `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(SdtdConfigDir)`; and the **install** `$(SdtdInstallDir)` — this machine's live game — deriving `$(ModsDir)`, `$(SdtdSavesDir)`, `$(SdtdServerDir)`. Redirecting the game tree never moves the deploy destination. Not imported directly by projects — the entry points below pull it in. |
 | `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
@@ -104,8 +104,8 @@ deploys by construction.
 - `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
 - `<IsDeployable>false</IsDeployable>` marks a project that never deploys (both templates; `Tests`).
 - `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch.
-  Plain builds no longer need it for safety. Do not combine `-t:Deploy` with `-p:SdtdDir=` (a vendored tree
-  would receive the deploy).
+  Plain builds no longer need it for safety, and since the two-root split `-p:SdtdDir` cannot move the deploy
+  destination: a deploy during a vendor-mode build goes to the normal install, never into the tree.
 - `Clean` touches only the `bin\` staging, never a live install. Removing a deployed mod entirely is a manual act.
 - Release deploys too: `-c Release -t:Deploy`.
 
@@ -123,9 +123,10 @@ dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13
 ```
 
 `build/GamePaths.props` detects which layout `$(SdtdDir)` is (the game and the dedicated server name their data
-directory differently). Building against a vendored tree is safe by default (builds stage to `bin\` only); just
-never run `-t:Deploy` with `-p:SdtdDir=` pointed at a tree. **Never commit or publish anything under `vendor/`**:
-the repo is public and those are licensed game files (`.ai/f5b-game-assembly-packages.md` §2).
+directory differently). Building against a vendored tree is safe by construction: builds stage to `bin\` only,
+and the deploy destination derives from the install root, never from `-p:SdtdDir` (the two-root split).
+**Never commit or publish anything under `vendor/`**: the repo is public and those are licensed game files
+(`.ai/f5b-game-assembly-packages.md` §2).
 
 ### CI, packages, and publishing
 

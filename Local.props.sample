@@ -3,28 +3,33 @@
   <!--
     Per-machine build overrides.
 
-    To use: copy this file to Local.props in the repo root and edit. Local.props is gitignored, so your local paths
-    never reach the repo. It is picked up by build\GamePaths.props, which every project reaches through its shape's
-    entry point (build\Mod.props, build\Modlet.targets, build\Overlay.props) — plus Tests\Tests.csproj, which
-    imports it directly.
+    To use: copy this file to Local.props in the repo root and edit. Local.props is gitignored, so your local
+    paths never reach the repo. It is picked up by build\GamePaths.props, which every project reaches through
+    its shape's entry point (build\Mod.props, build\Modlet.targets, build\Overlay.props) — plus
+    Tests\Tests.csproj, which imports it directly.
 
     USE ABSOLUTE PATHS IN THIS FILE. A relative value would change meaning with whatever directory each build
     happens to be invoked from — acceptable for a one-off command line (-p:SdtdDir=vendor/game/..., resolved
     against the directory you run from; see build\GamePaths.props), never for per-machine config.
 
     Precedence for the install path, highest first:
-      1. -p:SdtdDir=...              on the MSBuild command line
-      2. <SdtdDir> in Local.props    this file
+      1. -p:SdtdInstallDir=...            on the MSBuild command line
+      2. <SdtdInstallDir> in Local.props  this file. (The legacy <SdtdDir> spelling still works here, but
+                                          migrate: it sets only the INSTALL root, and the new name says so.)
       3. the SDTD_HOME environment variable
       4. the default in build\GamePaths.props
+
+    The two roots (#23): $(SdtdInstallDir) is where the game IS on this machine — deploy destinations derive
+    from it. What mods COMPILE against is the game tree, $(SdtdDir) — redirected per invocation with
+    -p:SdtdDir=... and, once #23 phase 2 lands, resolved from each mod's declared version.
   -->
 
   <PropertyGroup>
 
-    <!-- Where the game is installed. Everything else is derived from this. -->
-    <!-- <SdtdDir>D:\Games\steamapps\common\7 Days To Die</SdtdDir> -->
+    <!-- Where the game is installed on this machine. Deploy destinations derive from this. -->
+    <!-- <SdtdInstallDir>D:\Games\steamapps\common\7 Days To Die</SdtdInstallDir> -->
 
-    <!-- Only needed if the dedicated server is not at "<SdtdDir> Dedicated Server". -->
+    <!-- Only needed if the dedicated server is not at "<SdtdInstallDir> Dedicated Server". -->
     <!-- <SdtdServerDir>D:\Games\steamapps\common\7 Days To Die Dedicated Server</SdtdServerDir> -->
 
     <!-- Permanent redirect for the Deploy target: -t:Deploy installs into $(ModsDir)\<mod folder>. Plain builds

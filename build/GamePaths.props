@@ -1,33 +1,65 @@
 <Project>
 
   <!--
-    The single source of truth for the 7 Days To Die install location.
+    The single source of truth for 7 Days To Die paths — of which there are TWO roots (#23; design:
+    .ai/declared-game-versions.md §2):
+
+      GAME TREE  $(SdtdDir)         what everything compiles and tests against — a live install, a vendored
+                                    tree (vendor/<unit>/<label>), or a restored package tree. Redirect with
+                                    -p:SdtdDir=... . Until the declared-version flip (#23 phase 2) lands, it
+                                    defaults to the install below.
+      INSTALL    $(SdtdInstallDir)  the live game on THIS machine: the deploy destination ($(ModsDir),
+                                    $(SdtdSavesDir), $(SdtdServerDir) derive from it), vendor.cs's source,
+                                    and the version-check subject (#37).
+
+    One root cannot serve both: a single root made -p:SdtdDir=vendor/... drag $(ModsDir) into the vendored
+    tree, where a -t:Deploy would "install". Since the split, redirecting the game tree can never move the
+    deploy destination.
 
     Not imported directly by mod projects. It is pulled in by the entry point each project shape imports —
     build\Mod.props (code mods), build\Modlet.targets (modlets), build\Overlay.props (overlays). Tests\Tests.csproj
     is the one direct importer: it needs the resolved paths without the rest of a mod build.
 
+    Override the game tree: -p:SdtdDir=... on the command line.
     Override the install path, in precedence order:
-      1. -p:SdtdDir=... on the command line (a global property; always wins)
-      2. Local.props in the repo root (gitignored, per-machine — copy Local.props.sample)
+      1. -p:SdtdInstallDir=... on the command line (a global property; always wins)
+      2. <SdtdInstallDir> in Local.props (gitignored, per-machine — copy Local.props.sample). The legacy
+         <SdtdDir> spelling in Local.props is honored as the install root, so existing machine configs keep
+         working — see the capture below.
       3. the SDTD_HOME environment variable
       4. the default below
 
-    A relative override (-p:SdtdDir=vendor/game/V3.1.0-b14) is resolved against the directory the command was
-    run from — the same rule build\Deploy.targets applies to a relative -p:ModsDir. Without that, MSBuild would
-    resolve it against each PROJECT's directory instead, which is never what the caller meant and fails in three
-    different ways depending on the project (#46). $(_SdtdRoot) below holds the resolved form and everything
-    derives from it.
+    A relative override of either root (-p:SdtdDir=vendor/game/V3.1.0-b14) is resolved against the directory
+    the command was run from — the same rule build\Deploy.targets applies to a relative -p:ModsDir. Without
+    that, MSBuild would resolve it against each PROJECT's directory instead, which is never what the caller
+    meant and fails in three different ways depending on the project (#46).
   -->
+
+  <!-- $(SdtdDir) is non-empty HERE only when it arrived from outside — -p: or the environment. Captured
+       before Local.props so a legacy <SdtdDir> in Local.props (which always meant "where the game is
+       installed") can be told apart from a command-line game-tree redirect, which must NOT become the
+       install root. -->
+  <PropertyGroup>
+    <_SdtdDirPreLocal>$(SdtdDir)</_SdtdDirPreLocal>
+  </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\Local.props"
           Condition="Exists('$(MSBuildThisFileDirectory)..\Local.props')" />
 
   <PropertyGroup>
-    <SdtdDir Condition="'$(SdtdDir)' == '' AND '$(SDTD_HOME)' != ''">$(SDTD_HOME)</SdtdDir>
-    <SdtdDir Condition="'$(SdtdDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die</SdtdDir>
-    <!-- The install path in absolute form; see the header. It needs its own property because $(SdtdDir) is
-         usually a global property (-p:SdtdDir=...), and MSBuild ignores assignments to those from a project
+    <!-- The install root: legacy Local.props spelling first (see the capture above), then the machine chain. -->
+    <SdtdInstallDir Condition="'$(SdtdInstallDir)' == '' AND '$(_SdtdDirPreLocal)' == '' AND '$(SdtdDir)' != ''">$(SdtdDir)</SdtdInstallDir>
+    <SdtdInstallDir Condition="'$(SdtdInstallDir)' == '' AND '$(SDTD_HOME)' != ''">$(SDTD_HOME)</SdtdInstallDir>
+    <SdtdInstallDir Condition="'$(SdtdInstallDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die</SdtdInstallDir>
+    <!-- Anchored at the invocation directory exactly like _SdtdRoot below, for the same #46 reasons.
+         NormalizePath, not NormalizeDirectory: the latter appends a trailing slash, which would break the
+         '$(_SdtdInstallRoot) Dedicated Server' concatenation further down. -->
+    <_SdtdInstallRoot Condition="'$(SdtdInstallDir)' != ''">$([MSBuild]::NormalizePath('$(MSBuildStartupDirectory)', '$(SdtdInstallDir)'))</_SdtdInstallRoot>
+
+    <!-- The game tree defaults to the install until #23 phase 2 resolves it from the declared version. -->
+    <SdtdDir Condition="'$(SdtdDir)' == ''">$(SdtdInstallDir)</SdtdDir>
+    <!-- The game tree in absolute form; see the header. It needs its own property because $(SdtdDir) is
+         often a global property (-p:SdtdDir=...), and MSBuild ignores assignments to those from a project
          file — the value cannot be rewritten in place. $(SdtdDir) therefore keeps whatever the caller wrote,
          which is what the "game was not found at ..." error should echo back, while everything derived below
          uses the resolved path. Conditional so an explicitly empty override still reaches that error instead
@@ -37,30 +69,30 @@
          MSBuild points the working directory at each PROJECT while running that project's targets, so
          anything cwd-relative means different things at evaluation and at execution time — for exactly this
          reason a relative -p:ModsDir scattered deploys into every project folder until #52 anchored its
-         target-time consumption site the same way. NormalizePath, not
-         NormalizeDirectory: the latter appends a trailing slash, which would break the string concatenation
-         in SdtdServerDir just below. An absolute override passes through unchanged. -->
+         target-time consumption site the same way. -->
     <_SdtdRoot Condition="'$(SdtdDir)' != ''">$([MSBuild]::NormalizePath('$(MSBuildStartupDirectory)', '$(SdtdDir)'))</_SdtdRoot>
-    <SdtdServerDir Condition="'$(SdtdServerDir)' == ''">$(_SdtdRoot) Dedicated Server</SdtdServerDir>
+
     <!-- The game and the dedicated server name their data directory differently (7DaysToDie_Data vs
-         7DaysToDieServer_Data). Detect which layout $(SdtdDir) actually is, so a bare -p:SdtdDir=... works
+         7DaysToDieServer_Data). Detect which layout the game tree actually is, so a bare -p:SdtdDir=... works
          against any of: the live game, the live dedicated server, or a vendored tree of either
          (build/tools/vendor.cs). The game's name is the fallback so evaluation without an install present
          (e.g. -getProperty checks) still yields the familiar path. -->
     <SdtdManagedDir Condition="'$(SdtdManagedDir)' == '' AND Exists('$(_SdtdRoot)\7DaysToDieServer_Data\Managed')">$(_SdtdRoot)\7DaysToDieServer_Data\Managed</SdtdManagedDir>
     <SdtdManagedDir Condition="'$(SdtdManagedDir)' == ''">$(_SdtdRoot)\7DaysToDie_Data\Managed</SdtdManagedDir>
-    <!-- Where 0Harmony.dll is read from. Deliberately derived from $(SdtdDir), NOT from $(ModsDir): Harmony is part
-         of the game install, whereas $(ModsDir) is the deploy destination and may be redirected (-p:ModsDir=... to
-         build without deploying) or overridden per project (PrismaCoreFixes deploys to the dedicated server but
-         still compiles against the client's Harmony). -->
+    <!-- Where 0Harmony.dll is read from: part of the game tree — vendor.cs copies Mods\0_TFP_Harmony into
+         every tree for exactly this reason — never of the deploy destination. -->
     <SdtdHarmonyDir Condition="'$(SdtdHarmonyDir)' == ''">$(_SdtdRoot)\Mods\0_TFP_Harmony</SdtdHarmonyDir>
     <!-- The game's own XML (items.xml, blocks.xml, the XUi_* folders) and Localization.csv — what mod patches
          are applied ON TOP OF. Unlike Managed, this path is the same for both units, so it needs no layout
          detection. Vendored trees and the CI packages carry it since #59, which is what lets patch-application
          and localization be tested without a game install. -->
     <SdtdConfigDir Condition="'$(SdtdConfigDir)' == ''">$(_SdtdRoot)\Data\Config</SdtdConfigDir>
+
+    <!-- INSTALL-side paths: anchored to this machine, deliberately NOT to the game tree. A redirected game
+         tree must never become a deploy destination. -->
+    <SdtdServerDir Condition="'$(SdtdServerDir)' == ''">$(_SdtdInstallRoot) Dedicated Server</SdtdServerDir>
     <!-- Deploy root. A project targeting the dedicated server overrides this with $(SdtdServerDir)\Mods. -->
-    <ModsDir Condition="'$(ModsDir)' == ''">$(_SdtdRoot)\Mods</ModsDir>
+    <ModsDir Condition="'$(ModsDir)' == ''">$(_SdtdInstallRoot)\Mods</ModsDir>
     <!-- The game's save-data root (client). Overlay projects deploying into Saves\ use this as their DeployRoot. -->
     <SdtdSavesDir Condition="'$(SdtdSavesDir)' == ''">$(AppData)\7DaysToDie\Saves</SdtdSavesDir>
   </PropertyGroup>

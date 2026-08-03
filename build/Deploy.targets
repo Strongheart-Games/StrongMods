@@ -15,8 +15,9 @@
     content the repo does not manage is an Overlay, not a Mod — use build\Overlay.targets instead. Hades is the
     example: its Worlds\ holds ~400 MB of world binaries authored outside this repo.
 
-    Deploying while $(SdtdDir) points at a vendored tree would "install" into the tree — do not combine
-    -t:Deploy with -p:SdtdDir.
+    Since the game-tree/install split (#23), $(ModsDir) derives from $(SdtdInstallDir) — never from
+    $(SdtdDir) — so a deploy during a vendor-mode build (-p:SdtdDir=...) goes to the normal install, not into
+    the tree.
 
     A relative -p:ModsDir resolves against the directory the command was run from — the same rule
     build\GamePaths.props applies to a relative -p:SdtdDir (#46). _DeployDir below names
