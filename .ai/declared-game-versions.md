@@ -334,6 +334,41 @@ No live install was deployed to. CI is unaffected by the flip mechanics (its mat
 escape hatch) — only the relocated restore paths changed; the run on main after the commit is the round-trip
 proof, and phase 4 rebuilds the matrix on declarations anyway.
 
+### Phase 3 results (2026-08-03)
+
+Four tests across the two existing convention/resolution files — no new file:
+
+- `Tests/ProjectConventionTests.cs`: **B amended** — the first-element rule admits one leading `PropertyGroup`
+  iff it holds only declaration properties (`SdtdDevVersion`, `SdtdTestVersions`) with no `$(` anywhere in
+  the block; the failure message now names the allowance. **D** (new) — declarations are literal everywhere,
+  and in props-first shapes live only in that leading block; the between-imports message teaches the
+  OutDir-latch shape and names the runtime backstop. **E** (new) — the closure suite: map rows well-formed,
+  every row matches an independent `FourPart` recomputation (third independent computation, after pack.cs
+  and the vendor stub), every declared label has a row (with the semicolon hint when the label contains a
+  comma), no dead pins, and dev ∈ test per project.
+- `Tests/BuildPathResolutionTests.cs`: **The_game_tree_follows_the_declaration_and_the_install_side_does_not**
+  — one evaluation pins the flip and the split in both directions (R3's executable form). **The_tree_source_
+  is_an_input_never_a_discovery** — an empty `-p:SdtdPackagesDir` must not fall back to the vendored copy the
+  repo really holds, and vendor mode resolves by label under `vendor\dedicated-server\` (pinning the
+  unit→package-id map, hyphen dropped only in the id). Both read the expected label/version from
+  `build/GameVersions.props` at run time, so a version bump cannot rot them.
+
+| Break | Result |
+| --- | --- |
+| Valid shape-3 leading block on DisableLAN (dev+test `V3.0.1-b4`) | **B, D, E all pass** — the allowance admits exactly the designed block |
+| Same block moved between the imports | D fails with the two-slot message; **B alone passes** — the blind spot D exists to close, shown live |
+| `SdtdTestVersions` with a comma | E fails twice: dev∉test (clean message) and no-row **with the semicolon hint** |
+| `SdtdDevVersion=$(SomeSharedProperty)` | D fails citing the `C:\Hades` class |
+| Registry row `V2.5-b8=9.9.9.9` added | E fails twice: FourPart mismatch (`2.5.0.8` expected — patch defaults to 0) and dead pin |
+| `ModsDir` re-derived from `_SdtdRoot` in GamePaths.props | Split test fails: `ModsDir` under `packages\` — deploy-into-the-tree, caught |
+| `SdtdDir` default reverted to `$(SdtdInstallDir)` | Split test fails: game tree at the install fixture instead of the declared packages path |
+| `SdtdTreeSource` default flipped to `vendor` | No-probe test fails: packages override fell through to `vendor\` |
+| All reverts | `git status` shows only the two test files (plus the owner's unrelated spec docs) |
+
+Suite: 139/139 (was 135) against the packages default, and 139/139 with `-p:SdtdUnit=dedicated-server`.
+Changed lines ~190 across the two test files — over the plan's ~120 estimate; the overage is message prose,
+which in this suite is the deliverable.
+
 ## 6. Verification approach
 
 - **Phases 1–2:** `compare-eval` against a `HEAD` worktree for one project of each shape, plus `Tests`. Phase 1

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using Xunit;
 
 namespace Tests;
@@ -95,6 +97,76 @@ public class BuildPathResolutionTests {
     Assert.Single(Directory.GetFileSystemEntries(Path.Combine(space.InvocationDir, "deployed")));
   }
 
+  [Fact]
+  public void The_game_tree_follows_the_declaration_and_the_install_side_does_not() {
+    // The two-root split (#23): SdtdDir resolves from the DECLARED version under the repo's packages layout,
+    // never from the machine's install; ModsDir and SdtdServerDir derive from the INSTALL, never from the
+    // game tree. One evaluation pins both directions — a revert of the flip puts SdtdDir under the install
+    // fixture, and a re-merge of the roots puts ModsDir under packages\.
+    using var space = new Workspace();
+    space.Fixture("install", "7DaysToDie_Data");
+    (var label, var version) = DefaultDeclaration();
+    IReadOnlyDictionary<string, string> resolved = space.EvaluateWith(space.CodeModProject(),
+      new[] { "-p:SdtdInstallDir=install" },
+      new[] { "SdtdDir", "SdtdManagedDir", "ModsDir", "SdtdServerDir" });
+
+    var declaredTree = Path.Combine(Workspace.RepoRoot, "packages", "7dtd.assemblies.game", version);
+    Assert.True(string.Equals(resolved["SdtdDir"], declaredTree, StringComparison.OrdinalIgnoreCase),
+      $"SdtdDir resolved to\n    {resolved["SdtdDir"]}\nexpected the declared default {label} under the " +
+      $"repo packages layout:\n    {declaredTree}\nThe game tree resolves from build\\GameVersions.props' " +
+      "declaration — never from the machine's install (the #23 flip). If this points at the install " +
+      "fixture, the flip was reverted; if elsewhere, resolution or the registry map changed shape.");
+    foreach (var name in new[] { "ModsDir", "SdtdServerDir" }) {
+      Assert.True(resolved[name].StartsWith(Path.Combine(space.InvocationDir, "install"),
+          StringComparison.OrdinalIgnoreCase),
+        $"{name} resolved to\n    {resolved[name]}\nexpected it under the install fixture\n    " +
+        $"{Path.Combine(space.InvocationDir, "install")}\nInstall-side paths derive from " +
+        "$(SdtdInstallDir), deliberately NEVER from the game tree — a redirected or declared tree must not " +
+        "become a deploy destination (#52's lesson made structural). If this sits under packages\\ or " +
+        "vendor\\, the roots were re-merged.");
+    }
+  }
+
+  [Fact]
+  public void The_tree_source_is_an_input_never_a_discovery() {
+    // Decision 7 (.ai/declared-game-versions.md §1): resolution never probes both roots and picks one. The
+    // repo REALLY holds this version in packages\ AND vendor\ — so each source must resolve strictly within
+    // itself, and an empty packages override must NOT fall back to the vendored copy.
+    using var space = new Workspace();
+    (var label, var version) = DefaultDeclaration();
+    var empty = Path.Combine(space.InvocationDir, "empty-packages");
+    Directory.CreateDirectory(empty);
+
+    var packages = space.EvaluateWith(space.CodeModProject(),
+      new[] { "-p:SdtdPackagesDir=" + empty }, new[] { "SdtdDir" })["SdtdDir"];
+    Assert.True(string.Equals(packages, Path.Combine(empty, "7dtd.assemblies.game", version),
+        StringComparison.OrdinalIgnoreCase),
+      $"With -p:SdtdPackagesDir pointing at an EMPTY folder, SdtdDir resolved to\n    {packages}\n" +
+      "Packages mode must resolve under the given packages root even when the tree is absent there — the " +
+      "repo's vendor\\ holds this very version, and probing into it would mask a broken packages path " +
+      "(decision 7: the source is an input, never a discovery). The missing tree is the instructional " +
+      "Mod.targets error's job, not a fallback's.");
+
+    var vendor = space.EvaluateWith(space.CodeModProject(),
+      new[] { "-p:SdtdTreeSource=vendor", "-p:SdtdUnit=dedicated-server" }, new[] { "SdtdDir" })["SdtdDir"];
+    Assert.True(string.Equals(vendor, Path.Combine(Workspace.RepoRoot, "vendor", "dedicated-server", label),
+        StringComparison.OrdinalIgnoreCase),
+      $"With -p:SdtdTreeSource=vendor -p:SdtdUnit=dedicated-server, SdtdDir resolved to\n    {vendor}\n" +
+      $"expected vendor\\dedicated-server\\{label} under the repo root: vendor mode resolves by LABEL under " +
+      "the unit's own directory name (dedicated-server keeps its hyphen; only the package id drops it), " +
+      "regardless of what packages\\ holds.");
+  }
+
+  /// <summary>The repo default declaration, read from build\GameVersions.props so a version bump never
+  ///   rots these tests: the label plus its registry package version.</summary>
+  private static (string Label, string Version) DefaultDeclaration() {
+    XDocument versions = XDocument.Load(Path.Combine(Workspace.RepoRoot, "build", "GameVersions.props"));
+    var label = versions.Descendants().First(e => e.Name.LocalName == "SdtdDevVersion").Value;
+    var version = versions.Descendants().First(e => e.Name.LocalName == "SdtdGameVersionMap").Value
+      .Split(';').Select(pair => pair.Split('=')).First(pair => pair[0].Trim() == label)[1].Trim();
+    return (label, version);
+  }
+
   private const string ProbeName = "PathProbe";
 
   /// <summary>
@@ -159,9 +231,15 @@ public class BuildPathResolutionTests {
     }
 
     /// <summary>Evaluates the named properties with a relative -p:SdtdDir. No restore, no target, no build.</summary>
-    internal IReadOnlyDictionary<string, string> Evaluate(string project, string sdtdDir, params string[] names) {
-      (var exitCode, var log) = Run("msbuild", project, "-nologo", "-p:Configuration=Debug",
-        "-getProperty:" + string.Join(',', names), "-p:SdtdDir=" + sdtdDir);
+    internal IReadOnlyDictionary<string, string> Evaluate(string project, string sdtdDir, params string[] names) =>
+      EvaluateWith(project, new[] { "-p:SdtdDir=" + sdtdDir }, names);
+
+    /// <summary>Same evaluation, arbitrary -p: overrides.</summary>
+    internal IReadOnlyDictionary<string, string> EvaluateWith(string project, string[] overrides, string[] names) {
+      var arguments = new List<string> { "msbuild", project, "-nologo", "-p:Configuration=Debug",
+        "-getProperty:" + string.Join(',', names) };
+      arguments.AddRange(overrides);
+      (var exitCode, var log) = Run(arguments.ToArray());
       Assert.True(exitCode == 0, $"MSBuild evaluation failed ({exitCode}):\n{log}");
 
       // -getProperty prints a bare value for one name and a {"Properties":{...}} object for several.

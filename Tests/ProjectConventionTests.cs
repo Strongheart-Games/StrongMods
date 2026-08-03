@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Tests.Fixtures;
 using Xunit;
@@ -129,10 +130,16 @@ public class ProjectConventionTests {
       var shape = shapes.Single();
       (var first, var last) = ShapeBookends[shape];
       List<XElement> body = document.Root.Elements().ToList();
+      // The one thing allowed AHEAD of a props import: a single literal-only declaration block (#23's
+      // two-slot rule — declarations above, deviations between). Rule D owns the block's content; here it
+      // only shifts where the import must sit.
+      var lead = first != null && IsDeclarationBlock(body[0]) ? 1 : 0;
 
-      if (first != null && SharedBuildFile(body[0]) != first) {
+      if (first != null && SharedBuildFile(body[lead]) != first) {
         offenders.Add($"{name} is {Article(shape)}, so its FIRST element must be " +
-          $"<Import Project=\"..\\build\\{first}\" /> — it is {Describe(body[0])}.\n" +
+          $"<Import Project=\"..\\build\\{first}\" /> — optionally preceded by ONE PropertyGroup holding " +
+          $"only literal declaration properties ({string.Join(", ", DeclarationProperties)}) — but it is " +
+          $"{Describe(body[lead])}.\n" +
           "  The props half must be imported before anything that references a shared property, because " +
           "expansion is immediate: a body that reads $(ModsDir) or $(SdtdSavesDir) too early freezes it empty. " +
           "That shipped — $(ModsDir)\\Hades evaluated to \\Hades and the deploy landed in C:\\Hades " +
@@ -180,6 +187,142 @@ public class ProjectConventionTests {
       "  A new mod must import its shape's entry points (see CLAUDE.md, \"Adding a new mod\"); a new non-mod " +
       "project must be added to KnownNonMods with a reason. Silently falling outside every shape means no " +
       "convention test covers it.");
+  }
+
+  // The declaration properties (#23): what a mod may pin in its leading block, and nothing else may go there.
+  private static readonly string[] DeclarationProperties = { "SdtdDevVersion", "SdtdTestVersions" };
+
+  /// <summary>One PropertyGroup of declaration properties only, with no $() anywhere in it.</summary>
+  private static bool IsDeclarationBlock(XElement element) =>
+    element.Name.LocalName == "PropertyGroup" && element.HasElements &&
+    element.Elements().All(p => DeclarationProperties.Contains(p.Name.LocalName)) &&
+    !element.ToString().Contains("$(");
+
+  [Fact]
+  public void D_Declaration_properties_are_literal_and_sit_above_the_entry_point_props_import() {
+    // Both halves are load-bearing, measured (.ai/declared-game-versions.md §4):
+    //   * Position: BETWEEN the imports, a declaration assigns after build\GamePaths.props has already
+    //     resolved the game tree — the property reads back changed while every derived path silently keeps
+    //     the old value (the OutDir-latch shape). The runtime guard (_ValidateGameTreeDeclaration) catches
+    //     that at build time; this scan catches it a build earlier, and catches placements no build runs.
+    //   * Literalness: a $() reference in a leading block would read shared properties BEFORE the props
+    //     import defines them — the class that once evaluated $(ModsDir)\Hades to \Hades and deployed into
+    //     C:\Hades. A literal cannot do that.
+    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    var offenders = new List<string>();
+
+    foreach (var project in SourceProjects(repoRoot)) {
+      XDocument document = XDocument.Load(project);
+      var name = Relative(repoRoot, project);
+      List<XElement> body = document.Root.Elements().ToList();
+      var propsFirst = Elements(document, "Import").Select(SharedBuildFile)
+        .Any(file => file is "Mod.props" or "Overlay.props");
+
+      foreach (XElement declaration in document.Descendants()
+                 .Where(e => DeclarationProperties.Contains(e.Name.LocalName))) {
+        if (declaration.ToString().Contains("$(")) {
+          offenders.Add($"{name} declares {declaration.Name.LocalName} with a $() reference: " +
+            $"{declaration.ToString().Trim()}\n  Declaration values are LITERAL labels. A reference in a " +
+            "leading block reads shared properties before the props import defines them — the class that " +
+            "once evaluated $(ModsDir)\\Hades to \\Hades and deployed into C:\\Hades.");
+        }
+
+        if (propsFirst && !(declaration.Parent == body[0] && IsDeclarationBlock(body[0]))) {
+          offenders.Add($"{name} declares {declaration.Name.LocalName} outside the leading declaration " +
+            "block. Declarations live in ONE PropertyGroup ABOVE the entry-point props import; set any " +
+            "lower, the property reads back changed while build\\GamePaths.props has already resolved the " +
+            "game tree from the old value — the OutDir-latch shape. (_ValidateGameTreeDeclaration is the " +
+            "runtime backstop; this scan fires a build earlier.) Two-slot rule: declarations above, " +
+            "deviations between.");
+        }
+      }
+    }
+
+    Assert.True(offenders.Count == 0, string.Join("\n\n", offenders));
+  }
+
+  [Fact]
+  public void E_Declared_versions_and_the_registry_close_over_each_other() {
+    // build\GameVersions.props' registry and the declarations (repo defaults + per-mod leading blocks) must
+    // agree in BOTH directions, each mod must test what it compiles against, and every registry row must
+    // match an independent recomputation of pack.cs's FourPart label mapping — the same
+    // two-independent-computations pattern pack.cs itself uses against vendor.cs's nuspec stub.
+    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    XDocument versions = XDocument.Load(Path.Combine(repoRoot, "build", "GameVersions.props"));
+    var offenders = new List<string>();
+
+    var map = new Dictionary<string, string>();
+    foreach (var pair in SplitList(Declared(versions, "SdtdGameVersionMap"))) {
+      string[] parts = pair.Split('=');
+      if (parts.Length != 2 || FourPart(parts[0]) == null) {
+        offenders.Add($"SdtdGameVersionMap entry '{pair}' is not a 'V<major>.<minor>[.<patch>]-b<build>=" +
+          "<four-part>' pair. Rows are branch-head labels mapped to package versions, semicolon-separated.");
+        continue;
+      }
+      map[parts[0]] = parts[1];
+      if (FourPart(parts[0]) != parts[1]) {
+        offenders.Add($"SdtdGameVersionMap maps {parts[0]} to {parts[1]}, but the FourPart rule maps it to " +
+          $"{FourPart(parts[0])} (V3.1.0-b13 -> 3.1.0.13; V2.5-b8 -> 2.5.0.8 — patch defaults to 0, never " +
+          "dropped). pack.cs computes the same rule from the label when packing; a row that disagrees would " +
+          "resolve a tree the feed cannot contain.");
+      }
+    }
+
+    var defaultDev = Declared(versions, "SdtdDevVersion");
+    List<string> defaultTest = SplitList(Declared(versions, "SdtdTestVersions"));
+    var declared = new Dictionary<string, string> { [defaultDev] = "the repo default (build\\GameVersions.props)" };
+    foreach (var label in defaultTest) {
+      declared.TryAdd(label, "the repo default (build\\GameVersions.props)");
+    }
+
+    foreach (var project in SourceProjects(repoRoot)) {
+      XDocument document = XDocument.Load(project);
+      var name = Relative(repoRoot, project);
+      var dev = Elements(document, "SdtdDevVersion").FirstOrDefault()?.Value.Trim() ?? defaultDev;
+      List<string> test = Elements(document, "SdtdTestVersions").FirstOrDefault() is { } declaredTest
+        ? SplitList(declaredTest.Value) : defaultTest;
+      declared.TryAdd(dev, name);
+      foreach (var label in test) {
+        declared.TryAdd(label, name);
+      }
+
+      if (!test.Contains(dev)) {
+        offenders.Add($"{name} develops against {dev} but tests against [{string.Join(", ", test)}] — the " +
+          "dev version must be among the test versions. Compiling against a version you never test is " +
+          "exactly the silent gap the declaration exists to close.");
+      }
+    }
+
+    foreach ((var label, var declaredBy) in declared.Where(d => !map.ContainsKey(d.Key))) {
+      var hint = label.Contains(',')
+        ? " Labels are SEMICOLON-separated — a comma joins two labels into one unknown token."
+        : "";
+      offenders.Add($"'{label}' (declared by {declaredBy}) has no row in SdtdGameVersionMap " +
+        $"(build\\GameVersions.props).{hint} Rows are branch heads; add 'label=fourpart' or fix the label.");
+    }
+
+    foreach (var label in map.Keys.Where(k => !declared.ContainsKey(k))) {
+      offenders.Add($"SdtdGameVersionMap row '{label}' is declared by nothing — a dead pin. The registry " +
+        "lists exactly what is declared (repo defaults or a mod's leading block); drop the row or declare it.");
+    }
+
+    Assert.True(offenders.Count == 0, string.Join("\n\n", offenders));
+  }
+
+  /// <summary>The one element of this name in GameVersions.props (the _...AtResolve capture is named apart).</summary>
+  private static string Declared(XDocument versions, string name) =>
+    versions.Descendants().First(e => e.Name.LocalName == name).Value;
+
+  /// <summary>Semicolon-list split with MSBuild's item semantics: entries trimmed, empties dropped.</summary>
+  private static List<string> SplitList(string value) =>
+    value.Split(';').Select(entry => entry.Trim()).Where(entry => entry.Length > 0).ToList();
+
+  /// <summary>pack.cs's label mapping, recomputed independently: null when the label is not label-shaped.</summary>
+  private static string FourPart(string label) {
+    Match match = Regex.Match(label, @"^V(\d+)\.(\d+)(?:\.(\d+))?-b(\d+)$");
+    return !match.Success ? null :
+      $"{match.Groups[1].Value}.{match.Groups[2].Value}." +
+      $"{(match.Groups[3].Success ? match.Groups[3].Value : "0")}.{match.Groups[4].Value}";
   }
 
   private static IEnumerable<string> SourceProjects(string repoRoot) =>
