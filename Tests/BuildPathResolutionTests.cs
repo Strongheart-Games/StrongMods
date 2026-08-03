@@ -1,0 +1,208 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using Xunit;
+
+namespace Tests;
+
+/// <summary>
+///   Pins what a RELATIVE path override means: -p:SdtdDir, -p:ModsDir and -p:SdtdSavesDir all resolve against
+///   the directory the command was run from, never against each project's own directory. Two bugs shipped from
+///   getting this wrong, at the two different points in the build lifecycle where it can be gotten wrong:
+///
+///     #46  EVALUATION time — build\GamePaths.props resolved -p:SdtdDir=vendor/... against each project, so a
+///          dedicated-server tree was silently misdetected as a game tree, and FrameworkPathOverride came out
+///          unrooted (NETSDK1052) once a mod project entered the Tests build graph.
+///     #52  TARGET-EXECUTION time — build\Deploy.targets computed the deploy destination inside the Deploy
+///          target, where MSBuild has already pointed the process working directory at the PROJECT. So
+///          -p:ModsDir=.scratch/deploy — the redirect CLAUDE.md documents for safe verification — wrote 29
+///          per-project folders, nothing at the repo root, and reported 0 Error(s).
+///
+///   Both were defended by prose alone, and the Deploy.targets prose asserted the opposite of the truth for its
+///   whole life. These tests shell MSBuild because nothing cheaper can observe the rule: it is a property of
+///   MSBuild's own evaluation and execution phases, invisible to a file scan.
+///
+///   No game install is needed — layout detection is Exists() on directories, so a fixture is a few empty
+///   folders. Each test builds a throwaway tree with the invocation directory and the probe PROJECT as SIBLINGS,
+///   so "resolved against the invocation" and "resolved against the project" cannot be mistaken for one another,
+///   and neither can accidentally coincide with the repo root.
+/// </summary>
+public class BuildPathResolutionTests {
+  [Fact]
+  public void Relative_SdtdDir_resolves_against_the_invocation_directory() {
+    using var space = new Workspace();
+    space.Fixture("tree", "7DaysToDie_Data");
+    IReadOnlyDictionary<string, string> resolved = space.Evaluate(space.CodeModProject(), "tree",
+      "SdtdManagedDir", "SdtdHarmonyDir", "FrameworkPathOverride");
+
+    foreach ((var name, var value) in resolved) {
+      Assert.True(Path.IsPathRooted(value),
+        $"{name} resolved to '{value}', which is not an absolute path. build\\GamePaths.props must normalize a " +
+        "relative -p:SdtdDir into $(_SdtdRoot) before deriving anything from it; an unrooted value reaches the " +
+        "compiler as NETSDK1052 (#46).");
+      Assert.True(value.StartsWith(space.InvocationDir, StringComparison.OrdinalIgnoreCase),
+        $"{name} resolved to\n    {value}\nbut -p:SdtdDir=tree was passed from\n    {space.InvocationDir}\n" +
+        $"The probe project lives at\n    {space.ProjectDir}\nand the repo root is\n    {Workspace.RepoRoot}\n" +
+        "A relative override means relative to WHERE THE COMMAND WAS RUN. MSBuild resolves relative paths " +
+        "against the project by default, so build\\GamePaths.props names $(MSBuildStartupDirectory) explicitly " +
+        "(#46). If this fails, that anchor was dropped or something derives from raw $(SdtdDir) instead of " +
+        "$(_SdtdRoot).");
+    }
+  }
+
+  [Fact]
+  public void Relative_SdtdDir_detects_the_dedicated_server_layout() {
+    using var space = new Workspace();
+    space.Fixture("tree", "7DaysToDieServer_Data");
+    var managed = space.Evaluate(space.CodeModProject(), "tree", "SdtdManagedDir")["SdtdManagedDir"];
+
+    Assert.True(managed.Contains("7DaysToDieServer_Data", StringComparison.OrdinalIgnoreCase),
+      $"A dedicated-server tree was passed as a relative -p:SdtdDir, but SdtdManagedDir resolved to\n    {managed}\n" +
+      "which is the GAME layout. This is #46's quiet failure: layout detection is an Exists() test, and an " +
+      "unanchored relative path makes it probe under the project directory, where neither data folder exists — " +
+      "so it silently falls through to the game-layout default and the whole build compiles against the wrong " +
+      "unit. Detection must test the normalized $(_SdtdRoot), not $(SdtdDir).");
+  }
+
+  [Fact]
+  public void Relative_ModsDir_deploys_to_the_invocation_directory_not_beside_the_project() {
+    using var space = new Workspace();
+    var project = space.ModletProject();
+
+    // -t:Deploy, not -t:Build: the deploy destination is computed while the target RUNS, which is the whole
+    // point. By then MSBuild has pointed the working directory at the project, so an unanchored relative
+    // ModsDir lands beside the project instead of here.
+    (var exitCode, var log) = space.Run("msbuild", project, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      "-p:ModsDir=deployed", "-nodeReuse:false");
+    Assert.True(exitCode == 0, $"MSBuild -t:Deploy failed ({exitCode}):\n{log}");
+
+    var beside = Path.Combine(space.ProjectDir, "deployed");
+    Assert.False(Directory.Exists(beside),
+      $"-p:ModsDir=deployed was passed from\n    {space.InvocationDir}\nbut the deploy created\n    {beside}\n" +
+      "beside the project instead. That is #52 exactly: _DeployDir is computed inside the Deploy target, where " +
+      "the working directory is the PROJECT's, so across the solution this scatters one folder beside every " +
+      "deploying project — silently, reporting success. build\\Deploy.targets must pass " +
+      "$(MSBuildStartupDirectory) as the first argument to NormalizeDirectory (an absolute $(ModsDir) then " +
+      "discards it, so real deploys are unaffected).");
+
+    var expected = Path.Combine(space.InvocationDir, "deployed", ProbeName);
+    Assert.True(File.Exists(Path.Combine(expected, "ModInfo.xml")),
+      $"Nothing was deployed to\n    {expected}\nwhich is where -p:ModsDir=deployed points from " +
+      $"{space.InvocationDir}. Deploy log:\n{log}");
+    Assert.Single(Directory.GetFileSystemEntries(Path.Combine(space.InvocationDir, "deployed")));
+  }
+
+  private const string ProbeName = "PathProbe";
+
+  /// <summary>
+  ///   A disposable temp tree holding an invocation directory and a sibling probe project, plus the plumbing to
+  ///   run MSBuild against them. Siblings on purpose: a test that put the project inside the invocation
+  ///   directory could not tell the two resolution bases apart.
+  /// </summary>
+  private sealed class Workspace : IDisposable {
+    internal static readonly string RepoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    private static readonly string BuildDir = Path.Combine(RepoRoot, "build");
+
+    private readonly string root = Directory.CreateTempSubdirectory("StrongMods-paths-").FullName;
+
+    internal Workspace() {
+      Directory.CreateDirectory(InvocationDir);
+      Directory.CreateDirectory(ProjectDir);
+    }
+
+    internal string InvocationDir => Path.Combine(root, "invoked-from");
+    internal string ProjectDir => Path.Combine(root, "elsewhere");
+
+    /// <summary>
+    ///   A stand-in game tree: the layout detection in build\GamePaths.props only calls Exists(), so empty
+    ///   directories suffice. The zero-byte mscorlib.dll is not decoration — Microsoft.Common.CurrentVersion
+    ///   .targets blanks FrameworkPathOverride to $(MSBuildFrameworkToolsPath) (empty under `dotnet msbuild`
+    ///   on CoreCLR) unless mscorlib.dll is found there, which would make this test assert on "".
+    /// </summary>
+    internal void Fixture(string name, string dataFolder) {
+      var managed = Path.Combine(InvocationDir, name, dataFolder, "Managed");
+      Directory.CreateDirectory(managed);
+      File.WriteAllBytes(Path.Combine(managed, "mscorlib.dll"), Array.Empty<byte>());
+    }
+
+    /// <summary>
+    ///   A synthetic code mod importing the real shared build files by absolute path. Synthetic rather than a
+    ///   repo mod so the test pins build\Mod.props + build\GamePaths.props themselves, needs no game install,
+    ///   and writes nothing into the working tree.
+    /// </summary>
+    internal string CodeModProject() => WriteProject($"""
+      <Project Sdk="Microsoft.NET.Sdk">
+        <Import Project="{BuildDir}\Mod.props" />
+        <Import Project="{BuildDir}\Mod.targets" />
+      </Project>
+      """);
+
+    internal string ModletProject() {
+      // A modlet is the deploy subject deliberately: nothing to compile, so the test costs a file copy, and no
+      // game install is involved. ModInfo.xml is both the payload and what build\XmlLint.targets checks.
+      File.WriteAllText(Path.Combine(ProjectDir, "ModInfo.xml"),
+        $"<xml><Name value=\"{ProbeName}\" /><Version value=\"1.0.0\" /></xml>");
+      return WriteProject($"""
+        <Project DefaultTargets="Build">
+          <Import Project="{BuildDir}\Modlet.targets" />
+        </Project>
+        """);
+    }
+
+    private string WriteProject(string content) {
+      var path = Path.Combine(ProjectDir, ProbeName + ".csproj");
+      File.WriteAllText(path, content);
+      return path;
+    }
+
+    /// <summary>Evaluates the named properties with a relative -p:SdtdDir. No restore, no target, no build.</summary>
+    internal IReadOnlyDictionary<string, string> Evaluate(string project, string sdtdDir, params string[] names) {
+      (var exitCode, var log) = Run("msbuild", project, "-nologo", "-p:Configuration=Debug",
+        "-getProperty:" + string.Join(',', names), "-p:SdtdDir=" + sdtdDir);
+      Assert.True(exitCode == 0, $"MSBuild evaluation failed ({exitCode}):\n{log}");
+
+      // -getProperty prints a bare value for one name and a {"Properties":{...}} object for several.
+      if (names.Length == 1) {
+        return new Dictionary<string, string> { [names[0]] = log.Trim() };
+      }
+
+      var properties = new Dictionary<string, string>();
+      foreach (JsonProperty property in JsonDocument.Parse(log).RootElement.GetProperty("Properties")
+                 .EnumerateObject()) {
+        properties[property.Name] = property.Value.GetString();
+      }
+      return properties;
+    }
+
+    /// <summary>Runs the dotnet CLI with InvocationDir as the working directory — the base under test.</summary>
+    internal (int ExitCode, string Log) Run(params string[] arguments) {
+      var info = new ProcessStartInfo("dotnet") {
+        WorkingDirectory = InvocationDir, RedirectStandardOutput = true, RedirectStandardError = true
+      };
+      foreach (var argument in arguments) {
+        info.ArgumentList.Add(argument);
+      }
+
+      var output = new StringBuilder();
+      using var process = Process.Start(info);
+      process.OutputDataReceived += (_, e) => output.AppendLine(e.Data);
+      process.ErrorDataReceived += (_, e) => output.AppendLine(e.Data);
+      process.BeginOutputReadLine();
+      process.BeginErrorReadLine();
+      Assert.True(process.WaitForExit(180_000), "MSBuild did not exit within 180s.");
+      process.WaitForExit(); // flush the async readers
+      return (process.ExitCode, output.ToString().Trim());
+    }
+
+    public void Dispose() {
+      try {
+        Directory.Delete(root, recursive: true);
+      } catch (IOException) {
+        // A build server holding a handle is not a test failure; the OS temp dir is self-cleaning.
+      }
+    }
+  }
+}

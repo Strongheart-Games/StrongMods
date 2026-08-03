@@ -117,9 +117,43 @@ only thing in the repo that writes outside `bin\`, and this pins where.
 Failure messages carry the when/where rule — evaluation vs target execution, project dir vs
 `$(MSBuildStartupDirectory)` vs process cwd — in the house style where the failing test teaches the trap.
 
-Open question to settle while implementing: whether `-getProperty` on a code mod needs a prior restore. If it
-does, the evaluation tests move to a modlet and `FrameworkPathOverride` drops off the list (a modlet has none) —
-noted here so the outcome is recorded rather than quietly chosen.
+### Phase 2 results (2026-08-02)
+
+**The open question, settled: no restore is needed.** `dotnet msbuild <code mod> -getProperty:…` against a
+freshly-added `git worktree` (no `obj\`, nothing restored) evaluates fine and prints the properties.
+`-getProperty` never runs a target, and the NuGet assets file is only consulted by targets. So the evaluation
+tests keep the code-mod shape and keep `FrameworkPathOverride`.
+
+**Two design points that moved off the plan, both for the better:**
+
+1. **The probe projects are synthetic, not repo projects.** Each test writes a two-line `.csproj` into the temp
+   tree importing the real `build\Mod.props`/`Mod.targets` or `build\Modlet.targets` by absolute path. That pins
+   the shared files themselves rather than one mod's spelling of them, needs no game install, and writes nothing
+   into the working tree — a repo project would have staged into its own `bin\`.
+2. **The invocation directory and the project directory are SIBLINGS in the temp tree** (`invoked-from\` and
+   `elsewhere\`). If the project sat inside the invocation directory the two resolution bases would be
+   indistinguishable and the test would pass under either behavior.
+
+**`ModsDir` is deliberately absent from the evaluation assertions.** `Local.props.sample` documents
+`<ModsDir>` as a per-machine permanent redirect, and `GamePaths.props` imports `Local.props` from any project —
+so asserting a derived `ModsDir` would fail on a developer machine that legitimately sets one. `ModsDir` is
+covered where it actually matters instead: the deploy test passes `-p:ModsDir=` as a global, which no
+`Local.props` can override, at the target-execution site #52 fixed.
+
+**A trap worth recording:** a fixture tree needs a zero-byte `mscorlib.dll` in its `Managed\` folder.
+`Microsoft.Common.CurrentVersion.targets:85` blanks `FrameworkPathOverride` to `$(MSBuildFrameworkToolsPath)` —
+empty under `dotnet msbuild` on CoreCLR — unless `mscorlib.dll` is found there. Without the stub the test would
+assert on `""` and pass vacuously.
+
+| Check | Result |
+| --- | --- |
+| The three new tests | Pass |
+| Deploy anchor reverted in `build/Deploy.targets` | `Relative_ModsDir_…` **fails**, message naming the invocation dir, the project dir, and the fix |
+| `_SdtdRoot` anchor reverted in `build/GamePaths.props` | Both `Relative_SdtdDir_…` tests **fail**; layout detection falls through to the game layout and `SdtdManagedDir` comes back as the literal `tree\7DaysToDie_Data\Managed` |
+| Shared build files after the revert experiments | `git diff build/` empty — byte-identical to `HEAD` |
+| Full suite, live install | 133/133 (was 130) |
+| Full suite, `-p:SdtdDir=vendor/dedicated-server/V3.1.0-b14` | 133/133 — the new tests pass their own `-p:SdtdDir`, so they are unit-independent by construction |
+| Temp workspaces after the run | 0 left behind |
 
 ---
 
