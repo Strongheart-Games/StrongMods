@@ -44,7 +44,6 @@ public class PatchApplicationTests {
   ///   with an issue, not an exemption.
   /// </summary>
   private static readonly Dictionary<string, string> ExpectedDead = new() {
-    ["StrongholdTweaks/XUi/windows.xml"] = "wrong folder: the entry point is XUi_InGame/windows (#62)",
   };
 
   private static readonly Lazy<PatchPipeline> Pipeline = new(() => PatchPipeline.Run(GameRoom.Instance.Value));

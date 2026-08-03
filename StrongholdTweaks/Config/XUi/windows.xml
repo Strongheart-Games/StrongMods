@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<config>
-  <setattribute xpath="/windows/window[@name='serverjoinrulesdialog']/panel[@name='content']/sprite[@name='backgroundMain']" name="globalopacitymod">0.95</setattribute>
-</config>
