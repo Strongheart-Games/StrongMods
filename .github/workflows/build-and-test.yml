@@ -52,9 +52,9 @@ jobs:
         env:
           PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
         run: >
-          dotnet restore build/ci/GameAssemblies.csproj
+          dotnet restore build/GameAssemblies.csproj
           --packages .scratch/game-packages
-          --configfile build/ci/nuget.config
+          --configfile build/GameAssemblies.nuget.config
 
       - name: Locate and verify the ${{ matrix.unit }} tree
         id: tree

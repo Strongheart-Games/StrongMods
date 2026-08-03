@@ -88,8 +88,15 @@
   <Target Name="VerifyGameInstall" BeforeTargets="ResolveAssemblyReferences">
     <Error Condition="'$(ModsDir)' == ''"
            Text="build\Mod.props was not imported by $(MSBuildProjectFile). Add &lt;Import Project=&quot;..\build\Mod.props&quot; /&gt; immediately after the Microsoft.Common.props import." />
-    <Error Condition="!Exists('$(SdtdManagedDir)\Assembly-CSharp.dll')"
-           Text="7 Days To Die was not found at '$(SdtdDir)'. Set SdtdDir in Local.props (copy Local.props.sample), set the SDTD_HOME environment variable, or pass -p:SdtdDir=..." />
+    <!-- Missing game tree, three ways — the message teaches the fix for the way it went missing (#23).
+         Which way is told by how $(SdtdDir) got its value: equal to the declared-tree resolution means the
+         declaration is in charge; different means an explicit -p:SdtdDir override. -->
+    <Error Condition="!Exists('$(SdtdManagedDir)\Assembly-CSharp.dll') AND '$(SdtdDir)' != '$(_SdtdDeclaredTree)'"
+           Text="No game tree at '$(SdtdDir)' (explicit -p:SdtdDir override). Point it at a live install or a vendored tree (vendor\&lt;unit&gt;\&lt;label&gt;), or drop the override to build against $(MSBuildProjectName)'s declared version." />
+    <Error Condition="!Exists('$(SdtdManagedDir)\Assembly-CSharp.dll') AND '$(SdtdDir)' == '$(_SdtdDeclaredTree)' AND '$(SdtdTreeSource)' == 'packages'"
+           Text="The game tree for $(SdtdDevVersion) ($(SdtdUnit)) is not restored at '$(SdtdDir)'. Restore the declared versions:  dotnet restore build/GameAssemblies.csproj --packages packages --configfile build/GameAssemblies.nuget.config  (run from the repo root; PACKAGES_READ_TOKEN must hold a read PAT). If the version is not on the feed yet (pre-publish), build TEMPORARILY from your vendored tree with -p:SdtdTreeSource=vendor — packages is canonical; return to it once the version restores." />
+    <Error Condition="!Exists('$(SdtdManagedDir)\Assembly-CSharp.dll') AND '$(SdtdDir)' == '$(_SdtdDeclaredTree)' AND '$(SdtdTreeSource)' != 'packages'"
+           Text="The vendored game tree for $(SdtdDevVersion) ($(SdtdUnit)) is missing at '$(SdtdDir)'. Create it:  dotnet run build/tools/vendor.cs -- --unit $(SdtdUnit) --label $(SdtdDevVersion)  — and remember -p:SdtdTreeSource=vendor is the temporary escape; packages is canonical." />
   </Target>
 
 </Project>

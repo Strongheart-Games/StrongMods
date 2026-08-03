@@ -15,7 +15,7 @@
 // 4) vendor.cs + pack.cs per stale unit; 5+6) [--dry-run stops here] push.cs over vendor/packages — the single
 // push path: idempotent per-file pushes, retention (latest build per major.minor.patch), and GitHub
 // latest-tag reconciliation all live there (it prompts for the write PAT itself, or reads
-// PACKAGES_WRITE_TOKEN); 7) update build/ci/game-versions.json + GameAssemblies.csproj — with --commit, also
+// PACKAGES_WRITE_TOKEN); 7) update build/ci/game-versions.json + build/GameAssemblies.csproj — with --commit, also
 // commit them to the current branch and push (the owner's flow is direct-to-main; the green Build run on main is
 // the round-trip proof).
 //
@@ -170,7 +170,7 @@ internal static class Release {
         $"  \"{u.Key}\": {{ " + string.Join(", ", u.Value.Select(f => $"\"{f.Key}\": \"{f.Value}\"")) + " }"))
       + "\n}\n", new UTF8Encoding(false));
 
-    var csprojPath = Path.Combine(RepoRoot(), "build", "ci", "GameAssemblies.csproj");
+    var csprojPath = Path.Combine(RepoRoot(), "build", "GameAssemblies.csproj");
     var csproj = File.ReadAllText(csprojPath);
     foreach ((var unit, _, _, _) in stale) {
       csproj = BumpPin(csproj, Units[unit].PackageId, version);
@@ -185,7 +185,7 @@ internal static class Release {
       RunInherit("git", new[] { "push" });
       Console.WriteLine("Committed and pushed - the Build run on main is the round-trip proof.");
     } else {
-      Console.WriteLine("Now commit build/ci/game-versions.json and build/ci/GameAssemblies.csproj"
+      Console.WriteLine("Now commit build/ci/game-versions.json and build/GameAssemblies.csproj"
                         + " (or re-run with --commit); the Build run is the round-trip proof.");
     }
 

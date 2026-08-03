@@ -12,10 +12,12 @@
 // Copies every DLL in the unit's Managed directory, plus the entire Mods/0_TFP_Harmony and Data/Config folders,
 // into a tree that mirrors the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data
 // name; build/GamePaths.props detects either layout), so the build consumes it with nothing more than
-// -p:SdtdDir=vendor/<unit>/<label>. Whole folders, never a cherry-pick: the game's 0Harmony is a thin build
-// whose MonoMod/Cecil siblings are required to execute Harmony code outside the game (#48), and Data/Config is
-// the vanilla XML/CSV that patch-application and localization tests read through $(SdtdDir) (#59).
-// Always redirect -p:ModsDir when building against a vendored tree, or Debug deploys into it.
+// -p:SdtdDir=vendor/<unit>/<label> (one-off), or -p:SdtdTreeSource=vendor to resolve declared versions from
+// vendor\ (#23's temporary pre-publish escape; packages is canonical). Whole folders, never a cherry-pick:
+// the game's 0Harmony is a thin build whose MonoMod/Cecil siblings are required to execute Harmony code
+// outside the game (#48), and Data/Config is the vanilla XML/CSV that patch-application and localization
+// tests read through $(SdtdDir) (#59). Deploy destinations never follow the game tree (the two-root split),
+// so building against a tree cannot deploy into it.
 //
 // The label is the human coordinate (the in-game "V 2.5 b8" as V2.5-b8); machine provenance — Steam buildid,
 // betakey (informational), source paths, per-file SHA-256 — lands in manifest.json beside the tree. A nuspec

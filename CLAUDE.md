@@ -26,7 +26,8 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 
 | File | Role |
 | --- | --- |
-| `build/GamePaths.props` | The **one** place 7DtD paths live, split into two roots (#23): the **game tree** `$(SdtdDir)` — what everything compiles and tests against; `-p:SdtdDir` redirects it — deriving `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(SdtdConfigDir)`; and the **install** `$(SdtdInstallDir)` — this machine's live game — deriving `$(ModsDir)`, `$(SdtdSavesDir)`, `$(SdtdServerDir)`. Redirecting the game tree never moves the deploy destination. Not imported directly by projects — the entry points below pull it in. |
+| `build/GamePaths.props` | The **one** place 7DtD paths live, split into two roots (#23): the **game tree** `$(SdtdDir)` — what everything compiles and tests against, resolved from the declared version (under `packages/` by default; `vendor/` via the explicit `-p:SdtdTreeSource=vendor` escape; `-p:SdtdDir` overrides outright) — deriving `$(SdtdManagedDir)`, `$(SdtdHarmonyDir)`, `$(SdtdConfigDir)`; and the **install** `$(SdtdInstallDir)` — this machine's live game — deriving `$(ModsDir)`, `$(SdtdSavesDir)`, `$(SdtdServerDir)`. Redirecting the game tree never moves the deploy destination. Not imported directly by projects — the entry points below pull it in. |
+| `build/GameVersions.props` | The declared game versions (#23): repo-default `SdtdUnit` / `SdtdDevVersion` / `SdtdTestVersions`, and the version registry (`SdtdGameVersionMap`, `label=packageVersion` pairs — branch heads only). Per-mod pins do **not** live here — a deviating mod declares them in its own `.csproj`, ABOVE its entry-point props import. Pulled in by `GamePaths.props`. |
 | `build/Mod.props` | Code-mod defaults. Imported **before** the project body, so the body overrides it. |
 | `build/Mod.targets` | Code-mod references, content and `OutputPath`. Imported **after** the body. |
 | `build/Modlet.targets` | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`. |
@@ -65,8 +66,11 @@ never breaks compilation), *and framework types too*: `build/Mod.props` sets `Fr
 Managed folder, so no .NET Framework targeting pack is needed anywhere. **This is a necessity, not a preference** —
 the code uses APIs the game's Unity Mono runtime provides that official net481 reference assemblies lack, so
 `Microsoft.NETFramework.ReferenceAssemblies` cannot compile this repo (evidence: `.ai/f1-sdk-migration.md` §3). It
-also means what compiles is what the runtime actually has. The game must be installed to build; `build/Mod.targets`
-raises one readable error if it is not. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
+also means what compiles is what the runtime actually has. A **game tree** must be present to build — by default
+the declared version's restored package tree (`dotnet restore build/GameAssemblies.csproj --packages packages
+--configfile build/GameAssemblies.nuget.config`, once per version; needs a read PAT in `PACKAGES_READ_TOKEN`); a
+game *install* is needed only to deploy or to vendor. `build/Mod.targets` raises one readable, per-source error
+if the tree is missing. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
 
 **Every project needs a NuGet restore before its first build** (SDK-style projects require the assets file even
 with no packages). This is automatic in practice: `dotnet build` restores implicitly, IDEs restore on load, and
@@ -114,9 +118,13 @@ root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDT
 
 ### Building without the game
 
-`build/tools/vendor.cs` copies a unit's assemblies and vanilla `Data/Config` into the gitignored `vendor/` tree
-(`vendor/game/<label>/`, `vendor/dedicated-server/<label>/` — see its header comment for labels and provenance).
-Any such tree, or a live install of either unit, works as a build root:
+Plain builds need no game install at all since #23: they resolve each mod's declared version under the
+gitignored `packages/` tree (restored from the private feed — see *References*). `-p:SdtdDir` remains the
+explicit escape for one-off checks against any tree. `build/tools/vendor.cs` copies a unit's assemblies and
+vanilla `Data/Config` into the gitignored `vendor/` tree (`vendor/game/<label>/`,
+`vendor/dedicated-server/<label>/` — see its header comment for labels and provenance); vendoring is the
+*publishing* procedure, and `-p:SdtdTreeSource=vendor` the temporary pre-publish escape. Any such tree, or a
+live install of either unit, works as a build root:
 
 ```bash
 dotnet build StrongMods.sln -c Debug -p:SdtdDir=vendor/game/V3.1.0-b13
@@ -141,7 +149,7 @@ heads daily via anonymous SteamCMD and, once its shadow soak ends, files a track
 Publishing a new game version is one human-run command on a machine with licensed installs:
 `dotnet run build/tools/release.cs` (guardrails decide whether there is anything to publish; one prompt for the
 in-game version label; `--commit` pushes the pin bump to main). Version pins live in
-`build/ci/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
+`build/GameAssemblies.csproj`; published state in `build/ci/game-versions.json`. The tools — `steam_check`,
 `vendor`, `pack`, `push`, `release` — are C# file-based apps under `build/tools/` (`dotnet run
 build/tools/<tool>.cs -- --selftest`; #36 decided all tools are C# — with `compare-eval`, no Python remains). Feed hygiene is `push.cs`'s job: idempotent directory pushes, keep-latest-build-per-`major.minor.patch`
 retention, and GitHub latest-tag reconciliation. The C# rule is about maintained code: anything checked in is C#.

@@ -67,6 +67,21 @@
        rather than an error. -->
   <Target Name="VSTest" />
 
+  <!-- Declaration sanity (#23) — the same target Deploy.targets carries for mods and modlets; duplicated here
+       because overlays are self-contained by design (see the header). Keep the two in sync. -->
+  <Target Name="_ValidateGameTreeDeclaration" BeforeTargets="Build;Deploy">
+    <Error Condition="'$(SdtdUnit)' != 'game' AND '$(SdtdUnit)' != 'dedicated-server'"
+           Text="$(MSBuildProjectName) has SdtdUnit '$(SdtdUnit)' — valid units: game, dedicated-server (build\GameVersions.props)." />
+    <Error Condition="'$(SdtdTreeSource)' != 'packages' AND '$(SdtdTreeSource)' != 'vendor'"
+           Text="$(MSBuildProjectName) has SdtdTreeSource '$(SdtdTreeSource)' — valid sources: packages (default, canonical), vendor (explicit, temporary)." />
+    <Error Condition="'$(SdtdDevVersion)' != '$(_SdtdDevVersionAtResolve)'"
+           Text="$(MSBuildProjectName) set SdtdDevVersion '$(SdtdDevVersion)' AFTER the game tree resolved with '$(_SdtdDevVersionAtResolve)': the declaration sits BELOW the entry-point props import, where the property reads back changed while every derived path silently keeps the old value (the OutDir-latch shape). Move it ABOVE the import — declarations above, deviations between." />
+    <Error Condition="'$(SdtdDevVersion)' != '' AND $(_SdtdDevPackageVersion.Contains(';'))"
+           Text="$(MSBuildProjectName) declares SdtdDevVersion '$(SdtdDevVersion)', which has no row in build\GameVersions.props' SdtdGameVersionMap. Labels are branch heads in semicolon-separated 'label=packageVersion' pairs — add the row, or fix the label." />
+    <Message Importance="high" Condition="'$(SdtdTreeSource)' == 'vendor'"
+             Text="  $(MSBuildProjectName): game tree from vendor\ (SdtdTreeSource=vendor is a TEMPORARY escape — packages is canonical)" />
+  </Target>
+
   <Target Name="Deploy" DependsOnTargets="Build" Condition="'$(IsDeployable)' == 'true'">
     <Error Condition="'$(ModsDir)' == ''"
            Text="build\Overlay.props was not imported by $(MSBuildProjectFile). Add &lt;Import Project=&quot;..\build\Overlay.props&quot; /&gt; as the first element of the project, BEFORE the properties that reference shared paths." />

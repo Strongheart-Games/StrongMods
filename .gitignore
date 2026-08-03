@@ -19,6 +19,15 @@
 # redistribute. See .ai/f5b-game-assembly-packages.md §2.
 /vendor/
 
+# Restored game-assembly package trees (#23): the same licensed content as vendor/, restored from the private
+# feed into the layout the build resolves declared versions from (packages/7dtd.assemblies.<unit>/<version>/).
+# NEVER commit or publish anything under this tree.
+#
+# DELIBERATELY REDUNDANT with the boilerplate [Pp]ackages/ rule in the build-results block below: licensed
+# files must not depend on generic boilerplate surviving a cleanup, so this rule stays even though that one
+# currently shadows it (last match wins — `git check-ignore -v` credits the boilerplate line while both exist).
+/packages/
+
 # Claude Code local memory
 .claude/memory/
 

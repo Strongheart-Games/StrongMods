@@ -4,10 +4,11 @@
     The single source of truth for 7 Days To Die paths — of which there are TWO roots (#23; design:
     .ai/declared-game-versions.md §2):
 
-      GAME TREE  $(SdtdDir)         what everything compiles and tests against — a live install, a vendored
-                                    tree (vendor/<unit>/<label>), or a restored package tree. Redirect with
-                                    -p:SdtdDir=... . Until the declared-version flip (#23 phase 2) lands, it
-                                    defaults to the install below.
+      GAME TREE  $(SdtdDir)         what everything compiles and tests against. Resolved from the DECLARED
+                                    version (build\GameVersions.props; per-mod pins live above each mod's
+                                    props import) under the selected source — the restored-packages layout
+                                    by default, vendor\ via the explicit -p:SdtdTreeSource=vendor escape.
+                                    -p:SdtdDir=... overrides outright (one-off checks against any tree).
       INSTALL    $(SdtdInstallDir)  the live game on THIS machine: the deploy destination ($(ModsDir),
                                     $(SdtdSavesDir), $(SdtdServerDir) derive from it), vendor.cs's source,
                                     and the version-check subject (#37).
@@ -20,7 +21,9 @@
     build\Mod.props (code mods), build\Modlet.targets (modlets), build\Overlay.props (overlays). Tests\Tests.csproj
     is the one direct importer: it needs the resolved paths without the rest of a mod build.
 
-    Override the game tree: -p:SdtdDir=... on the command line.
+    Game-tree precedence, highest first: -p:SdtdDir=... (escape hatch) -> the project's declared version
+    resolved under $(SdtdUnit) and $(SdtdTreeSource) -> a readable, per-source, instructional error. Never a
+    probe: a missing tree in the selected source errors even if the other source has it.
     Override the install path, in precedence order:
       1. -p:SdtdInstallDir=... on the command line (a global property; always wins)
       2. <SdtdInstallDir> in Local.props (gitignored, per-machine — copy Local.props.sample). The legacy
@@ -45,6 +48,7 @@
 
   <Import Project="$(MSBuildThisFileDirectory)..\Local.props"
           Condition="Exists('$(MSBuildThisFileDirectory)..\Local.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)GameVersions.props" />
 
   <PropertyGroup>
     <!-- The install root: legacy Local.props spelling first (see the capture above), then the machine chain. -->
@@ -56,8 +60,24 @@
          '$(_SdtdInstallRoot) Dedicated Server' concatenation further down. -->
     <_SdtdInstallRoot Condition="'$(SdtdInstallDir)' != ''">$([MSBuild]::NormalizePath('$(MSBuildStartupDirectory)', '$(SdtdInstallDir)'))</_SdtdInstallRoot>
 
-    <!-- The game tree defaults to the install until #23 phase 2 resolves it from the declared version. -->
-    <SdtdDir Condition="'$(SdtdDir)' == ''">$(SdtdInstallDir)</SdtdDir>
+    <!-- THE FLIP (#23): the game tree resolves from the declared version, never from the install. The source
+         is an INPUT, not a discovery — resolution never probes both roots and picks one, so a broken packages
+         path cannot be silently masked by a stale vendored tree. All errors fire at target time
+         (_ValidateGameTreeDeclaration in the shared targets; VerifyGameInstall in Mod.targets), so
+         -getProperty evaluation and IDE loads always survive. -->
+    <SdtdTreeSource Condition="'$(SdtdTreeSource)' == ''">packages</SdtdTreeSource>
+    <_SdtdUnitPackageId Condition="'$(SdtdUnit)' == 'game'">7dtd.assemblies.game</_SdtdUnitPackageId>
+    <_SdtdUnitPackageId Condition="'$(SdtdUnit)' == 'dedicated-server'">7dtd.assemblies.dedicatedserver</_SdtdUnitPackageId>
+    <!-- Label -> package version, looked up in the registry map. On no match, Replace returns its input
+         unchanged — the surviving ';' marks the lookup failed, and validation turns that into the readable
+         no-registry-row error instead of a half-built path. -->
+    <_SdtdDevPackageVersion Condition="'$(SdtdDevVersion)' != ''">$([System.Text.RegularExpressions.Regex]::Replace(';$(SdtdGameVersionMap);', '^.*;$(SdtdDevVersion)=([^;]+);.*$', '$1'))</_SdtdDevPackageVersion>
+    <!-- Repo-anchored (ThisFileDirectory, not the invocation): the packages and vendor roots are properties
+         of the CHECKOUT, unlike the caller-supplied overrides above. -->
+    <SdtdPackagesDir Condition="'$(SdtdPackagesDir)' == ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\packages'))</SdtdPackagesDir>
+    <_SdtdDeclaredTree Condition="'$(SdtdTreeSource)' == 'packages' AND '$(_SdtdUnitPackageId)' != '' AND '$(_SdtdDevPackageVersion)' != '' AND !$(_SdtdDevPackageVersion.Contains(';'))">$(SdtdPackagesDir)\$(_SdtdUnitPackageId)\$(_SdtdDevPackageVersion)</_SdtdDeclaredTree>
+    <_SdtdDeclaredTree Condition="'$(SdtdTreeSource)' == 'vendor' AND '$(SdtdDevVersion)' != ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\vendor'))\$(SdtdUnit)\$(SdtdDevVersion)</_SdtdDeclaredTree>
+    <SdtdDir Condition="'$(SdtdDir)' == ''">$(_SdtdDeclaredTree)</SdtdDir>
     <!-- The game tree in absolute form; see the header. It needs its own property because $(SdtdDir) is
          often a global property (-p:SdtdDir=...), and MSBuild ignores assignments to those from a project
          file — the value cannot be rewritten in place. $(SdtdDir) therefore keeps whatever the caller wrote,

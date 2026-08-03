@@ -89,7 +89,7 @@ public class ProjectConventionTests {
   // Projects that are not mods at all and so import no entry point. Asserted, not skipped — see the test.
   private static readonly string[] KnownNonMods = {
     @"Tests\Tests.csproj", @"Tests\Stubs\UnityStub.csproj", @"Tests\FunctionMod\FunctionMod.csproj",
-    @"build\ci\GameAssemblies.csproj"
+    @"build\GameAssemblies.csproj"
   };
 
   [Fact]

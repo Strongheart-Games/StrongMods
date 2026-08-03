@@ -1,0 +1,36 @@
+<Project>
+
+  <!--
+    The declared game versions (#23; design: .ai/declared-game-versions.md §4): repo-wide defaults plus the
+    version REGISTRY. This file is not a per-mod exceptions list — a mod that deviates declares its pin in its
+    OWN .csproj, in a PropertyGroup ABOVE its entry-point props import (literal values only; the two-slot
+    rule: declarations above the imports, deviations between them). The defaults below are conditional, so a
+    mod's leading block wins.
+
+      SdtdUnit          game | dedicated-server — which releasable unit to build against (build-level; #21).
+      SdtdDevVersion    the version a mod is developed and compiled against.
+      SdtdTestVersions  every version its tests assert against (semicolon list — MSBuild's native separator;
+                        the dev version must be among them). Consumed by the test suite, not the build.
+
+    The registry is a semicolon map of 'label=packageVersion' pairs, NOT an ItemGroup: the game tree resolves
+    during the PROPERTY pass, and properties cannot read items (items evaluate later). Rows are branch heads,
+    mirroring the feed's keep-latest-per-major.minor.patch retention; the package version is pack.cs's
+    FourPart mapping of the label, asserted by test, never derived inline (V2.5-b8 -> 2.5.0.8 is not a
+    substring swap). A label with no row is a readable build error, not a silent fallback.
+  -->
+
+  <PropertyGroup>
+    <SdtdUnit Condition="'$(SdtdUnit)' == ''">game</SdtdUnit>
+    <!-- The default shape: develop against the latest head, test against every supported head. -->
+    <SdtdDevVersion Condition="'$(SdtdDevVersion)' == ''">V3.1.0-b14</SdtdDevVersion>
+    <SdtdTestVersions Condition="'$(SdtdTestVersions)' == ''">V3.1.0-b14;V3.0.1-b4</SdtdTestVersions>
+
+    <SdtdGameVersionMap>V3.1.0-b14=3.1.0.14;V3.0.1-b4=3.0.1.4</SdtdGameVersionMap>
+
+    <!-- What the game tree is about to resolve with. If the final SdtdDevVersion differs, the declaration was
+         set BELOW the entry-point props import — the silent OutDir-latch shape; _ValidateGameTreeDeclaration
+         turns it into a readable error at build time. -->
+    <_SdtdDevVersionAtResolve>$(SdtdDevVersion)</_SdtdDevVersionAtResolve>
+  </PropertyGroup>
+
+</Project>

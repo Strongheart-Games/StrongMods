@@ -287,6 +287,53 @@ vendored tree, or Debug deploys into it" was already stale (#13 ended build-time
 after the split — phase 2 touches that header anyway. `build-and-test.yml`'s "never combine a deploy with
 `-p:SdtdDir`" comment is now redundant-but-true; left alone.
 
+### Phase 2 results (2026-08-03)
+
+**One design deviation, forced by MSBuild's evaluation order: the registry is a map property
+(`SdtdGameVersionMap`, `label=packageVersion;…`), not the planned `SdtdGameVersion` ItemGroup.** The game tree
+resolves during the *property* pass, and properties cannot read items (items evaluate in a later pass) — an
+`@(SdtdGameVersion)` reference in the resolution expression would be empty. Lookup is a `Regex::Replace` whose
+no-match case leaves the input (with its `;`) behind as a sentinel, which validation turns into the
+no-registry-row error. Phase 3's closure test reads the map; `-getItem` consumers in phase 4 read
+`-getProperty:SdtdGameVersionMap` instead.
+
+Implementation notes beyond the plan:
+
+- The relocated nuget.config is `build/GameAssemblies.nuget.config` — deliberately not an auto-discoverable
+  name, which at `build/` would sit in the ancestor chain of every `build/tools/*.cs` restore.
+- The validation target `_ValidateGameTreeDeclaration` (unit/source enums, the between-imports consistency
+  guard, the no-registry-row error, the vendor announcement) lives in `Deploy.targets` for mods+modlets and is
+  duplicated in `Overlay.targets`, which is self-contained by design. Missing-tree errors live in
+  `Mod.targets`' `VerifyGameInstall`, three-way: explicit `-p:SdtdDir` override / packages / vendor, told
+  apart by whether `$(SdtdDir)` equals the declared-tree resolution.
+- All errors are target-time; `-getProperty` evaluation and IDE loads always survive.
+- `packages/` was populated by a **real restore** — the four nupkgs already in `vendor/packages/` served as a
+  local folder source (`dotnet restore build/GameAssemblies.csproj --packages packages -s vendor/packages`),
+  no feed, no token — then hash-verified: `pack.cs --verify-tree` 228/228 files per unit.
+- Reference-site sweep for the relocation: workflow restore step, `release.cs` (path + two messages),
+  `Tests/ProjectConventionTests.cs` roster, CLAUDE.md. `build/ci/` keeps only `game-versions.json`
+  (publishing state).
+
+| Check | Result |
+| --- | --- |
+| `compare-eval` vs `HEAD` worktree, 5 projects | Exactly the designed class: `SdtdDir`, `SdtdManagedDir`, `SdtdHarmonyDir`, `SdtdConfigDir`, `FrameworkPathOverride`, and Reference HintPaths re-rooted to `packages\7dtd.assemblies.game\3.1.0.14`; `ModsDir`/`SdtdServerDir`/`SdtdSavesDir`/`SdtdInstallDir`/`OutputPath`/`DeployRoot` absent from the diff; usual worktree noise on `TargetDir`/`TargetPath` |
+| Unknown label (`-p:SdtdDevVersion=V9.9.9-b1`) | No-registry-row error naming the map format |
+| Packages-missing (`V3.0.1-b4` declared; only 3.1.0.14 restored) | Instructional error: restore command + PAT note + temporary vendor escape. **No-probe proven live**: `vendor/game/V3.0.1-b4` exists on this machine and was not silently used |
+| Vendor escape (`-p:SdtdTreeSource=vendor`, same declaration) | Compiles from the vendor tree; high-importance TEMPORARY announcement in the log |
+| Invalid `SdtdUnit` / `SdtdTreeSource` values | Enum errors listing the valid values |
+| Consistency guard (synthetic mod, declaration between the imports) | Errors with the OutDir-latch explanation and the two-slot rule |
+| Leading-block pin (same synthetic, block above the import) | Resolves to `packages\...\3.0.1.4`; `ModsDir` stays the live install |
+| Full solution build, default (= packages tree) | 0 warnings, 0 errors |
+| Full suite, default | 135/135 |
+| Full suite, `-p:SdtdUnit=dedicated-server` | 135/135 — #21's axis as a first-class coordinate; server layout detected inside the package tree |
+| Full suite, escape `-p:SdtdDir=<live install>` | 135/135 |
+| Redirected deploy | Lands in exactly one folder at the redirect |
+| `pack.cs --selftest` | 11/11 |
+
+No live install was deployed to. CI is unaffected by the flip mechanics (its matrix passes `-p:SdtdDir`, the
+escape hatch) — only the relocated restore paths changed; the run on main after the commit is the round-trip
+proof, and phase 4 rebuilds the matrix on declarations anyway.
+
 ## 6. Verification approach
 
 - **Phases 1–2:** `compare-eval` against a `HEAD` worktree for one project of each shape, plus `Tests`. Phase 1
