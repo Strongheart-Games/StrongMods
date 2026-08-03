@@ -91,6 +91,31 @@ XML coverage for free.
 - **b13 trees stay thin**: nothing consumes them (off-feed); `--verify-tree` still passes on them since their
   manifests remain self-consistent.
 
+## 5. Considered and excluded: `MonoBleedingEdge/EmbedRuntime` (owner decision, 2026-08-02)
+
+Raised by the owner after phase C: the only other install content that looked plausibly test-relevant. Measured:
+exactly two files, 8.1 MB, size-identical across the game, the dedicated server, and the v3.0.1 backfill —
+`mono-2.0-bdwgc.dll` (7.5 MB) and `MonoPosixHelper.dll` (0.6 MB), the **native win-x64** Mono VM the Unity
+player embeds plus its compression helper. `MonoBleedingEdge/etc` (712 KB) is that VM's machine.config tree —
+useless alone, required the moment EmbedRuntime is used; the two are a unit.
+
+Excluded, three reasons in descending force:
+
+1. **The Linux story kills it.** CI runs `ubuntu-latest` and production is the Linux dedicated server, whose
+   Mono is the Linux depot's `.so` — these Windows natives can neither run in CI nor answer production-fidelity
+   questions. A test depending on them would be owner-machine-only, the exact property #59 exists to eliminate.
+2. **No consumer.** The suite runs on .NET 10 (UnityStub for engine types); consuming a native VM means an
+   embedding harness (custom host, Mono BCL, `etc/`, a net4x stub universe) that no issue proposes, and the
+   headless ceiling is set by the missing Unity engine natives, which embedding Mono does not raise.
+3. **Folder selection stays need-driven.** #48's wholesale rule governs *within* a captured folder; the folders
+   themselves earn capture by a named consumer (Managed → compile, Harmony → execute patches headlessly,
+   `Data/Config` → #43/#58). EmbedRuntime has none.
+
+The argument weighed on the other side: capturing now would ride the phase D repush (one repush instead of a
+possible second later), and old builds stop being vendorable when installs vanish (b13 already has). Accepted
+risk: the retrofit is ~5 lines in vendor.cs plus a `--repush-duplicates` run — proven by this very issue — and
+all four in-play sources persist. Revisit only if a hosted-Mono consumer becomes a real issue.
+
 ## Results
 
 ### B. vendor.cs edited; no-touch verification passed (2026-08-02)
@@ -118,7 +143,37 @@ filenames plain ASCII with no path characters that NuGet would object to.
 Diff helper: `.scratch/59-verify/manifest-diff.cs` (disposable, deleted at the end of phase C — the repo's
 "maintained code is C#" rule means nothing here graduates).
 
-### C. (pending)
+### C. Four trees re-vendored in place, repacked, five-target regression green (2026-08-02)
+
+Each tree's `manifest.json` was snapshotted to `.scratch/59-verify/before/` before any `--force`, since `--force`
+deletes the tree and the old manifest is the only baseline the diff can run against.
+
+| Tree | Source | Files | Tree | buildid | Manifest diff | nupkg |
+| --- | --- | --- | --- | --- | --- | --- |
+| game V3.1.0-b14 | live install | 169 → **228** | 80.9 MB | 24436778 ✓ | 0 removed, 0 changed, +59 | 23.9 MB |
+| dedicated-server V3.1.0-b14 | live install | 169 → **228** | 80.8 MB | 24436799 ✓ | 0 removed, 0 changed, +59 | 23.9 MB |
+| game V3.0.1-b4 | backfill install | 169 → **228** | 80.7 MB | 24117861 ✓ | 0 removed, 0 changed, +59 | 23.9 MB |
+| dedicated-server V3.0.1-b4 | backfill install | 169 → **228** | 80.6 MB | 24117900 ✓ | 0 removed, 0 changed, +59 | 23.9 MB |
+
+Every buildid matches the tree's original provenance, so all four remain the same depots they always were —
+re-vendoring changed what is captured, never which build. In all four diffs the 169 pre-existing entries are
+byte-identical on size and SHA-256 and the 59 additions are confined to `Data/Config/`; the v3.0.1 units carry
+the same 59-file config shape as b14. `pack.cs` validated each pack strictly (coordinates, nuspec version, no
+`<repository>` element, 228/228 tree hashes, then every file re-hashed from inside the produced archive).
+
+**Consumer regression: 126/126 tests on all five targets** — live install, and each of the four enriched trees.
+
+**CI-path rehearsal.** Extracting `7DtD.Assemblies.Game.3.1.0.14.nupkg` and running the workflow's own
+`pack.cs --verify-tree` against the extracted root reported 228/228 hash-match with all 59 `Data/Config` files
+present — the pack → publish → restore → verify round trip works end to end, which is what phase D depends on.
+
+**Feed footprint: 95.6 MB across four packages** (23.9 MB each, up from ~18.0 MB). The 33 MB of added XML/CSV
+compresses to ~5.9 MB per package — well inside plan §1's 22–25 MB projection and the ~500 MB free tier, so the
+quota risk in §4 is closed at roughly a fifth of the allowance.
+
+Deviation from the plan: `.scratch/59-verify/manifest-diff.cs` and the `before/` snapshots (128 KB total) are
+kept until close-out rather than deleted here, so phase D has the baseline on hand if a push needs re-checking.
+The 80 MB scratch tree and the extracted package root are deleted.
 
 ### D. (pending)
 
