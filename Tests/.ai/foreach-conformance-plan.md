@@ -29,11 +29,26 @@ tests — the spec is the test inventory.
   `Log` initializes and works fully: `Out`/`Warning`/`Error` execute, `AddOutputPath(file)` gives assertable
   capture, and the `LogCallbacks` event allows typed in-memory capture (the *stub* owns the delegate type, so
   fixtures can subscribe compile-time).
-- **S1b — Harmony patch application on .NET 10 is NOT viable** (plan R1, resolved negative): MonoMod v25
-  ships no net10.0 runtime assets — its packages hard-refuse the TFM at build time, the game's net4x
-  `RuntimeDetour` fails to load, and Harmony's own initializer dies without it. Nothing in waves A–D needs it
-  anymore (the seam above replaced D1's patching idea), but any future test wanting runtime detours is blocked
-  until MonoMod ships net10 support.
+- **S1b — Harmony patch application on .NET 10: recorded 2026-08-01 as NOT viable; OVERTURNED 2026-08-03.**
+  The owner challenged the record from MonoMod's own NuGet listing, and a rerun
+  (`.scratch/spike-harmony-net10/`, disposable — this entry is the durable record) proved patching works. The
+  original conclusion — "MonoMod v25 ships no net10.0 runtime assets; its packages hard-refuse the TFM at
+  build time; the game's net4x `RuntimeDetour` fails to load; Harmony's initializer dies" — decomposes into
+  two version artifacts, neither a platform limit:
+  - *Build-time:* MonoMod **25.1.0**'s target-runtime check refused net10.0 (the spike bypassed it with
+    `MonoMod_ReallySkipCheckTargetRuntime`); **25.3.6** accepts net10.0 with no bypass.
+  - *Runtime (reconstructed from the symptoms):* the spike pinned `MonoMod.RuntimeDetour` **25.1.0**, below
+    the **25.1.2.0** floor the game's 0Harmony 2.13 references. CoreCLR refuses a lower-version bind, the
+    spike's resolution hook then served the game's net4x `MonoMod.RuntimeDetour.dll` as fallback, and that
+    flavor genuinely cannot execute on CoreCLR — every recorded symptom, downstream of one version pin.
+  The rerun used the harness's exact topology (stub CoreModule + game assemblies in a custom ALC, the game's
+  own 0Harmony typed in the default context, NuGet `MonoMod.RuntimeDetour` 25.3.6): the game's 0Harmony
+  applied a prefix to `XmlFile.GetXpathResultsInList`, a real `singlePatch` dispatch of a marked xpath landed
+  in the prefix, and unmarked xpaths fell through to the original evaluator. Scope of proof: Windows, live
+  game install (V3.1.0-b14 line), .NET 10.0.302; the first ubuntu CI run of a detour-based test is the Linux
+  proof. Consequence: **runtime detours are available to this suite.** Reference `MonoMod.RuntimeDetour` at
+  ≥ 25.3.6 and ≥ the version the unit's 0Harmony asks for; a future game Harmony bump above the pin fails
+  loudly (`FileLoadException`), fixed by bumping the pin.
 - **S2 — construction is trivial**: `XmlFile` has an in-memory ctor `(string text, string dir, string filename,
   bool throwExc)` and its document is the public **field** `XmlDoc` (`XDocument`); `Mod` has a parameterless
   ctor with a settable `Name`.
@@ -55,15 +70,18 @@ answered the question with a fifth:
 | `dotnet test` toolchain | yes (any OS — ubuntu CI) | yes (Windows only — proven locally) |
 | Game assemblies load/reflect | 7558/7558 | partial in stub room; loadable |
 | **Game code EXECUTES** | **reliably** — CoreCLR's API surface is a superset of Unity's Mono profile (all of §2's results) | **unreliably** — desktop 4.8 is a SUBSET of Unity's Mono: the first game path exercised (`XmlPatcher.addXmlFilePatchMethod`) died on `Dictionary.TryAdd`, an API Unity's Mono has and desktop lacks; unfixable, it is the game's code |
-| **Harmony patch application** | no (MonoMod v25 ships no net10 assets) | **yes — proven**: game 0Harmony + vendored net4x MonoMod applied a prefix AND StrongMods' real `ReplaceFileOrDirectoryExists` transpiler to the real `Localization.LoadPatchDictionaries` |
+| **Harmony patch application** | **yes — since the 2026-08-03 S1b correction** (MonoMod ≥ 25.3.6; the "no" recorded here on 2026-08-01 was a 25.1.0 artifact) | **yes — proven**: game 0Harmony + vendored net4x MonoMod applied a prefix AND StrongMods' real `ReplaceFileOrDirectoryExists` transpiler to the real `Localization.LoadPatchDictionaries` |
 
-Neither host does both; the game's own runtime (Unity Mono) is the only place both work, and that is in-game
-territory. **Decision: the suite stays on .NET 10**, because reliable game-code *execution* is the foundation
-the conformance suite stands on, while the patching unlock is itself hobbled on desktop CLR — executing a
-patched game method hits the same subset walls. The unlock is not lost, just parked: (a) a future, separate
-net481 test project could host *apply-only* patch checks (transpiler applies cleanly without executing the
-target — exactly what the spike proved); (b) the day MonoMod ships net10 support, CoreCLR gets patching too
-and everything unifies. Nuggets recorded for that future: on net4x, `LoadFrom`-context same-directory probing
+Neither host does both *(2026-08-01 finding — no longer true, see the note below)*; the game's own runtime
+(Unity Mono) is the only place both work, and that is in-game territory. **Decision: the suite stays on
+.NET 10**, because reliable game-code *execution* is the foundation the conformance suite stands on, while
+the patching unlock is itself hobbled on desktop CLR — executing a patched game method hits the same subset
+walls. The unlock is not lost, just parked: (a) a future, separate net481 test project could host *apply-only*
+patch checks (transpiler applies cleanly without executing the target — exactly what the spike proved); (b)
+the day MonoMod ships net10 support, CoreCLR gets patching too and everything unifies. *(2026-08-03: (b)
+arrived — MonoMod 25.3.6, see the S1b correction. .NET 10 now does both, the stay-on-.NET-10 decision stands
+stronger than when it was made, and the parked net481 apply-only idea is obsolete.)* Nuggets recorded for
+that future: on net4x, `LoadFrom`-context same-directory probing
 preempts resolution hooks — preload the stub so simple-name binding wins; and `FrameworkPathOverride`
 compilation lets test-own code silently bind Mono-only overloads that explode on desktop
 (`string.Split(char, StringSplitOptions)` bit within minutes).
@@ -76,7 +94,9 @@ stub project (our own clean-room code; it contains no Unity IP, only empty shape
 makes `LogLibrary`'s `Log` initialize and run headlessly — captured via the `LogCallbacks` event (typed: the
 stub owns the delegate) and/or `AddOutputPath`. The smoke tests' load context keeps resolving the *real*
 CoreModule and is untouched; the two rooms coexist. Fixture setup also performs the manual vanilla
-patch-method registration (§2 R3). Harmony patching plays no role — see §2 S1b for why it cannot on .NET 10.
+patch-method registration (§2 R3). Harmony patching plays no role in these waves — a design choice that
+stands on its own; the "cannot on .NET 10" rationale this sentence originally cited was overturned 2026-08-03
+(see the §2 S1b correction), so patching is an available tool for future waves, not a blocked one.
 Note the earlier claim that wave D needed patching capability was wrong: wave D applies *XML* patches via
 `XmlPatcher`, which the spike already proved working.
 
@@ -222,8 +242,9 @@ resolution direction, before the affected test is finalized.
 
 ## 6. Risks
 
-- **R1 — resolved negative, consequence contained** (see §2 S1b): no Harmony patch application on .NET 10;
-  nothing in waves A–D needs it after the D1 rewrite.
+- **R1 — resolved negative 2026-08-01; overturned 2026-08-03** (see the §2 S1b correction): Harmony patch
+  application works on .NET 10 with `MonoMod.RuntimeDetour` ≥ 25.3.6. Waves A–D neither needed nor used it
+  (the D1 seam), so nothing shipped changes; the capability is simply available now.
 - **R2 — did not materialise.** All 48 spec clauses matched the implementation; not one divergence was found
   across every section of `foreach.md`. The reconciliation project this risk anticipated never started.
 - **R3 — resolved positive** (see §2): `singlePatch` works end to end in the stub room with manual registry
