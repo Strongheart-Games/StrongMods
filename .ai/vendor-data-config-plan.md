@@ -189,4 +189,26 @@ workflows (Triage role; a direct feed-metadata query 403s the same way), so the 
 the next push to main — which the commit of this very section triggers. Phase E checks that run for
 **228/228** on both units before the close-out comment claims the round trip.
 
-### E. (pending)
+### E. CI round-trip proven; close-out (2026-08-02)
+
+The push of phase D's own results section triggered run
+[30774409207](https://github.com/Strongheart-Games/StrongMods/actions/runs/30774409207) on `3a14b06`, which
+restored the repushed packages from the feed and logged the proof the previous run could not:
+
+| Unit | verify-tree | buildid |
+| --- | --- | --- |
+| game V3.1.0-b14 | **228/228** files hash-match | 24436778 |
+| dedicated-server V3.1.0-b14 | **228/228** files hash-match | 24436799 |
+
+Both units built clean and the suite passed **126/126 against each** — CI's standing compile-against-both check
+(#21) now runs against trees that carry vanilla `Data/Config`, restored from the feed, on `ubuntu-latest` with
+no live install anywhere in the path. That is the property #59 set out to buy.
+
+Scratch cleaned: `.scratch/59-verify/` removed in full (the `manifest-diff.cs` helper and the `before/`
+snapshots phase C had deferred). Nothing from this effort graduates into the repo — the whole change remains
+the 15 lines of phase B.
+
+**Delivered:** #43 wave D and #58 can read vanilla XML/CSV through `$(SdtdDir)/Data/Config` on any vendored
+tree, so both become CI-runnable and version-matrix-runnable (#23/#45) instead of owner-machine-only. No third
+live-install dependency was created; the only two remain `Deploy` and the `vendor`/`release` publishing path,
+both human-run by definition.
