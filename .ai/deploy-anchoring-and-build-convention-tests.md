@@ -180,8 +180,28 @@ fails the test and has to be named, which is the opposite of a silent skip.
 The failure message cites the two incidents that make order load-bearing: the `DeployRoot`-above-`Overlay.props`
 deploy that landed in `C:\Hades` (2026-07-30), and the `OutDir` latch that forbids a `Directory.Build.targets`.
 
-### Verification (phases 2 and 3)
+### Phase 3 results (2026-08-02)
 
-`dotnet test StrongMods.sln -c Debug` green against the live install; each new test also confirmed to *fail*
-when its invariant is deliberately broken (revert Phase 1's anchor; move an import) — a convention test that
-cannot fail pins nothing.
+Landed as two tests, not one. `B_…` checks the shapes and their order; `C_…` asserts the roster of projects
+importing no entry point. They are separate because `B` can only check a project it can classify — the
+unclassified ones are exactly the blind spot, so the roster needs its own assertion rather than a clause inside
+`B`. The break test below demonstrates that split: making a modlet unclassifiable leaves `B` **passing**.
+
+**Both plan predictions held.** The templates conform and need no exemption — `dotnet new`'s
+`<!--#if (IsTemplate)-->` markers are XML *comments* wrapping real elements, and comments are not elements, so
+they are invisible to a first/last-child check. And `build\ci\GameAssemblies.csproj` is a fourth unclassified
+project the issue text did not list; it is in the roster with the other three.
+
+| Break | Result |
+| --- | --- |
+| `<PropertyGroup>` appended after `DisableLAN`'s `Mod.targets` import | `B` fails: "LAST element must be…", message carrying the `OutDir`-latch story |
+| `Hades`' `Overlay.props` import moved below the `DeployRoot` `PropertyGroup` | `B` fails **twice** — first-element rule and the `DeployRoot`-below-the-import rule — both citing the `C:\Hades` deploy |
+| `Modlet.targets` import added to `StrongBoxes` (a code mod) | `B` fails: entry points of 2 different shapes, colliding `Deploy` targets |
+| `AECVehiclesFixes`' import path mangled so it matches no entry point | `C` fails, listing the project; **`B` passes** — the blind spot, shown live |
+| All four reverted | `git diff -- '*.csproj'` empty |
+
+| Check | Result |
+| --- | --- |
+| Full suite, live install | 135/135 (was 133) |
+| Full suite, `-p:SdtdDir=vendor/dedicated-server/V3.1.0-b14` | 135/135 |
+| Full solution build | 0 warnings, 0 errors |
