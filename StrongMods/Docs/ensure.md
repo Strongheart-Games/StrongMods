@@ -184,7 +184,9 @@ Among duplicate siblings in 7 Days to Die config, **the last one wins**. So:
   it sits can't change which value wins, so `<ensure>` leaves it in place rather than shuffling your config around.
   If you genuinely need something moved, `remove` it and let `<ensure>` re-add it, or use `insertBefore`/`insertAfter`.
 
-Several new children in one block keep the order you wrote them, prepended or appended.
+Several new children in one block keep the order you wrote them, prepended or appended. And `position` applies at
+every level of a nested block, not just the outermost — one rule everywhere, rather than a rule that quietly stops
+applying once you nest.
 
 ## When it doesn't work
 
