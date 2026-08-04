@@ -57,11 +57,11 @@
   <ItemGroup>
     <!-- Build ordering only. ReferenceOutputAssembly=false keeps the stub out of this project's compile
          references AND out of its output directory — a stub reachable by the smoke tests' load context would
-         shadow the real Unity types their patch-target signatures need. The conformance room loads it by
+         shadow the real Unity types their patch-target signatures need. The PatcherHost loads it by
          path (UnityStubDir below); see Stubs\UnityStub.csproj. -->
     <ProjectReference Include="Stubs\UnityStub.csproj" ReferenceOutputAssembly="false" />
     <!-- Same deal for the fixture mod: build it, but keep it out of this output directory. It must load into
-         the conformance room, where StrongMods lives, or its [XmlPatchFunction] would be a different type
+         the PatcherHost, where StrongMods lives, or its [XmlPatchFunction] would be a different type
          than the one the engine checks for. -->
     <ProjectReference Include="FunctionMod\FunctionMod.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>

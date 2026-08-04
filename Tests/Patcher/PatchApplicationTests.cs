@@ -15,7 +15,7 @@ namespace Tests.Patcher;
 ///   that has gone quiet fails too. The second half is what keeps the list from rotting — when #60 lands and
 ///   the ensure-idiom warnings disappear, these tests will say so.
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class PatchApplicationTests {
   /// <summary>
   ///   Patches that legitimately log, and why. Keyed <c>Mod/entry-point</c>.
@@ -46,7 +46,7 @@ public class PatchApplicationTests {
   private static readonly Dictionary<string, string> ExpectedDead = new() {
   };
 
-  private static readonly Lazy<PatchPipeline> Pipeline = new(() => PatchPipeline.Run(GameRoom.Instance.Value));
+  private static readonly Lazy<PatchPipeline> Pipeline = new(() => PatchPipeline.Run(PatcherHost.Instance.Value));
 
   [Fact]
   public void Every_patch_applies_without_error_or_warning_unless_declared() {

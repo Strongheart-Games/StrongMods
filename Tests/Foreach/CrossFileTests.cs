@@ -9,7 +9,7 @@ namespace Tests.Foreach;
 ///   <c>&lt;foreach&gt;</c> and on <c>&lt;bind&gt;</c>. Deferred here from waves A and B because it resolves
 ///   through the breadth-first patcher's cache, which these tests seed.
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class CrossFileTests {
   private const string Items = """<items><item name="alpha" /></items>""";
 
@@ -26,7 +26,7 @@ public class CrossFileTests {
   public void Foreach_source_loops_over_another_document_while_commands_target_this_one() {
     // Spec: source is "Which config file to select from, named without the .xml"; body commands still target
     // the patch's own file — the whole point of Example 2, "generate one file from another".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(Items, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(Items, """
       <foreach source="entityclasses" xpath="/entity_classes/entity_class" as="entity">
         <append xpath="/items">
           <item name="{$entity/@name}" tier="{$entity/property[@name='Tier']/@value}" />
@@ -42,7 +42,7 @@ public class CrossFileTests {
   [Fact]
   public void Bind_source_reads_its_table_from_another_document() {
     // Spec: "<bind name="loot" source="loot_tables" xpath="/loot_tables/autoloot/row" />".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(Items, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(Items, """
       <foreach xpath="/items/item" as="item">
         <bind name="tiers" source="entityclasses" xpath="/entity_classes/entity_class" />
         <append xpath="/items">
@@ -58,7 +58,7 @@ public class CrossFileTests {
   [Fact]
   public void A_source_written_with_the_xml_extension_is_told_to_drop_it() {
     // The likeliest way to get this wrong, so the error names the fix rather than just reporting a miss.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(Items, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(Items, """
       <foreach source="entityclasses.xml" xpath="/entity_classes/entity_class" as="entity">
         <append xpath="/items"><nope /></append>
       </foreach>

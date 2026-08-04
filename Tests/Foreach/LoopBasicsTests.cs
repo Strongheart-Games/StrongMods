@@ -8,7 +8,7 @@ namespace Tests.Foreach;
 ///   Conformance with StrongMods\Docs\foreach.md, "Writing a loop". One test per documented behavior; the
 ///   spec clause is named in each test so a failure reads as "the spec says X, the engine did Y".
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class LoopBasicsTests {
   private const string ThreeItems = """
     <items>
@@ -21,7 +21,7 @@ public class LoopBasicsTests {
   [Fact]
   public void Body_runs_once_per_matched_node_in_document_order() {
     // Spec: "Selects the nodes to loop over. Runs once, in document order."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <seen name="{$item/@name}" />
@@ -37,7 +37,7 @@ public class LoopBasicsTests {
   public void Body_xpath_targets_the_file_not_the_bound_node() {
     // Spec: "Body XPaths are absolute against your target document... To aim a command at the node you're
     // looping over, interpolate your way back to it."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach xpath="/items/item[@tier='2']" as="item">
         <setattribute xpath="/items/item[@name='{$item/@name}']" name="marked">yes</setattribute>
       </foreach>
@@ -51,7 +51,7 @@ public class LoopBasicsTests {
   [Fact]
   public void Inner_loops_can_read_outer_bindings() {
     // Spec: "Nesting works, and inner loops can read outer bindings."
-    PatchOutcome result = GameRoom.Instance.Value.Apply("""
+    PatchOutcome result = PatcherHost.Instance.Value.Apply("""
       <items>
         <item name="alpha"><part id="1" /><part id="2" /></item>
       </items>
@@ -72,7 +72,7 @@ public class LoopBasicsTests {
   [Fact]
   public void As_must_not_start_with_a_digit() {
     // Spec: as is "Letters, digits, underscores; must not start with a digit."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach xpath="/items/item" as="2fast">
         <append xpath="/items"><nope /></append>
       </foreach>
@@ -85,7 +85,7 @@ public class LoopBasicsTests {
   [Fact]
   public void As_is_required() {
     // Spec reference table: as is required. foreach itself rejects the omission.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach xpath="/items/item">
         <append xpath="/items"><nope /></append>
       </foreach>
@@ -100,7 +100,7 @@ public class LoopBasicsTests {
     // Spec reference table: xpath is required — but the rejection comes from vanilla dispatch, one layer
     // above foreach: StrongMods registers foreach as a patch command that requires an xpath, so the patcher
     // throws before the engine is ever called. Recorded as an exception, not a logged error, deliberately.
-    Exception thrown = Assert.ThrowsAny<Exception>(() => GameRoom.Instance.Value.Apply(ThreeItems, """
+    Exception thrown = Assert.ThrowsAny<Exception>(() => PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach as="item">
         <append xpath="/items"><nope /></append>
       </foreach>
@@ -112,7 +112,7 @@ public class LoopBasicsTests {
   [Fact]
   public void Reusing_a_name_already_in_scope_is_an_error() {
     // Spec: "Reusing a name that's already in scope is an error, not a shadow."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(ThreeItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(ThreeItems, """
       <foreach xpath="/items/item" as="item">
         <foreach xpath="/items/item" as="item">
           <append xpath="/items"><nope /></append>

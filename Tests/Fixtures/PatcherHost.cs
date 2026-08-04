@@ -19,19 +19,23 @@ public sealed record PatchOutcome(bool Applied, string Xml, IReadOnlyList<LogEnt
 }
 
 /// <summary>
-///   The game's assemblies loaded with our stub UnityEngine.CoreModule standing in for the real one, which is
-///   what makes game code that logs runnable outside the game: the real CoreModule's engine-internal callback
-///   registration throws in LogLibrary's Log initializer, poisoning the type, and everything that logs — the
-///   whole XML patcher — dies with it (#43 plan §2).
-///   Deliberately a separate room from <see cref="GameTree" />: the smoke tests keep the REAL CoreModule so
-///   patch targets whose signatures use Unity types still resolve. Nothing crosses between them.
-///   Expensive to build (loads ~50 MB of assemblies, runs initializers); one per test session.
+///   The host that holds the game's XML patching pipeline, executable headlessly. A HOST is one isolated
+///   assembly universe: the game's Managed assemblies plus a deliberately chosen set of companions, loaded
+///   into a private AssemblyLoadContext so its types never unify with the test runtime's or another host's;
+///   expensive to build (~50 MB of assemblies, static initializers run), so one per test session.
+///   This host's companions are the STUB UnityEngine.CoreModule, StrongMods, and the fixture mod. The stub
+///   is what makes game code that logs runnable outside the game: the real CoreModule's engine-internal
+///   callback registration throws in LogLibrary's Log initializer, poisoning the type, and everything that
+///   logs — the whole XML patcher — dies with it (#43 plan §2).
+///   Deliberately a separate host from <see cref="GameTree" /> (the real-engine host): the smoke tests keep
+///   the REAL CoreModule so patch targets whose signatures use Unity types still resolve. Nothing crosses
+///   between them.
 /// </summary>
-public sealed class GameRoom {
+public sealed class PatcherHost {
   /// <summary>The mod name &lt;function&gt; references resolve against; see Tests\FunctionMod.</summary>
   public const string FixtureModName = "Tests.FunctionMod";
 
-  public static readonly Lazy<GameRoom> Instance = new(() => new GameRoom());
+  public static readonly Lazy<PatcherHost> Instance = new(() => new PatcherHost());
 
   private readonly List<LogEntry> captured = new();
   private readonly object fixtureMod;
@@ -40,7 +44,7 @@ public sealed class GameRoom {
   private readonly MethodInfo singlePatch;
   private readonly MethodInfo patchXmlMethod;
 
-  private GameRoom() {
+  private PatcherHost() {
     // Touching GameTree first installs its default-context hook for 0Harmony, which StrongMods needs.
     var managedDir = GameTree.Metadata("SdtdManagedDir");
     var stubDir = GameTree.Metadata("UnityStubDir");
@@ -76,7 +80,7 @@ public sealed class GameRoom {
   /// </summary>
   public string VanillaConfigDir { get; } = GameTree.Metadata("SdtdConfigDir");
 
-  /// <summary>Builds one of the game's XmlFile objects from a string, in the room's own type identity.</summary>
+  /// <summary>Builds one of the game's XmlFile objects from a string, in the host's own type identity.</summary>
   public object CreateXmlFile(string xml, string filename) => NewXmlFile(xml, filename);
 
   /// <summary>
@@ -97,7 +101,7 @@ public sealed class GameRoom {
     return captured.ToList();
   }
 
-  /// <summary>The document a room-typed XmlFile holds, as text with the patch-trace comments stripped.</summary>
+  /// <summary>The document a host-typed XmlFile holds, as text with the patch-trace comments stripped.</summary>
   public string XmlOf(object xmlFile) => Normalize(Document(xmlFile));
 
   /// <summary>
@@ -199,13 +203,13 @@ public sealed class GameRoom {
   ///   Captures the game's own log output so tests can assert the spec'd skip-warnings and errors. Subscribes
   ///   to the extended callback for the unformatted message (the plain one carries a timestamp prefix). The
   ///   handler declares the LogType parameter as int: delegate binding accepts an enum's underlying type, and
-  ///   the enum itself lives in the room, out of this assembly's compile-time reach.
+  ///   the enum itself lives in the host, out of this assembly's compile-time reach.
   /// </summary>
   private void SubscribeToLog(Assembly logLibrary) {
     Type log = logLibrary.GetType("Log")!;
     RuntimeHelpers.RunClassConstructor(log.TypeHandle);
     EventInfo callbacks = log.GetEvent("LogCallbacksExtended")!;
-    MethodInfo handler = typeof(GameRoom).GetMethod(nameof(OnLog), BindingFlags.NonPublic | BindingFlags.Instance)!;
+    MethodInfo handler = typeof(PatcherHost).GetMethod(nameof(OnLog), BindingFlags.NonPublic | BindingFlags.Instance)!;
     callbacks.AddEventHandler(null, Delegate.CreateDelegate(callbacks.EventHandlerType!, this, handler));
   }
 

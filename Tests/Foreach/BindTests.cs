@@ -8,7 +8,7 @@ namespace Tests.Foreach;
 ///   cross-file form (<c>source=</c>) needs the breadth-first patcher's cache and is covered with the rest of
 ///   cross-file resolution in wave C.
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class BindTests {
   private const string TwoMeshes = """
     <items>
@@ -21,7 +21,7 @@ public class BindTests {
   public void Inline_rows_are_a_node_set_looked_up_by_predicate() {
     // Spec: "A bind holds a set of nodes, and that's the point: $loot IS the rows. Look one up by filtering
     // the variable with a predicate, then take the column you want."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="loot">
           <row mesh="duffle" icon="cntDuffle01" />
@@ -41,7 +41,7 @@ public class BindTests {
   [Fact]
   public void Xpath_without_source_selects_from_the_target_document() {
     // Spec reference: bind's source "defaults to the patch's own target file"; xpath is valid "alone".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <bind name="everything" xpath="/items/item" />
         <append xpath="/items">
@@ -59,7 +59,7 @@ public class BindTests {
     // Spec: "resolved once before the loop starts, and constant across iterations" — the body adds <item>
     // elements the bind's own xpath would match, so a per-iteration re-resolve would show a growing count.
     // The loop's own node set is likewise fixed ("Runs once, in document order"): exactly two iterations.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="everything" xpath="/items/item" />
         <append xpath="/items">
@@ -82,7 +82,7 @@ public class BindTests {
   [Fact]
   public void Inline_children_together_with_xpath_are_an_error() {
     // Spec: "One form or the other — inline children plus source/xpath on the same bind is an error."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="loot" xpath="/items/item">
           <row mesh="duffle" icon="cntDuffle01" />
@@ -98,7 +98,7 @@ public class BindTests {
   [Fact]
   public void A_bind_name_colliding_with_the_loop_binding_is_an_error() {
     // Spec: "The name joins the same scope as as names (collisions are errors)."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="item">
           <row mesh="duffle" />
@@ -114,7 +114,7 @@ public class BindTests {
   [Fact]
   public void No_matching_row_skips_the_iteration() {
     // Spec: "The exactly-one rule applies at the lookup: no matching row skips the iteration."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="loot">
           <row mesh="duffle" icon="cntDuffle01" />
@@ -133,7 +133,7 @@ public class BindTests {
   [Fact]
   public void Two_rows_with_the_same_key_skip_the_iteration() {
     // Spec: "two rows with the same key skip it too — check the log if a table misbehaves."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <bind name="loot">
           <row mesh="duffle" icon="first" />
@@ -153,7 +153,7 @@ public class BindTests {
   public void The_default_row_is_reachable_only_through_the_fallback() {
     // Spec: "The default row has no mesh attribute, so the key predicate can never match it — it's only
     // reachable through the ?: fallback. This is the idiom for 'look it up, or use the default.'"
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoMeshes, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoMeshes, """
       <foreach xpath="/items/item" as="item">
         <bind name="loot">
           <row mesh="duffle" icon="cntDuffle01" />

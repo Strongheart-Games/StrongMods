@@ -8,7 +8,7 @@ namespace Tests.Foreach;
 ///   one". The functions called here live in Tests\FunctionMod, a real mod assembly registered with the game
 ///   as loaded — the same path a modder's own mod takes.
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class FunctionTests {
   private const string TwoItems = """
     <items>
@@ -20,7 +20,7 @@ public class FunctionTests {
   [Fact]
   public void A_declared_function_is_callable_from_an_expression() {
     // Spec: "<function name="tint" method="..." />" then "{tint($lootContainer/@name)}".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="up" method="Tests.FunctionMod.PatchFunctions.Upper, Tests.FunctionMod" />
         <append xpath="/items">
@@ -37,7 +37,7 @@ public class FunctionTests {
   [Fact]
   public void Arguments_are_ordinary_expressions() {
     // Spec: "Arguments are ordinary XPath expressions — anything you could write inside {...}".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <function name="join" method="Tests.FunctionMod.PatchFunctions.Join, Tests.FunctionMod" />
         <append xpath="/items">
@@ -54,7 +54,7 @@ public class FunctionTests {
   public void A_function_returning_null_skips_the_iteration() {
     // XmlPatchFunctionAttribute's contract: "Returning null tells the patcher to skip the current iteration,
     // the same verdict an XPath expression matching no nodes produces."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="nothing" method="Tests.FunctionMod.PatchFunctions.Nothing, Tests.FunctionMod" />
         <append xpath="/items">
@@ -71,7 +71,7 @@ public class FunctionTests {
   public void A_null_return_falls_through_the_fallback() {
     // Spec: "{left ?: right} evaluates right only when left selects no nodes (or a called function returns
     // null)."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <function name="nothing" method="Tests.FunctionMod.PatchFunctions.Nothing, Tests.FunctionMod" />
         <append xpath="/items">
@@ -87,7 +87,7 @@ public class FunctionTests {
   [Fact]
   public void A_throwing_function_skips_the_iteration() {
     // Engine contract: "a function throwing" skips the current iteration rather than escaping.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="boom" method="Tests.FunctionMod.PatchFunctions.Boom, Tests.FunctionMod" />
         <append xpath="/items">
@@ -104,7 +104,7 @@ public class FunctionTests {
   public void An_untagged_method_is_rejected_even_with_a_perfect_signature() {
     // Spec: "An untagged method is rejected even if the signature is perfect — that's deliberate, so nothing
     // in your assembly becomes XML-callable by accident."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="plain" method="Tests.FunctionMod.PatchFunctions.Untagged, Tests.FunctionMod" />
         <append xpath="/items"><nope /></append>
@@ -119,7 +119,7 @@ public class FunctionTests {
   public void Omitting_the_mod_looks_in_Assembly_CSharp() {
     // Spec: "The mod is optional; leave it off and the game looks in Assembly-CSharp." The fixture mod's type
     // is not there, so the failure names where it looked.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="up" method="Tests.FunctionMod.PatchFunctions.Upper" />
         <append xpath="/items"><nope /></append>
@@ -132,7 +132,7 @@ public class FunctionTests {
 
   [Fact]
   public void A_reference_to_an_unloaded_mod_is_an_error() {
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="up" method="Tests.FunctionMod.PatchFunctions.Upper, NoSuchMod" />
         <append xpath="/items"><nope /></append>
@@ -146,7 +146,7 @@ public class FunctionTests {
   [Fact]
   public void A_malformed_method_reference_is_an_error() {
     // Spec shape: "[namespace.]Class.Method, [mod]" — "Upper" alone has no class part.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="up" method="Upper, Tests.FunctionMod" />
         <append xpath="/items"><nope /></append>
@@ -160,7 +160,7 @@ public class FunctionTests {
   [Fact]
   public void A_function_name_colliding_with_the_loop_binding_is_an_error() {
     // Spec: a function's "name lives for that loop only, in the same scope as as names and binds."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <function name="item" method="Tests.FunctionMod.PatchFunctions.Upper, Tests.FunctionMod" />
         <append xpath="/items"><nope /></append>

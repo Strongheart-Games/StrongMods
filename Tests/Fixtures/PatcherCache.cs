@@ -82,7 +82,7 @@ public sealed class PatcherCache {
   }
 
   /// <summary>
-  ///   Receives the callback. Declared as object so one method binds to Action&lt;XmlFile&gt; for the room's
+  ///   Receives the callback. Declared as object so one method binds to Action&lt;XmlFile&gt; for the host's
   ///   XmlFile type, which this assembly cannot name at compile time — delegate creation allows a parameter
   ///   type the delegate's own is assignable to.
   /// </summary>

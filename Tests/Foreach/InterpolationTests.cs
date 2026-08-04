@@ -7,7 +7,7 @@ namespace Tests.Foreach;
 ///   Conformance with StrongMods\Docs\foreach.md, "Filling in values": where <c>{...}</c> interpolates, the
 ///   exactly-one-node rule, and <c>?:</c> fallbacks.
 /// </summary>
-[Collection(GameRoomCollection.Name)]
+[Collection(PatcherHostCollection.Name)]
 public class InterpolationTests {
   private const string TwoItems = """
     <items>
@@ -20,7 +20,7 @@ public class InterpolationTests {
   public void Interpolates_into_attribute_values_and_element_text() {
     // Spec: "Interpolation works in four places: attribute values, element text, body command XPaths, and
     // element names." (Element names — the foreach-name attribute — are covered in wave A2.)
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <append xpath="/items">
           <copy of="{$item/@name}">{$item/property[@name='Tier']/@value}</copy>
@@ -36,7 +36,7 @@ public class InterpolationTests {
   public void Scalar_expressions_resolve_to_one_value_and_never_skip() {
     // Spec: "Scalar XPath results (count(), string(), string-length(), boolean tests) always produce exactly
     // one value and never skip." — beta has no properties, so count() is 0 rather than a skip.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <counted name="{$item/@name}" properties="{count($item/property)}" />
@@ -53,7 +53,7 @@ public class InterpolationTests {
   public void Zero_matches_skips_the_whole_iteration_with_a_warning() {
     // Spec: "Zero matches and the patcher skips that iteration entirely — no half-written item — and logs a
     // warning." beta has no Tier property, so its iteration must produce nothing at all.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <tier for="{$item/@name}" value="{$item/property[@name='Tier']/@value}" />
@@ -69,7 +69,7 @@ public class InterpolationTests {
   [Fact]
   public void Fallback_runs_only_when_the_left_side_selects_nothing() {
     // Spec: "The right side only runs when the left selects no nodes."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <tier for="{$item/@name}" value="{$item/property[@name='Tier']/@value ?: $item/@name}" />
@@ -94,7 +94,7 @@ public class InterpolationTests {
   [Fact]
   public void Foreach_name_renames_the_element() {
     // Spec: "use the reserved foreach-name attribute, and the tag renames itself" — XML forbids '{' in a tag.
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <append xpath="/items">
           <placeholder foreach-name="{$item/@name}_extra" />
@@ -110,7 +110,7 @@ public class InterpolationTests {
   [Fact]
   public void Doubled_braces_are_literal_braces() {
     // Spec: "For a literal brace, double it: {{ and }}."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <append xpath="/items">
           <literal value="{{not an expression}}" />
@@ -125,7 +125,7 @@ public class InterpolationTests {
   [Fact]
   public void Two_or_more_matches_skips_the_iteration() {
     // Spec: "Two or more matches skips too: an ambiguous lookup should never guess."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoTiers, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoTiers, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <tier value="{$item/property[@name='Tier']/@value}" />
@@ -140,7 +140,7 @@ public class InterpolationTests {
   [Fact]
   public void Two_or_more_matches_skip_rather_than_falling_through() {
     // Spec: "two or more matches skip the iteration rather than falling through".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoTiers, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoTiers, """
       <foreach xpath="/items/item" as="item">
         <append xpath="/items">
           <tier value="{$item/property[@name='Tier']/@value ?: $item/@name}" />
@@ -155,7 +155,7 @@ public class InterpolationTests {
   [Fact]
   public void Both_sides_empty_skips_the_iteration() {
     // Spec: "if both sides come up empty, the iteration skips".
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <append xpath="/items">
           <tier value="{$item/@missing ?: $item/@alsoMissing}" />
@@ -170,7 +170,7 @@ public class InterpolationTests {
   [Fact]
   public void Only_one_fallback_operator_is_allowed_per_expression() {
     // Spec: "One ?: per expression."
-    PatchOutcome result = GameRoom.Instance.Value.Apply(TwoItems, """
+    PatchOutcome result = PatcherHost.Instance.Value.Apply(TwoItems, """
       <foreach xpath="/items/item[@name='alpha']" as="item">
         <append xpath="/items">
           <tier value="{$item/@missing ?: $item/@alsoMissing ?: $item/@name}" />
@@ -186,7 +186,7 @@ public class InterpolationTests {
   public void An_empty_attribute_is_a_match_and_does_not_fall_through() {
     // Spec: "an attribute that exists but is empty (tier="") is one node with the value "" and does not fall
     // through".
-    PatchOutcome result = GameRoom.Instance.Value.Apply("""
+    PatchOutcome result = PatcherHost.Instance.Value.Apply("""
       <items><item name="alpha" tier="" /></items>
       """, """
       <foreach xpath="/items/item" as="item">

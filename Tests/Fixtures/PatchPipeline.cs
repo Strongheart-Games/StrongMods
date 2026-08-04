@@ -48,24 +48,24 @@ public sealed class PatchPipeline {
   /// <summary>Entry points this unit ships no document for — legal, XmlLoadInfo has an ignore-missing flag.</summary>
   public IReadOnlyList<string> AbsentFromUnit { get; }
 
-  public static PatchPipeline Run(GameRoom room) {
+  public static PatchPipeline Run(PatcherHost host) {
     var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
     IReadOnlyList<string> entryPoints = Fixtures.EntryPoints.Read(GameTree.Metadata("SdtdManagedDir"));
 
-    room.Cache.Clear();
+    host.Cache.Clear();
     try {
       var vanilla = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
       var absent = new List<string>();
       foreach (var name in entryPoints) {
-        var path = Path.Combine(room.VanillaConfigDir, Native(name) + ".xml");
+        var path = Path.Combine(host.VanillaConfigDir, Native(name) + ".xml");
         if (!File.Exists(path)) {
           absent.Add(name);
           continue;
         }
 
-        object document = room.CreateXmlFile(File.ReadAllText(path), Path.GetFileName(path));
+        object document = host.CreateXmlFile(File.ReadAllText(path), Path.GetFileName(path));
         vanilla[name] = document;
-        room.Cache.Seed(name, document);
+        host.Cache.Seed(name, document);
       }
 
       var applications = new List<PatchApplication>();
@@ -87,7 +87,7 @@ public sealed class PatchPipeline {
           opened.Add(Path.GetFullPath(patchPath));
           IReadOnlyList<LogEntry> logs;
           try {
-            logs = room.ApplyPatchFile(target, File.ReadAllText(patchPath), Path.GetFileName(patchPath));
+            logs = host.ApplyPatchFile(target, File.ReadAllText(patchPath), Path.GetFileName(patchPath));
           } catch (Exception ex) {
             logs = new[] { new LogEntry(LogLevel.Exception, $"{ex.GetType().Name}: {ex.Message}") };
           }
@@ -100,7 +100,7 @@ public sealed class PatchPipeline {
 
       return new PatchPipeline(entryPoints, applications, dead, absent);
     } finally {
-      room.Cache.Clear();
+      host.Cache.Clear();
     }
   }
 

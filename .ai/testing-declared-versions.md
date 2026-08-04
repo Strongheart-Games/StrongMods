@@ -183,6 +183,18 @@ Two candidate shapes:
 exceed the 100-line target — this plan is the validation request. CI needs **no workflow change**: each unit
 leg already restores the registry and passes `SdtdPackagesDir`/`SdtdUnit` to the test build.
 
+## 4b. Phase 6-0 results (2026-08-03)
+
+| Check | Result |
+| --- | --- |
+| Backlog issue | filed as **#64**, cited by the CLAUDE.md rule text |
+| Renames | `git mv` ×2 (`PatcherHost.cs`, `PatcherHostCollection.cs`) + one mechanical token sweep across 12 files (`GameRoom`→`PatcherHost`, `room`/`Room` identifiers → `host`/`Host`); residual-token grep empty |
+| The one deliberate non-rename | `Tests/Stubs/UnityStubs.cs`'s "Clean-room stand-ins" — the reverse-engineering idiom, a different sense of the word; untouched |
+| Host definition | landed as `PatcherHost`'s opening doc comment (what a host is; this host's companions; why the stub; the separate-host rationale) |
+| Naming rule | in CLAUDE.md *Conventions*, citing #64; `Tests.csproj`'s two "conformance room" comments now say `PatcherHost` (the curry-the-label rule applied to prose) |
+| Suite | **exactly 142/142** — the phase's bar: zero assertion changes |
+| Diff | spot-checked token-mechanical; sed normalized the 12 touched files' line endings to the repo-standard LF (`.editorconfig`), hence git's benign autocrlf warnings |
+
 ## 5. Verification
 
 - 6-0 verifies as a rename must: the whole suite green at exactly 142/142, zero assertion changes, the diff

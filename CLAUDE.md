@@ -254,6 +254,16 @@ pieces. Notable shared infrastructure worth reusing:
   applies especially to status/metadata headers at the top of a doc.
 - **Namespaces match the project/assembly name.** The SDK defaults `RootNamespace` and `AssemblyName` to
   `$(MSBuildProjectName)`, so a project should not set them; the directory name *is* the mod name.
+- **Names must survive leaving their context.** A file or class name is read in places its declaration can't
+  follow — planning docs, commit messages, grep output, error text, chat — and the name alone must say what
+  the thing is when met there. The test: write the bare name in a doc for a reader who has not opened the
+  file; do they know what kind of thing it names? `Ctx` fails (*which* of the dozen kinds of context?);
+  `SmokeTestCtx` passes. `GameRoom` failed; `PatcherHost` passes. Carry the category word wherever the
+  category is what disambiguates (`*Host` on every isolated game-assembly host — `Tests/Fixtures/PatcherHost.cs`
+  defines the concept); abbreviate only what is unambiguous repo-wide (`Sdtd` is; `Ctx` was not). Where a
+  fully self-identifying name is impractical, every out-of-file reference carries qualification instead
+  (`SmokeTests.Ctx`, a path). Existing violations are grandfathered — #64 enumerates them for one-by-one
+  fixes — but a name a change already touches conforms as part of that change, and new names conform always.
 - `ModInfo.xml` is UTF-8-with-BOM and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
 - AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project, or in the
