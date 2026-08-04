@@ -1,8 +1,8 @@
 # Idempotent config patching — `<ensure>`
 
-**Version:** 1.0 (Draft 3)\
-**Status:** Proposed — design settled; testing strategy rebuilt around the Tests conformance harness (#43) after it
-landed\
+**Version:** 1.0 (Draft 4)\
+**Status:** Proposed — design settled; testing strategy rebuilt around the Tests conformance harness (#43), then
+rescoped for the per-version test axis (#23/#37/#21, landed in `2b6d473`)\
 **Tracked by:** [#60](https://github.com/Strongheart-Games/StrongMods/issues/60)\
 **Applies to:** StrongMods XML patch extensions (alongside `<foreach>`)\
 **Audience:** Mod authors writing XPath config patches; StrongMods maintainers
@@ -24,10 +24,11 @@ intent. From `StrongholdTweaks/Config/items.xml`:
 Exactly one matches. The other matches nothing, and the patcher logs `did not apply` — scaring admins about intended
 behavior. The author's intent, *"make sure this property is on this item"*, has no way to be written down.
 
-The repo now measures this noise: `Tests/Patcher/PatchApplicationTests.cs` applies every mod's real patches to the
-unit's real vanilla XML and requires every warning to be declared with a reason. Two of its standing declarations are
-this exact idiom (`StrongholdTweaks/items` for `AltItemTypeIconColor`, `StrongholdTweaks/blocks` for
-`AllowedRotations`), both annotated "goes away when `<ensure>` lands (#60)".
+The repo now measures this noise: `Tests/Patcher/PatchApplicationTests.cs` applies every mod's real patches to real
+vanilla XML — since #23/#37/#21, once per game version the mod declares — and requires every warning to be declared
+with a reason. Two of its standing declarations are this exact idiom (`StrongholdTweaks/items` for
+`AltItemTypeIconColor`, `StrongholdTweaks/blocks` for `AllowedRotations`), both annotated "goes away when `<ensure>`
+lands (#60)".
 
 ## 2. What vanilla already provides
 
@@ -234,9 +235,9 @@ build, layout B", or "remove whichever of these two nodes exists". Those remain 
 | Implementation                        | ~150 lines over the target document  | ~50 lines, dispatch via `singlePatch`   | ~50 lines                              |
 
 Draft 2 carried an "offline-testable" row favoring `<ensure>` (pure `XDocument`, no `singlePatch` needed). The
-conformance harness dissolved that differentiator — `Tests/Fixtures/GameRoom.cs` executes the game's own `singlePatch`
-headlessly, so all three designs are now equally testable. The row is corrected rather than silently dropped; the
-recommendation never rested on it alone.
+conformance harness dissolved that differentiator — `Tests/Fixtures/PatcherHost.cs` executes the game's own
+`singlePatch` headlessly, so all three designs are now equally testable. The row is corrected rather than silently
+dropped; the recommendation never rested on it alone.
 
 ## 5. Recommendation
 
@@ -290,21 +291,30 @@ diagnostics table with its warn/error split — because those tables are what th
 ### 6.2 Testing — conformance suite at parity with `<foreach>`
 
 Draft 2's plan (a pure-function seam for offline tests, an in-game fixture patch checked via `ConfigDump/`) predates
-the Tests project and is superseded. The harness that now exists is strictly better: `GameRoom` loads
+the Tests project and is superseded. The harness that now exists is strictly better: `PatcherHost` loads
 Assembly-CSharp, LogLibrary, and the real `StrongMods.dll` headlessly (Unity stubbed), executes the game's own
 `singlePatch`, and captures the game's own log — so tests assert real dispatch, real warnings, and the resulting
-document, and CI runs them against **both units** on every push. `GameRoom.CreateXmlFile` also settles Draft 2's
-"unverified" note: `XmlFile` construction from a string works headlessly; the room does it for every test.
+document, and CI runs the suite on every push. `PatcherHost.CreateXmlFile` also settles Draft 2's "unverified" note:
+`XmlFile` construction from a string works headlessly; the host does it for every test.
 
-Harness change required: `GameRoom.SeedPatchMethods` fills the patch-command registry by hand (the attribute scan
+**Scope: the default host, not per-version.** `.ai/testing-declared-versions.md` §3c settled this for `Foreach/*`
+and it governs `Ensure/*` identically — these tests exercise StrongMods' *engine semantics* against synthetic XML,
+not a mod's compatibility with a particular vanilla, so per-version legs would be real cost for hypothetical signal.
+`Ensure/*` therefore uses `PatcherHost.Instance`, like `Foreach/*` and `PatcherCacheTests`. §3c's caveat applies
+unchanged: revisit if StrongMods itself ever pins. The per-version signal for this feature is real but belongs one
+layer out, on the mods that *use* `<ensure>` — which is §6.3's job.
+
+Harness change required: `PatcherHost.SeedPatchMethods` fills the patch-command registry by hand (the attribute scan
 that discovers commands in-game cannot run against the stub), registering vanilla commands plus `foreach` explicitly.
-`<ensure>` needs one more line there, mirroring its `ModApi` registration. That is the second place registration
-lives; a room-vs-`ModApi` drift guard (a test asserting the room registers every command `ModApi` does, or a shared
-catalog both read) is worth considering while in there, but must not grow this feature — raise it separately if it
-grows legs.
+`<ensure>` needs one more line there, mirroring its `ModApi` registration. Seeding runs from the constructor, so the
+one line covers `Instance` and every `ForLabel` host alike. That is the second place registration lives; a
+host-vs-`ModApi` drift guard (a test asserting the host registers every command `ModApi` does, or a shared catalog
+both read) is worth considering while in there, but must not grow this feature — raise it separately if it grows
+legs.
 
-`Tests/Ensure/`, one file per `ensure.md` section, same style as `Tests/Foreach/` (xunit, `[Collection(GameRoom)]`,
-raw-string XML fixtures, asserts on `PatchOutcome.Applied` + `.Xml` + exact warning/error substrings):
+`Tests/Ensure/`, one file per `ensure.md` section, same style as `Tests/Foreach/` (xunit,
+`[Collection(PatcherHostCollection.Name)]`, `PatcherHost.Instance.Value.Apply(...)`, raw-string XML fixtures,
+asserts on `PatchOutcome.Applied` + `.Xml` + exact warning/error substrings):
 
 | File                     | Covers (doc section)                                                                                          |
 |--------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -316,27 +326,34 @@ raw-string XML fixtures, asserts on `PatchOutcome.Applied` + `.Xml` + exact warn
 | `FailureModeTests`       | §3.6 table row-by-row, foreach-style: zero parents → `Applied` false (via `Apply`) and the vanilla warning text (via `ApplyPatchFile`); empty block, bad `position`, missing/unusable key → `Log.Error`; malformed xpath → throw, mirroring foreach's `A_bad_xpath_is_an_error` |
 | `ForeachCompositionTests`| §6.1: `<ensure>` in a foreach body with `{…}` in template attributes and in `ensure-key`; per-iteration materialization |
 
-### 6.3 Acceptance — the repo's own patches go quiet
+### 6.3 Acceptance — the repo's own patches go quiet, on every declared version
 
-`PatchApplicationTests` is a ready-made end-to-end acceptance test. Landing finishes by converting the two declared
-call sites (`StrongholdTweaks/Config/items.xml` `AltItemTypeIconColor`, `StrongholdTweaks/Config/blocks.xml`
-`AllowedRotations`) to `<ensure>` and deleting their `ExpectedToLog` entries. The suite enforces this in both
-directions — an undeclared warning fails, and a declaration that has gone quiet fails — so forgetting the cleanup is
-itself a red test.
+`PatchApplicationTests` is a ready-made end-to-end acceptance test, and #23/#37/#21 sharpened it: it is now a
+`[Theory]` over declared version labels, replaying each mod's `Config\` against **each vanilla that mod declares
+support for**. Landing finishes by converting the two declared call sites
+(`StrongholdTweaks/Config/items.xml` `AltItemTypeIconColor`, `StrongholdTweaks/Config/blocks.xml`
+`AllowedRotations`) to `<ensure>` and deleting their `ExpectedToLog` entries.
 
-One in-game sanity pass at landing is still warranted, for the single thing the room does not exercise: `ModApi`'s
+StrongholdTweaks declares no pin, so it inherits `build/GameVersions.props`' default `SdtdTestVersions` —
+`V3.1.0-b14` and `V3.0.1-b4` today — and the conversion must come out clean against **both**. That is stronger
+than what Draft 3 promised and is genuinely new signal: `<ensure>`'s selector has to match on each vanilla
+independently, so a property that moved or an item renamed between versions surfaces here rather than in someone's
+log. The suite enforces the cleanup in both directions — an undeclared warning fails, and a declaration that has
+gone quiet against every label fails — so forgetting it is itself a red test.
+
+One in-game sanity pass at landing is still warranted, for the single thing the host does not exercise: `ModApi`'s
 registration path running under the real game. Everything behavioral is the suite's job now.
 
 ### 6.4 Landing plan
 
 Waves, foreach-conformance style, each with its own explicit go and committed before the next starts:
 
-1. `XmlPatchMethodEnsure.cs` + `Config` toggle + `ModApi` registration + `GameRoom` seeding line + `Docs/ensure.md`
-   + `UpsertBasicsTests` — the smallest shippable slice that proves the pipeline end to end.
+1. `XmlPatchMethodEnsure.cs` + `Config` toggle + `ModApi` registration + `PatcherHost` seeding line +
+   `Docs/ensure.md` + `UpsertBasicsTests` — the smallest shippable slice that proves the pipeline end to end.
 2. `IdentityTests` + `FailureModeTests` (the two suites most likely to push back on the implementation).
 3. `NestedTemplateTests` + `TextContentTests` + `OrderingTests` + `ForeachCompositionTests`.
 4. StrongholdTweaks conversion + `ExpectedToLog` cleanup + README line + in-game sanity pass + `ModInfo.xml` version
-   bumps.
+   bumps. Verify with `dotnet test`, which now covers both declared versions (§6.3).
 
 Wave 1 exceeds the ~100-line target on the implementation file alone; flagging that here is the plan-phase
 notification the workflow requires.
@@ -356,11 +373,16 @@ notification the workflow requires.
    is gone" is far rarer and carries none of the identity or merge subtlety — roughly 15 lines whenever it is wanted.
 6. **Standalone doc file**, now doubly justified: the conformance suite traces to its clauses (§6.1).
 7. **Verification is the conformance suite, at parity with `<foreach>`** (§6.2) — doc-clause-driven files, warn/error
-   split asserted against the game's own log, run against both units in CI — plus the `PatchApplicationTests`
-   acceptance loop (§6.3). Replaces Draft 2's pure-seam + in-game-fixture plan, which predated the Tests project.
+   split asserted against the game's own log — plus the `PatchApplicationTests` acceptance loop (§6.3). Replaces
+   Draft 2's pure-seam + in-game-fixture plan, which predated the Tests project.
 8. **Draft 2's testability claim corrected, recommendation unchanged** (§4): the harness made every candidate design
    equally testable, so that argument for `<ensure>` is void; the set-based, warning-semantics, and idempotency
    arguments carry it alone.
+9. **`Ensure/*` conformance runs on the default host only; per-version assertion happens at the mod layer**
+   (§6.2, §6.3). Follows `.ai/testing-declared-versions.md` §3c rather than inventing a second policy: engine
+   semantics are version-independent, mod-to-vanilla compatibility is not. Consequence worth stating plainly — no
+   test proves `<ensure>` itself behaves identically on `V3.0.1-b4` until a mod using it declares that version, which
+   §6.3's conversion does immediately.
 
 ## 8. Alternatives considered
 
