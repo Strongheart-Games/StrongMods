@@ -1,7 +1,9 @@
 # Idempotent config patching — `<ensure>`
 
-**Version:** 1.0 (Draft 2)\
-**Status:** Proposed — design settled, not scheduled for implementation\
+**Version:** 1.0 (Draft 3)\
+**Status:** Proposed — design settled; testing strategy rebuilt around the Tests conformance harness (#43) after it
+landed\
+**Tracked by:** [#60](https://github.com/Strongheart-Games/StrongMods/issues/60)\
 **Applies to:** StrongMods XML patch extensions (alongside `<foreach>`)\
 **Audience:** Mod authors writing XPath config patches; StrongMods maintainers
 
@@ -22,6 +24,11 @@ intent. From `StrongholdTweaks/Config/items.xml`:
 Exactly one matches. The other matches nothing, and the patcher logs `did not apply` — scaring admins about intended
 behavior. The author's intent, *"make sure this property is on this item"*, has no way to be written down.
 
+The repo now measures this noise: `Tests/Patcher/PatchApplicationTests.cs` applies every mod's real patches to the
+unit's real vanilla XML and requires every warning to be declared with a reason. Two of its standing declarations are
+this exact idiom (`StrongholdTweaks/items` for `AltItemTypeIconColor`, `StrongholdTweaks/blocks` for
+`AllowedRotations`), both annotated "goes away when `<ensure>` lands (#60)".
+
 ## 2. What vanilla already provides
 
 Established by disassembling `Assembly-CSharp.dll` and by running the game's shipped `NCalc.dll` against the
@@ -37,7 +44,7 @@ expressions below.
 - **`setattribute` already upserts.** `SetAttributeByXPath` calls `XElement.SetAttributeValue`, which creates the
   attribute when absent (`Attribute "{0}" added/overwritten by: "{1}"`). **The game can already ensure an *attribute*;
   what it cannot do is ensure a *child element*.** That is precisely the hole this spec fills, and it is why the
-  command is named for the unsuffixed element form (§9, decision 1).
+  command is named for the unsuffixed element form (§7, decision 1).
 - **`<conditional>` can express the two-branch form today.** Its `<if cond>` chain plus `<else>` is evaluated by
   `XmlPatchConditionEvaluator`, whose `xpath(expr)` function runs against the target file *as it stands mid-patch* and
   returns the matched node's string, or `null` for zero matches, or `"More than one match"` for 2+. It is not a
@@ -92,10 +99,15 @@ The return count is the number of matched parents. Zero parents → 0 → one or
 missing; here, the only way to warn is for the parent selector to match nothing — which is a genuine authoring error
 worth reporting. The goal was to stop false warnings; this also restores true ones.
 
+`<ensure>` is **idempotent by construction**: applying the same block twice yields the same document as applying it
+once, and two mods ensuring the same property converge instead of fighting. The conformance suite asserts this
+directly (§6.2).
+
 ### 3.2 Identity
 
 Identity is `(tag name, key attributes)`. The default key is `@name`, falling back to `@class` when the template has
-no `@name`. Surveying vanilla config for how children are identified among their siblings:
+no `@name`; a template carrying both uses both. Surveying vanilla config for how children are identified among their
+siblings:
 
 | File               | `tag, @name`                                                  | `tag, @class`      | neither                                        |
 |--------------------|---------------------------------------------------------------|--------------------|------------------------------------------------|
@@ -192,10 +204,13 @@ exactly the untraceable corruption rule 4 exists to prevent.
 | Template child has no `@name`/`@class` and no `ensure-key` | `Log.Error`, return 0 (whole block; it would fail identically for every parent) |
 | Template child has an unusable `ensure-key`            | `Log.Error`, return 0                                         |
 | `position` is neither `append` nor `prepend`           | `Log.Error`, return 0                                         |
+| `xpath` attribute missing                              | Vanilla dispatch throws before `<ensure>` runs (`requiresXpath: true`) — same as every built-in |
+| `xpath` malformed                                      | `XPathException` propagates, wrapped by `singlePatch`'s formatted rethrow — same as every built-in |
 | Non-element children (text, comments) of `<ensure>`    | Ignored                                                       |
 
 The split between per-parent warnings and whole-block errors follows `<foreach>`: data conditions warn and carry on,
-mod bugs stop the construct.
+mod bugs stop the construct. Warnings and errors carry the same context prefix foreach's do (mod, file, line), so a
+log line is diagnosable on sight.
 
 ### 3.7 What it does not do
 
@@ -214,9 +229,14 @@ build, layout B", or "remove whichever of these two nodes exists". Those remain 
 | Multiple properties per block         | yes                                  | one block each                          | one block each                         |
 | Ordering control                      | `position`, and merge never moves    | whatever the alternatives do            | same                                   |
 | Handles non-upsert alternatives       | no                                   | yes                                     | yes                                    |
+| Idempotent / multi-mod convergent     | yes                                  | no — depends on the alternatives        | no                                     |
 | New concepts for authors              | identity/key rule                    | none (composes known commands)          | none                                   |
-| Implementation                        | ~150 lines, pure `XDocument`         | ~50 lines, dispatch via `singlePatch`   | ~50 lines                              |
-| Offline-testable                      | fully                                | needs `singlePatch`                     | needs `singlePatch`                    |
+| Implementation                        | ~150 lines over the target document  | ~50 lines, dispatch via `singlePatch`   | ~50 lines                              |
+
+Draft 2 carried an "offline-testable" row favoring `<ensure>` (pure `XDocument`, no `singlePatch` needed). The
+conformance harness dissolved that differentiator — `Tests/Fixtures/GameRoom.cs` executes the game's own `singlePatch`
+headlessly, so all three designs are now equally testable. The row is corrected rather than silently dropped; the
+recommendation never rested on it alone.
 
 ## 5. Recommendation
 
@@ -227,53 +247,106 @@ does not exist here: operating on every match is the definition of the command, 
 removes the duplication entirely rather than relocating it, it collapses several properties into one block, and it is
 idempotent, so two mods ensuring the same property converge instead of fighting.
 
-It is also the most testable of the three, being a pure `XDocument` transformation with no `singlePatch` dispatch.
-
 The cost is one genuinely new concept — identity — and the survey in §3.2 says that concept is unavoidable for any
 design in this space. Better to name it and make ambiguity loud than to let a hidden first-match rule corrupt a config.
 
-## 6. Implementation and testing
+## 6. Implementation, testing, and landing
 
-One new file, `StrongMods/XmlPatchMethodEnsure.cs`. Registration mirrors `<foreach>` in `ModApi.cs`, gated by a
-`Config.XmlPatchMethodEnsureEnabled` toggle:
+### 6.1 Implementation
+
+One new file, `StrongMods/XmlPatchMethodEnsure.cs`, shaped like the vanilla methods: signature
+`Ensure(XmlFile, string xpath, XElement, XmlFile, Mod)`, matches via the target's own XPath helpers, mutates
+`XmlDoc` directly. No `singlePatch` dispatch — `<ensure>` is a document transformation, not a container of other
+commands. Registration mirrors `<foreach>` in `ModApi.cs`, gated by a new always-true getter in `Config.cs`
+(`XmlPatchMethodEnsureEnabled`, beside `XmlPatchMethodForeachEnabled`):
 
 ```csharp
-MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodEnsure), nameof(XmlPatchMethodEnsure.Ensure));
-XmlPatcher.addXmlFilePatchMethod("ensure", method);   // requiresXpath: true (the default)
+private static void InitXmlPatchMethodEnsure(Mod mod, Harmony harmony) {
+  if (!Config.XmlPatchMethodEnsureEnabled) {
+    return;
+  }
+
+  MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodEnsure), nameof(XmlPatchMethodEnsure.Ensure));
+  XmlPatcher.addXmlFilePatchMethod("ensure", method);   // requiresXpath: true (the default)
+}
 ```
 
-No Harmony patch — this is purely an added patch method. Interactions:
+No Harmony patch — purely an added patch method, so the patch-target smoke tests are unaffected and no
+`[PatchTargetManifest]` is involved. Other interactions:
 
 - **Breadth-first patcher:** none. Operates within one mod's pass over one file.
 - **`<foreach>`:** an `<ensure>` in a foreach body is materialized like any other command (`{…}` substitution over
-  attributes and children) and dispatched through `singlePatch`. Confirm during implementation that
-  `TryCloneWithSubstitution` recurses into template children.
+  attributes and children, including `ensure-key` values) and dispatched through `singlePatch`. The composition gets
+  its own conformance tests (§6.2) rather than the Draft 2 code-reading TODO.
 - **StrongMods absent:** "Patch type (ensure) unknown" plus a `did not apply` warning, and the block is skipped — same
   degradation as `<foreach>`. Consumers must declare the StrongMods dependency in `ModInfo.xml`.
 
-Testing, given the repo has no test project:
+Documentation ships as a standalone `StrongMods/Docs/ensure.md` mirroring `Docs/foreach.md` — and this is now
+load-bearing, not just a docs preference: the conformance suite is doc-clause-driven (each test file header cites the
+doc section it verifies), so `ensure.md` must be written with the same table discipline — semantics rules, the
+diagnostics table with its warn/error split — because those tables are what the tests trace to. Plus a line in
+`StrongMods/README.md`.
 
-1. **Offline, pure.** The core is `(XElement parent, XElement template) -> void` over plain `XDocument` — no game
-   types. Cover: absent → inserted at the right end for both `position` values; present → attributes merged,
-   unmentioned attributes preserved, element not moved; two key matches → warned and untouched; nested template
-   recursion; text content set, and whitespace-only text ignored when element children are present; `@class` fallback;
-   `ensure-key` override; `ensure-key` stripped from output; missing key → error.
-2. **End-to-end, in game.** A fixture patch under `StrongMods/Docs/` covering property-present, property-absent,
-   selector-matches-nothing, ambiguous-key, `position="prepend"`, and `<ensure>` inside `<foreach>`; verified against
-   the save's `ConfigDump/items.xml` and by grepping the log for exactly the expected warnings.
+### 6.2 Testing — conformance suite at parity with `<foreach>`
 
-`XmlFile` has constructors taking a `string` and a `Stream`, so an in-memory target document is constructible without
-the filesystem — if `Assembly-CSharp`'s static initializers cooperate outside Unity, which is unverified.
+Draft 2's plan (a pure-function seam for offline tests, an in-game fixture patch checked via `ConfigDump/`) predates
+the Tests project and is superseded. The harness that now exists is strictly better: `GameRoom` loads
+Assembly-CSharp, LogLibrary, and the real `StrongMods.dll` headlessly (Unity stubbed), executes the game's own
+`singlePatch`, and captures the game's own log — so tests assert real dispatch, real warnings, and the resulting
+document, and CI runs them against **both units** on every push. `GameRoom.CreateXmlFile` also settles Draft 2's
+"unverified" note: `XmlFile` construction from a string works headlessly; the room does it for every test.
 
-Documentation ships as a standalone `StrongMods/Docs/ensure.md` mirroring `Docs/foreach.md`, plus a line in
-`StrongMods/README.md`. Folding both into a combined `xml-patching.md` is a real restructuring chore and should not
-ride along with a new feature.
+Harness change required: `GameRoom.SeedPatchMethods` fills the patch-command registry by hand (the attribute scan
+that discovers commands in-game cannot run against the stub), registering vanilla commands plus `foreach` explicitly.
+`<ensure>` needs one more line there, mirroring its `ModApi` registration. That is the second place registration
+lives; a room-vs-`ModApi` drift guard (a test asserting the room registers every command `ModApi` does, or a shared
+catalog both read) is worth considering while in there, but must not grow this feature — raise it separately if it
+grows legs.
+
+`Tests/Ensure/`, one file per `ensure.md` section, same style as `Tests/Foreach/` (xunit, `[Collection(GameRoom)]`,
+raw-string XML fixtures, asserts on `PatchOutcome.Applied` + `.Xml` + exact warning/error substrings):
+
+| File                     | Covers (doc section)                                                                                          |
+|--------------------------|---------------------------------------------------------------------------------------------------------------|
+| `UpsertBasicsTests`      | §3.1: absent → inserted; present → merged, unmentioned attributes preserved; multi-parent set-based operation; return-count/`Applied` semantics; **idempotency** (same block twice → identical document) and **convergence** (two overlapping blocks → merged result) |
+| `IdentityTests`          | §3.2: `@name` key; `@class` fallback; both-present; `ensure-key` override incl. compound keys; `ensure-key` stripped from output; ambiguous key → warn, skip that child, other parents still processed; missing key → error |
+| `NestedTemplateTests`    | §3.3: recursion into existing and freshly created blocks; never-removes semantics                             |
+| `TextContentTests`       | §3.4: text set; whitespace-between-children not mistaken for content                                          |
+| `OrderingTests`          | §3.5: `append` default; `prepend`; merge never moves an existing element                                      |
+| `FailureModeTests`       | §3.6 table row-by-row, foreach-style: zero parents → `Applied` false (via `Apply`) and the vanilla warning text (via `ApplyPatchFile`); empty block, bad `position`, missing/unusable key → `Log.Error`; malformed xpath → throw, mirroring foreach's `A_bad_xpath_is_an_error` |
+| `ForeachCompositionTests`| §6.1: `<ensure>` in a foreach body with `{…}` in template attributes and in `ensure-key`; per-iteration materialization |
+
+### 6.3 Acceptance — the repo's own patches go quiet
+
+`PatchApplicationTests` is a ready-made end-to-end acceptance test. Landing finishes by converting the two declared
+call sites (`StrongholdTweaks/Config/items.xml` `AltItemTypeIconColor`, `StrongholdTweaks/Config/blocks.xml`
+`AllowedRotations`) to `<ensure>` and deleting their `ExpectedToLog` entries. The suite enforces this in both
+directions — an undeclared warning fails, and a declaration that has gone quiet fails — so forgetting the cleanup is
+itself a red test.
+
+One in-game sanity pass at landing is still warranted, for the single thing the room does not exercise: `ModApi`'s
+registration path running under the real game. Everything behavioral is the suite's job now.
+
+### 6.4 Landing plan
+
+Waves, foreach-conformance style, each with its own explicit go and committed before the next starts:
+
+1. `XmlPatchMethodEnsure.cs` + `Config` toggle + `ModApi` registration + `GameRoom` seeding line + `Docs/ensure.md`
+   + `UpsertBasicsTests` — the smallest shippable slice that proves the pipeline end to end.
+2. `IdentityTests` + `FailureModeTests` (the two suites most likely to push back on the implementation).
+3. `NestedTemplateTests` + `TextContentTests` + `OrderingTests` + `ForeachCompositionTests`.
+4. StrongholdTweaks conversion + `ExpectedToLog` cleanup + README line + in-game sanity pass + `ModInfo.xml` version
+   bumps.
+
+Wave 1 exceeds the ~100-line target on the implementation file alone; flagging that here is the plan-phase
+notification the workflow requires.
 
 ## 7. Decisions taken
 
 1. **Name `<ensure>`**, not `<ensurechild>`. Vanilla's grammar is that unsuffixed commands operate on elements
    (`append`, `set`, `remove`) and the noun suffix marks the attribute variants (`setattribute`, `removeattribute`).
-   Ensuring an element is therefore `<ensure>`; the attribute form the game already has is `setattribute`.
+   Ensuring an element is therefore `<ensure>`; the attribute form the game already has is `setattribute`. Checked
+   against nearby ecosystem vocabulary for fuzzy collisions (vanilla command names, Harmony attribute names): none.
 2. **Merge only.** No `replace="true"`. Merge is what "ensure" means and the only behavior that composes when two mods
    touch the same element; wholesale replacement is already expressible as `remove` plus `<ensure>`. If it is ever
    added it belongs on the template child, so heterogeneous children can differ.
@@ -281,7 +354,13 @@ ride along with a new feature.
 4. **`position="append|prepend"`, default `append`** (§3.5), because among duplicate siblings the last wins.
 5. **No `<ensureabsent>` mirror yet.** `remove` on zero matches produces the same spurious warning, but "make sure it
    is gone" is far rarer and carries none of the identity or merge subtlety — roughly 15 lines whenever it is wanted.
-6. **Standalone doc file** (§6).
+6. **Standalone doc file**, now doubly justified: the conformance suite traces to its clauses (§6.1).
+7. **Verification is the conformance suite, at parity with `<foreach>`** (§6.2) — doc-clause-driven files, warn/error
+   split asserted against the game's own log, run against both units in CI — plus the `PatchApplicationTests`
+   acceptance loop (§6.3). Replaces Draft 2's pure-seam + in-game-fixture plan, which predated the Tests project.
+8. **Draft 2's testability claim corrected, recommendation unchanged** (§4): the harness made every candidate design
+   equally testable, so that argument for `<ensure>` is void; the set-based, warning-semantics, and idempotency
+   arguments carry it alone.
 
 ## 8. Alternatives considered
 
