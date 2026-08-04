@@ -7,10 +7,9 @@
   </conditional>
 
   <!-- Schematics that have been read show a green "read" icon -->
-  <setattribute xpath="/items/item[@name='schematicMaster']/property[@name='AltItemTypeIconColor']" name="value">0,255,0,200</setattribute>
-  <append xpath="/items/item[@name='schematicMaster' and not(property[@name='AltItemTypeIconColor'])]">
+  <ensure xpath="/items/item[@name='schematicMaster']">
     <property name="AltItemTypeIconColor" value="0,255,0,200" />
-  </append>
+  </ensure>
 
   <!-- Master Tool compatibility with Project Z
        with patch: 11, 17

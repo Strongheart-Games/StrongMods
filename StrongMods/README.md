@@ -11,6 +11,10 @@ Modding tools from Strongheart.
   `Docs/foreach.md`](Docs/foreach.md) for the complete spec.
 * Because of the breadth-first ordering, a `<foreach>` can see vanilla XML and any mod *earlier* in load order, but
   never a mod that loads *after* it.
+* Adds the `<ensure>` XML-patch command: makes a child element exist, with the attributes you give it, on every node
+  an XPath matches — adding it where it is absent and merging into it where it is present. It replaces the paired
+  `setattribute`+`append` idiom, in which one command always misses and logs `did not apply` even though the patch did
+  exactly what its author intended. See [`Docs/ensure.md`](Docs/ensure.md) for the complete spec.
 * On case-insensitive filesystems (Windows) it enforces the case-sensitivity rules a Linux server would apply, logging
   path-casing mismatches and unloading mods whose `ModInfo.xml` casing is wrong — so a mod that would break on a Linux
   dedicated server breaks the same way locally.
@@ -53,11 +57,19 @@ patch site — the last one was converted to categorized attribute patches (#44)
 * All other deployments:
   * Deploy to host (in single-player this is your game)
   * EAC must be disabled
-* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, case-sensitivity checks,
-  dependency validation) is toggled in code and all are on by default, except the case-sensitivity checks which only
-  activate on a case-insensitive filesystem
+* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, `<ensure>`,
+  case-sensitivity checks, dependency validation) is toggled in code and all are on by default, except the
+  case-sensitivity checks which only activate on a case-insensitive filesystem
 
 ## Changelog
+
+### 1.1.0
+
+* Added the `<ensure>` XML-patch command — idempotent add-or-merge of a child element across every node an XPath
+  matches, retiring the paired `setattribute`+`append` idiom and the spurious `did not apply` warning it always
+  produced. See [`Docs/ensure.md`](Docs/ensure.md) for the spec and `.ai/xml-patch-ensure-spec.md` for the design.
+* Ensuring an *attribute* still belongs to vanilla `setattribute`, which already adds one that is absent; `<ensure>`
+  detects a block aimed at attributes and names the `setattribute` to write instead
 
 ### 1.0.0
 

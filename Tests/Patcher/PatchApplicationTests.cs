@@ -14,8 +14,9 @@ namespace Tests.Patcher;
 ///   with a reason</b>, so "this mod warns" is a decision on record rather than noise someone learns to
 ///   ignore.
 ///   The declarations are checked in both directions: an undeclared patch that warns fails, and a declared one
-///   that has gone quiet fails too. The second half is what keeps the list from rotting — when #60 lands and
-///   the ensure-idiom warnings disappear, these tests will say so.
+///   that has gone quiet fails too. The second half is what keeps the list from rotting, and it has already paid
+///   for itself once — the two StrongholdTweaks entries here were retired by #60, and this suite is what would
+///   have failed had the conversion been forgotten.
 /// </summary>
 [Collection(PatcherHostCollection.Name)]
 public class PatchApplicationTests {
@@ -31,11 +32,6 @@ public class PatchApplicationTests {
     ["ProjectZFixes/items"] = "targets Project Z's content, absent from vanilla",
     ["ProjectZFixes/item_modifiers"] = "targets Project Z's content, absent from vanilla",
     ["ProjectZFixes/recipes"] = "targets Project Z's content, absent from vanilla",
-
-    // The paired setattribute+append idiom: exactly one command matches by design and the other reports
-    // "did not apply". Goes away when <ensure> lands (#60).
-    ["StrongholdTweaks/blocks"] = "paired setattribute+append for AllowedRotations; one always misses (#60)",
-    ["StrongholdTweaks/items"] = "paired setattribute+append for AltItemTypeIconColor; one always misses (#60)",
 
     // A documented foreach skip, working exactly as foreach.md says it should.
     ["AutoCollectLoot/items"] = "vanilla twitch_crate_template has no Mesh property, so that iteration skips",

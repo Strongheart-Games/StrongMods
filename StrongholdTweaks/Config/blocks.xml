@@ -5,10 +5,9 @@
 
   <!-- Workstations and Campfires allow all rotations -->
   <remove xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']]/property[@name='OnlySimpleRotations']" />
-  <setattribute xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']]/property[@name='AllowedRotations']" name="value">All</setattribute>
-  <append xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']][not(property[@name='AllowedRotations'])]">
+  <ensure xpath="/blocks/block[property[@name='Class'][@value='Workstation' or @value='Campfire']]">
     <property name="AllowedRotations" value="All" />
-  </append>
+  </ensure>
 
   <!-- StrongStones -->
   <append xpath="/blocks">
