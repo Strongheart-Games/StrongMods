@@ -48,9 +48,16 @@ public sealed class PatchPipeline {
   /// <summary>Entry points this unit ships no document for — legal, XmlLoadInfo has an ignore-missing flag.</summary>
   public IReadOnlyList<string> AbsentFromUnit { get; }
 
-  public static PatchPipeline Run(PatcherHost host) {
+  /// <summary>
+  ///   Replays the pipeline against the host's tree. With a label, only the projects DECLARING that version
+  ///   run — a mod pinned away from a game version is not installed on it, so its patches must not apply in
+  ///   that version's replay (#23 phase 6b). A null label (the -p:SdtdDir escape hatch) runs every project,
+  ///   as before the version axis existed.
+  /// </summary>
+  public static PatchPipeline Run(PatcherHost host, string label = null) {
     var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
-    IReadOnlyList<string> entryPoints = Fixtures.EntryPoints.Read(AssemblyMetadata.Get("SdtdManagedDir"));
+    IReadOnlyList<string> entryPoints = Fixtures.EntryPoints.Read(host.Tree.ManagedDir);
+    GameVersionDeclarations declarations = label == null ? null : GameVersionDeclarations.Load(repoRoot);
 
     host.Cache.Clear();
     try {
@@ -75,6 +82,13 @@ public sealed class PatchPipeline {
         var configDir = Path.Combine(modDir, "Config");
         if (!Directory.Exists(configDir) || mod == "Tests") {
           continue;
+        }
+
+        if (declarations != null) {
+          var csproj = Path.Combine(modDir, mod + ".csproj");
+          if (File.Exists(csproj) && !declarations.For(csproj).Test.Contains(label)) {
+            continue; // pinned away from this version — not installed there, so its patches never run there
+          }
         }
 
         var opened = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

@@ -229,6 +229,36 @@ the naming rule before birth). Implementation facts worth keeping:
 Changed: 8 files + 3 new (~330 lines against the ~230 estimate; the overage is doc comments and the
 `LoadedLabel` cache shape). CI needs no change — proven by the same commands CI runs.
 
+## 4d. Phase 6b results (2026-08-03)
+
+Three files: `PatcherHost` gains a `GameTree` and `ForLabel()` (its `Instance` stays the default-tree host
+for the engine-conformance tests, per §3c); `PatchPipeline.Run(host, label)` reads the host's tree and, per
+label, replays **only the projects declaring that version** — a mod pinned away from a game version is not
+installed there, so its patches must not apply in that version's replay; `PatchApplicationTests` became
+label theories with per-label pipelines. A subtlety the expansion forced: the stale-declaration check
+(`Declared_exceptions_are_still_needed`) judges a declaration only at labels whose replay INCLUDED the mod
+(`ModReplayed`) — a pinned-away mod's declaration is judged where the mod runs, never where it doesn't.
+
+**The R3 finding is the measured absence of divergence**: every mod's `Config\` applies against `V3.0.1-b4`
+vanilla with outcomes identical to `V3.1.0-b14` — all nine `ExpectedToLog` exceptions hold on both, no new
+warnings. The shared expectations table therefore needs no per-label variance mechanism; deferred until a
+real divergence demands it.
+
+| Check | Result |
+| --- | --- |
+| Suite | 210/210 (was 206): the four application tests × 2 labels — deterministic |
+| Wall-clock | ~5.6 s — three stub hosts + two engine hosts in one process; laziness holds (R1 stays cheap). Accepted inefficiency, noted: `ForLabel(default label)` builds a host over the same tree `Instance` wraps — aliasing deferred until cost says otherwise |
+| Pin break (AutoCollectLoot → `V3.1.0-b14` only) | Its patches vanish from the `V3.0.1-b4` replay; its `ExpectedToLog` entry not falsely flagged stale there; still enforced at `V3.1.0-b14`. 8/8 green |
+| `ModReplayed` guard disabled | `Declared_exceptions` **fails** with exactly the false-positive the guard prevents (`AutoCollectLoot/items` "stale" at the label it disclaims); reverted |
+| Missing tree, layered | Empty packages root → caught UPSTREAM by phase 2's build-time `Mod.targets` error (the dev tree can't compile); test-only tree hidden → `PatcherHost`'s ctor guard fires with the restore message. Both layers demonstrated live |
+| `-p:SdtdUnit=dedicated-server` | 210/210 |
+| Escape hatch (`-p:SdtdDir=<live install>`) | 143/143 — application theories collapse to the pseudo-label, pipeline unfiltered, as before the axis existed |
+| Full solution suite | 210/210; reverts clean |
+
+~120 changed lines against the ~110 estimate. With 6b, **#23 phase 6 is complete**: every mod's patch
+targets AND patch applications are asserted against every version it declares, on both units, locally and in
+CI, with the escape hatch preserved.
+
 ## 5. Verification
 
 - 6-0 verifies as a rename must: the whole suite green at exactly 142/142, zero assertion changes, the diff

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,7 +36,17 @@ public sealed class PatcherHost {
   /// <summary>The mod name &lt;function&gt; references resolve against; see Tests\FunctionMod.</summary>
   public const string FixtureModName = "Tests.FunctionMod";
 
-  public static readonly Lazy<PatcherHost> Instance = new(() => new PatcherHost());
+  /// <summary>The default tree's host — what $(SdtdDir) resolved to. The engine-conformance tests (Foreach\*,
+  ///   PatcherCacheTests) run here: they exercise StrongMods' semantics against synthetic XML, not per-mod
+  ///   compatibility, so one tree suffices (.ai/testing-declared-versions.md §3c).</summary>
+  public static readonly Lazy<PatcherHost> Instance = new(() => new PatcherHost(GameTree.Default()));
+
+  private static readonly ConcurrentDictionary<string, Lazy<PatcherHost>> ByLabel = new();
+
+  /// <summary>One host per declared version label (#23 phase 6b), lazily — the patch-application tests
+  ///   assert each mod's Config against every vanilla it declares support for.</summary>
+  public static PatcherHost ForLabel(string label) => ByLabel.GetOrAdd(label,
+    l => new Lazy<PatcherHost>(() => new PatcherHost(GameTree.ForLabel(l)))).Value;
 
   private readonly List<LogEntry> captured = new();
   private readonly object fixtureMod;
@@ -44,11 +55,20 @@ public sealed class PatcherHost {
   private readonly MethodInfo singlePatch;
   private readonly MethodInfo patchXmlMethod;
 
-  private PatcherHost() {
+  private PatcherHost(GameTree tree) {
+    if (!Directory.Exists(tree.ManagedDir)) {
+      throw new DirectoryNotFoundException(
+        $"The game tree for {tree.Label} is missing at '{tree.Root}'. Every declared version must be present " +
+        "to test against — unverifiable must not decay into unverified. Restore the declared versions:  " +
+        "dotnet restore build/GameAssemblies.csproj --packages packages --configfile " +
+        "build/GameAssemblies.nuget.config");
+    }
+
+    Tree = tree;
     // StrongMods needs 0Harmony resolvable in the default context; the resolver installs once, explicitly
     // (it used to ride on a static-ctor side effect of "touching GameTree first").
     GameEngineHost.EnsureHarmonyResolver();
-    var managedDir = AssemblyMetadata.Get("SdtdManagedDir");
+    var managedDir = tree.ManagedDir;
     var stubDir = AssemblyMetadata.Get("UnityStubDir");
     var strongModsDir = Path.Combine(AssemblyMetadata.Get("RepoRoot"), "StrongMods", "bin",
       AssemblyMetadata.Get("Configuration"));
@@ -75,12 +95,15 @@ public sealed class PatcherHost {
     Cache = new PatcherCache(strongMods.GetType("StrongMods.BreadthFirstXmlPatcher")!, xmlFileType, xmlDocField);
   }
 
+  /// <summary>The game tree this host loaded — which version, which unit, where.</summary>
+  public GameTree Tree { get; }
+
   /// <summary>
-  ///   The unit's own <c>Data\Config</c> — the vanilla XML and Localization.csv that mod patches are applied
+  ///   The tree's own <c>Data\Config</c> — the vanilla XML and Localization.csv that mod patches are applied
   ///   on top of. Carried by vendored trees and the CI packages since #59, so this resolves wherever the
   ///   suite runs.
   /// </summary>
-  public string VanillaConfigDir { get; } = AssemblyMetadata.Get("SdtdConfigDir");
+  public string VanillaConfigDir => Tree.ConfigDir;
 
   /// <summary>Builds one of the game's XmlFile objects from a string, in the host's own type identity.</summary>
   public object CreateXmlFile(string xml, string filename) => NewXmlFile(xml, filename);
