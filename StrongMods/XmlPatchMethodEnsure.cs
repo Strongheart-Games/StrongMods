@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -30,6 +31,15 @@ namespace StrongMods {
     private const string AppendPosition = "append";
     private const string PrependPosition = "prepend";
 
+    /// <summary>
+    ///   Splits a trailing <c>/@name</c> step off an xpath, so a block aimed at an attribute can be answered with
+    ///   the exact <c>setattribute</c> that does what it meant. Diagnostics only: it recognizes the plain form and
+    ///   nothing else, which is fine because a miss costs a less specific hint and never changes behavior. Using a
+    ///   heuristic to decide what a patch *does* would not be.
+    /// </summary>
+    private static readonly Regex s_trailingAttributeStep =
+      new(@"^(?<element>.+)/@(?<name>[A-Za-z_][A-Za-z0-9_.\-]*)$", RegexOptions.Compiled);
+
     public static int Ensure(
       XmlFile targetFile,
       string xpath,
@@ -55,7 +65,12 @@ namespace StrongMods {
       }
 
       if (templates.Count == 0) {
-        Log.Error($"{context}: ensure has no template children, so there is nothing to ensure.");
+        // A block with text and no children is the shape an author writes when they wanted an attribute.
+        var declared = patchSourceElement.Value.Trim();
+        var alternative = declared.Length == 0
+          ? string.Empty
+          : DescribeAttributeAlternative(xpath, null, declared);
+        Log.Error($"{context}: ensure has no template children, so there is nothing to ensure.{alternative}");
         return 0;
       }
 
@@ -67,19 +82,63 @@ namespace StrongMods {
       var matches = new List<XObject>(matchList);
       targetFile.ClearXpathResults();
 
+      // Non-element matches are a mistake about the whole block, not about one node, so they are reported once
+      // however many nodes the xpath happened to select.
       var applied = 0;
+      var attributes = new List<XAttribute>();
+      var others = new List<XObject>();
       foreach (XObject match in matches) {
-        if (match is not XElement parent) {
-          Log.Warning($"{context}: xpath matched {DescribeMatch(match)}, which is not an element and so cannot " +
-                      "hold children; skipped.");
-          continue;
+        switch (match) {
+          case XElement parent:
+            EnsureChildren(context, parent, templates, prepend);
+            applied++;
+            break;
+          case XAttribute attribute:
+            attributes.Add(attribute);
+            break;
+          default:
+            others.Add(match);
+            break;
         }
+      }
 
-        EnsureChildren(context, parent, templates, prepend);
-        applied++;
+      if (attributes.Count > 0) {
+        var alternative = DescribeAttributeAlternative(xpath, attributes[0].Name.LocalName, null);
+        Log.Warning($"{context}: xpath selected {attributes.Count} attribute node(s) rather than elements, and " +
+                    $"ensure adds child elements to the nodes it matches.{alternative}");
+      }
+
+      if (others.Count > 0) {
+        Log.Warning($"{context}: xpath selected {others.Count} node(s) that cannot hold children " +
+                    $"(first: {DescribeMatch(others[0])}); skipped.");
       }
 
       return applied;
+    }
+
+    /// <summary>
+    ///   The <c>setattribute</c> rewrite for a block that was aiming at an attribute — the mistake authors make
+    ///   because attribute-targeting xpaths are idiomatic elsewhere in the patcher (vanilla <c>csv</c> requires
+    ///   one). Vanilla <c>setattribute</c> already adds the attribute when it is absent, which is the whole
+    ///   contract ensure would offer, so the answer is to name it rather than to grow a second spelling of it.
+    ///   Returns empty when the block looks like nothing of the sort.
+    /// </summary>
+    /// <param name="attributeName">
+    ///   The attribute when it is known for certain — the xpath actually matched one. Null falls back to the
+    ///   trailing step of the xpath, and no hint at all when that does not look like an attribute either.
+    /// </param>
+    /// <param name="value">The value the block declared, when it declared one; a placeholder otherwise.</param>
+    private static string DescribeAttributeAlternative(string xpath, string attributeName, string value) {
+      Match trailing = s_trailingAttributeStep.Match(xpath ?? string.Empty);
+      var name = attributeName ?? (trailing.Success ? trailing.Groups["name"].Value : null);
+      if (name == null) {
+        return string.Empty;
+      }
+
+      var elementXpath = trailing.Success ? trailing.Groups["element"].Value : "...";
+      return $" To set the {name} attribute, use vanilla setattribute — it already adds an attribute that is " +
+             $"absent: <setattribute xpath=\"{elementXpath}\" name=\"{name}\">" +
+             $"{(string.IsNullOrEmpty(value) ? "value" : value)}</setattribute>";
     }
 
     /// <summary>

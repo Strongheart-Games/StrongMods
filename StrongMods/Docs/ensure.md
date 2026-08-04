@@ -142,6 +142,36 @@ A template with text and no child elements sets the element's text:
 Surrounding whitespace is trimmed, and only a template with **no child elements** can carry text — the whitespace
 between nested children is formatting, not content, and is never mistaken for it.
 
+## Ensuring an attribute
+
+`<ensure>` ensures child *elements*. For an attribute you don't need it — vanilla `setattribute` already does the
+whole job:
+
+```xml
+<setattribute xpath="/items/item[starts-with(@name, 'boss')]" name="extends">masterBoss</setattribute>
+```
+
+It **creates the attribute when it is absent** and overwrites it when present, on every matched element, and warns
+only when the xpath matched nothing. That is exactly what `<ensure>` would offer, so there is no `<ensure>` spelling
+of it.
+
+The form that looks like it ought to work does not, and it is worth knowing why:
+
+```xml
+<!-- does NOT do what it looks like -->
+<ensure xpath="/items/item[starts-with(@name, 'boss')]/@extends">masterBoss</ensure>
+```
+
+XPath selects nodes that *exist*. An attribute-targeting xpath returns only the items that **already have**
+`@extends`, so the items you were trying to fix are invisible to it — the add-if-missing half is unreachable by
+construction, not by omission. `<ensure>` recognizes both spellings of this mistake and tells you the
+`setattribute` to write instead.
+
+(Attribute-targeting xpaths are perfectly normal elsewhere — vanilla `csv` requires one. They suit commands that
+only ever modify what is already there, which is precisely why they don't suit this one.)
+
+Setting several attributes on the same element is one `setattribute` each.
+
 ## Order matters, and so does `position`
 
 Among duplicate siblings in 7 Days to Die config, **the last one wins**. So:
@@ -169,9 +199,10 @@ parent, so there is no point applying half of them.
 |-------------------------------------------------------------------|----------------------------------------------------------------|
 | `xpath` matched at least one parent                              | Applied; no warning                                            |
 | `xpath` matched nothing                                          | The ordinary vanilla `did not apply` warning — a real one      |
-| `xpath` matched something that isn't an element                  | Warning, that match skipped                                    |
+| `xpath` selected attributes rather than elements                 | One warning for the block, naming the `setattribute` to write instead |
+| `xpath` selected some other non-element node                     | One warning for the block; those matches skipped               |
 | A parent holds 2+ children matching the key                      | Warning naming the parent and key; that parent left alone      |
-| `<ensure>` has no template children                              | Error                                                          |
+| `<ensure>` has no template children                              | Error — and if the block declared a value, it names `setattribute` too |
 | A template has no `name`/`class` and no `ensure-key`             | Error                                                          |
 | `ensure-key` is empty, or names an attribute the template lacks  | Error                                                          |
 | `position` is neither `append` nor `prepend`                     | Error                                                          |
