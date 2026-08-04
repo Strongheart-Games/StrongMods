@@ -27,9 +27,9 @@ public sealed record PatchOutcome(bool Applied, string Xml, IReadOnlyList<LogEnt
 ///   is what makes game code that logs runnable outside the game: the real CoreModule's engine-internal
 ///   callback registration throws in LogLibrary's Log initializer, poisoning the type, and everything that
 ///   logs — the whole XML patcher — dies with it (#43 plan §2).
-///   Deliberately a separate host from <see cref="GameTree" /> (the real-engine host): the smoke tests keep
-///   the REAL CoreModule so patch targets whose signatures use Unity types still resolve. Nothing crosses
-///   between them.
+///   Deliberately a separate host from <see cref="GameEngineHost" /> (the real-engine host): the smoke tests
+///   keep the REAL CoreModule so patch targets whose signatures use Unity types still resolve. Nothing
+///   crosses between them.
 /// </summary>
 public sealed class PatcherHost {
   /// <summary>The mod name &lt;function&gt; references resolve against; see Tests\FunctionMod.</summary>
@@ -45,12 +45,14 @@ public sealed class PatcherHost {
   private readonly MethodInfo patchXmlMethod;
 
   private PatcherHost() {
-    // Touching GameTree first installs its default-context hook for 0Harmony, which StrongMods needs.
-    var managedDir = GameTree.Metadata("SdtdManagedDir");
-    var stubDir = GameTree.Metadata("UnityStubDir");
-    var strongModsDir = Path.Combine(GameTree.Metadata("RepoRoot"), "StrongMods", "bin",
-      GameTree.Metadata("Configuration"));
-    var functionModDir = GameTree.Metadata("FunctionModDir");
+    // StrongMods needs 0Harmony resolvable in the default context; the resolver installs once, explicitly
+    // (it used to ride on a static-ctor side effect of "touching GameTree first").
+    GameEngineHost.EnsureHarmonyResolver();
+    var managedDir = AssemblyMetadata.Get("SdtdManagedDir");
+    var stubDir = AssemblyMetadata.Get("UnityStubDir");
+    var strongModsDir = Path.Combine(AssemblyMetadata.Get("RepoRoot"), "StrongMods", "bin",
+      AssemblyMetadata.Get("Configuration"));
+    var functionModDir = AssemblyMetadata.Get("FunctionModDir");
     var context = new StubbedUnitContext(stubDir, new[] { managedDir, strongModsDir, functionModDir });
 
     Assembly acs = context.LoadFromAssemblyPath(Path.Combine(managedDir, "Assembly-CSharp.dll"));
@@ -78,7 +80,7 @@ public sealed class PatcherHost {
   ///   on top of. Carried by vendored trees and the CI packages since #59, so this resolves wherever the
   ///   suite runs.
   /// </summary>
-  public string VanillaConfigDir { get; } = GameTree.Metadata("SdtdConfigDir");
+  public string VanillaConfigDir { get; } = AssemblyMetadata.Get("SdtdConfigDir");
 
   /// <summary>Builds one of the game's XmlFile objects from a string, in the host's own type identity.</summary>
   public object CreateXmlFile(string xml, string filename) => NewXmlFile(xml, filename);

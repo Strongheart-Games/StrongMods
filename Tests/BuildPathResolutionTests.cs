@@ -237,7 +237,7 @@ public class BuildPathResolutionTests {
   ///   directory could not tell the two resolution bases apart.
   /// </summary>
   private sealed class Workspace : IDisposable {
-    internal static readonly string RepoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    internal static readonly string RepoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     private static readonly string BuildDir = Path.Combine(RepoRoot, "build");
 
     private readonly string root = Directory.CreateTempSubdirectory("StrongMods-paths-").FullName;

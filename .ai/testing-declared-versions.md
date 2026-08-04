@@ -195,6 +195,40 @@ leg already restores the registry and passes `SdtdPackagesDir`/`SdtdUnit` to the
 | Suite | **exactly 142/142** — the phase's bar: zero assertion changes |
 | Diff | spot-checked token-mechanical; sed normalized the 12 touched files' line endings to the repo-standard LF (`.editorconfig`), hence git's benign autocrlf warnings |
 
+## 4c. Phase 6a results (2026-08-03)
+
+The split and the axis, as planned — with the settled names (`GameTree` record, `GameEngineHost`,
+`AssemblyMetadata`, `SmokeTestCtx`, `GameVersionDeclarations` — the plan's "DeclarationReader", renamed under
+the naming rule before birth). Implementation facts worth keeping:
+
+- **Evaluation-time item metadata cannot use the bare update form** (`<Item><Meta>` outside a target is
+  MSB4232); the registry-row metadata went inline on the `Include` element, where `%(Identity)` references
+  resolve per created item — the ubiquitous `%(Filename)` mechanism. Verified by `-getItem`: both rows baked
+  as `SdtdTree:<label>` → resolved roots, plus `SdtdUnit`/`SdtdUnitDataDir`/`SdtdTreeIsDeclared`.
+- **The escape hatch is a baked verdict, not a runtime probe**: `SdtdTreeIsDeclared` compares `$(SdtdDir)`
+  to `$(_SdtdDeclaredTree)` in MSBuild; false → the suite runs every mod against that one tree under the
+  `"SdtdDir override"` pseudo-label.
+- **The Harmony resolver became an explicit call** (`GameEngineHost.EnsureHarmonyResolver()`, called by both
+  hosts) — it used to ride on a static-ctor side effect of "touching GameTree first", an implicit ordering
+  dependency the split would have silently broken.
+- The missing-tree failure demonstrated itself unprompted: this machine's `packages/` held only `3.1.0.14`
+  (phase 4's full-registry restore went to scratch), so the first run failed 4 tests with the
+  restore-command message — the design's onboarding moment, working. One local-source restore fixed it.
+
+| Check | Result |
+| --- | --- |
+| Suite | 142 → **206/206**: 63 patch-class cases × 2 labels + the new `Every_mod_is_tested_against_at_least_one_tree` fact — deterministic |
+| Wall-clock (R1) | ~4 s → ~5.5 s for the second `GameEngineHost`; per-label laziness holds; 6b may proceed |
+| Missing tree | 4 failures with the teaching message, live (see above); green after restore |
+| Pin break (DisableLAN → `V3.0.1-b4` only) | Its `V3.1.0-b14` case **vanished**, its `V3.0.1-b4` case remains, 205/205 green — both directions of the filter |
+| Escape hatch (`-p:SdtdDir=<live install>`) | Single-tree mode: 143/143 (63 cases × 1 pseudo-label + facts) |
+| `-p:SdtdUnit=dedicated-server` | 206/206 — the axis × the unit, both server trees |
+| Full solution suite, default | 206/206 |
+| Reverts | `git status` shows only the intended 6a files |
+
+Changed: 8 files + 3 new (~330 lines against the ~230 estimate; the overage is doc comments and the
+`LoadedLabel` cache shape). CI needs no change — proven by the same commands CI runs.
+
 ## 5. Verification
 
 - 6-0 verifies as a rename must: the whole suite green at exactly 142/142, zero assertion changes, the diff

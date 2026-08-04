@@ -66,7 +66,36 @@
     <ProjectReference Include="FunctionMod\FunctionMod.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- The version axis needs runtime knowledge the build already has (#23 phase 6a). Package trees carry
+         their unit's data-dir name by construction (vendor.cs mirrors the install), so no Exists() probing —
+         a pure name mapping keeps MSBuild the only path-resolution authority. -->
+    <_SdtdUnitDataDir Condition="'$(SdtdUnit)' == 'game'">7DaysToDie_Data</_SdtdUnitDataDir>
+    <_SdtdUnitDataDir Condition="'$(SdtdUnit)' == 'dedicated-server'">7DaysToDieServer_Data</_SdtdUnitDataDir>
+    <!-- False exactly when an explicit -p:SdtdDir override redirected the build — the escape hatch. The
+         suite then runs everything against that one tree instead of the declared-label axis. -->
+    <_SdtdTreeIsDeclared>false</_SdtdTreeIsDeclared>
+    <_SdtdTreeIsDeclared Condition="'$(SdtdDir)' == '$(_SdtdDeclaredTree)'">true</_SdtdTreeIsDeclared>
+  </PropertyGroup>
+
   <ItemGroup>
+    <!-- One row per registry entry ("label=version"), resolved to a tree root for THIS build's unit and
+         source — the same shape build\GamePaths.props resolves for the default tree. Baked below as
+         SdtdTree:<label> so tests locate every declared version's tree without recomputing any path. -->
+    <_SdtdRegistryRow Include="$(SdtdGameVersionMap)">
+      <Label>$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', '=.*$', ''))</Label>
+      <TreeRoot Condition="'$(SdtdTreeSource)' == 'packages'">$(SdtdPackagesDir)\$(_SdtdUnitPackageId)\$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', '^.*=', ''))</TreeRoot>
+      <TreeRoot Condition="'$(SdtdTreeSource)' == 'vendor'">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\vendor'))\$(SdtdUnit)\$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', '=.*$', ''))</TreeRoot>
+    </_SdtdRegistryRow>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="@(_SdtdRegistryRow->'SdtdTree:%(Label)')">
+      <Value>%(TreeRoot)</Value>
+    </AssemblyMetadata>
+    <AssemblyMetadata Include="SdtdUnit" Value="$(SdtdUnit)" />
+    <AssemblyMetadata Include="SdtdUnitDataDir" Value="$(_SdtdUnitDataDir)" />
+    <AssemblyMetadata Include="SdtdTreeIsDeclared" Value="$(_SdtdTreeIsDeclared)" />
     <AssemblyMetadata Include="SdtdManagedDir" Value="$(SdtdManagedDir)" />
     <AssemblyMetadata Include="SdtdConfigDir" Value="$(SdtdConfigDir)" />
     <AssemblyMetadata Include="UnityStubDir" Value="$(MSBuildProjectDirectory)\Stubs\bin\$(Configuration)" />

@@ -20,8 +20,8 @@ public class ProjectConventionTests {
     // be built first, and nothing in the build graph says it must be. It passes on any machine where the
     // sibling was ever built, then fails on a clean checkout — exactly what #51 found in Tests\FunctionMod.
     // A ProjectReference (even ReferenceOutputAssembly=false, which orders without referencing) is the fix.
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
-    var configuration = GameTree.Metadata("Configuration");
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
+    var configuration = AssemblyMetadata.Get("Configuration");
     List<string> projects = Directory.EnumerateFiles(repoRoot, "*.csproj", SearchOption.AllDirectories)
       .Where(IsSourceProject).Select(Path.GetFullPath).ToList();
     // Longest first: Tests\FunctionMod must win over Tests for a path inside it.
@@ -106,7 +106,7 @@ public class ProjectConventionTests {
     // Prose alone measurably rots here (#52's comment asserted the opposite of the truth for its whole life),
     // so the rule is executable. Comments and the XML declaration are not elements, so the templates'
     // <!--#if (IsTemplate)--> blocks are invisible to these position checks and need no exemption.
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     var offenders = new List<string>();
 
     foreach (var project in SourceProjects(repoRoot)) {
@@ -173,7 +173,7 @@ public class ProjectConventionTests {
     // The exemptions are asserted rather than skipped. A project matching no shape is invisible to the order
     // test above, so if the roster were implicit a new one would go silently unchecked — the failure mode this
     // whole pair exists to prevent.
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     List<string> unclassified = SourceProjects(repoRoot)
       .Where(project => !Elements(XDocument.Load(project), "Import").Select(SharedBuildFile)
         .Any(file => file != null && EntryPointShapes.ContainsKey(file)))
@@ -208,7 +208,7 @@ public class ProjectConventionTests {
     //   * Literalness: a $() reference in a leading block would read shared properties BEFORE the props
     //     import defines them — the class that once evaluated $(ModsDir)\Hades to \Hades and deployed into
     //     C:\Hades. A literal cannot do that.
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     var offenders = new List<string>();
 
     foreach (var project in SourceProjects(repoRoot)) {
@@ -247,12 +247,12 @@ public class ProjectConventionTests {
     // agree in BOTH directions, each mod must test what it compiles against, and every registry row must
     // match an independent recomputation of pack.cs's FourPart label mapping — the same
     // two-independent-computations pattern pack.cs itself uses against vendor.cs's nuspec stub.
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     XDocument versions = XDocument.Load(Path.Combine(repoRoot, "build", "GameVersions.props"));
     var offenders = new List<string>();
 
     var map = new Dictionary<string, string>();
-    foreach (var pair in SplitList(Declared(versions, "SdtdGameVersionMap"))) {
+    foreach (var pair in GameVersionDeclarations.SplitList(Declared(versions, "SdtdGameVersionMap"))) {
       string[] parts = pair.Split('=');
       if (parts.Length != 2 || FourPart(parts[0]) == null) {
         offenders.Add($"SdtdGameVersionMap entry '{pair}' is not a 'V<major>.<minor>[.<patch>]-b<build>=" +
@@ -268,19 +268,19 @@ public class ProjectConventionTests {
       }
     }
 
-    var defaultDev = Declared(versions, "SdtdDevVersion");
-    List<string> defaultTest = SplitList(Declared(versions, "SdtdTestVersions"));
-    var declared = new Dictionary<string, string> { [defaultDev] = "the repo default (build\\GameVersions.props)" };
-    foreach (var label in defaultTest) {
+    // Effective declarations come from the same reader ModInventory consumes (GameVersionDeclarations), so
+    // what this test validates is exactly what the suite runs — the two cannot drift.
+    GameVersionDeclarations declarations = GameVersionDeclarations.Load(repoRoot);
+    var declared = new Dictionary<string, string> {
+      [declarations.DefaultDevVersion] = "the repo default (build\\GameVersions.props)"
+    };
+    foreach (var label in declarations.DefaultTestVersions) {
       declared.TryAdd(label, "the repo default (build\\GameVersions.props)");
     }
 
     foreach (var project in SourceProjects(repoRoot)) {
-      XDocument document = XDocument.Load(project);
       var name = Relative(repoRoot, project);
-      var dev = Elements(document, "SdtdDevVersion").FirstOrDefault()?.Value.Trim() ?? defaultDev;
-      List<string> test = Elements(document, "SdtdTestVersions").FirstOrDefault() is { } declaredTest
-        ? SplitList(declaredTest.Value) : defaultTest;
+      (var dev, IReadOnlyList<string> test) = declarations.For(project);
       declared.TryAdd(dev, name);
       foreach (var label in test) {
         declared.TryAdd(label, name);
@@ -312,10 +312,6 @@ public class ProjectConventionTests {
   /// <summary>The one element of this name in GameVersions.props (the _...AtResolve capture is named apart).</summary>
   private static string Declared(XDocument versions, string name) =>
     versions.Descendants().First(e => e.Name.LocalName == name).Value;
-
-  /// <summary>Semicolon-list split with MSBuild's item semantics: entries trimmed, empties dropped.</summary>
-  private static List<string> SplitList(string value) =>
-    value.Split(';').Select(entry => entry.Trim()).Where(entry => entry.Length > 0).ToList();
 
   /// <summary>pack.cs's label mapping, recomputed independently: null when the label is not label-shaped.</summary>
   private static string FourPart(string label) {

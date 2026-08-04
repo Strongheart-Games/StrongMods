@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -7,8 +7,9 @@ namespace Tests;
 /// <summary>
 ///   The code mods under test, derived from the repo rather than hardcoded (plan D5): every top-level
 ///   directory whose csproj imports build\Mod.props, except the Template* scaffolds (not shippable mods;
-///   CLAUDE.md carves them out of "one directory = one mod"). A code mod whose DLL is missing is a hard
-///   failure, not a silent coverage shrink.
+///   CLAUDE.md carves them out of "one directory = one mod"). Each mod carries its effective declaration
+///   (#23) — the versions its tests assert against. A code mod whose DLL is missing is a hard failure, not a
+///   silent coverage shrink.
 /// </summary>
 public sealed class ModInventory {
   private ModInventory(List<CodeMod> mods, List<string> missing) {
@@ -20,8 +21,9 @@ public sealed class ModInventory {
   public IReadOnlyList<string> MissingDlls { get; }
 
   public static ModInventory Scan() {
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
-    var configuration = GameTree.Metadata("Configuration");
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
+    var configuration = AssemblyMetadata.Get("Configuration");
+    GameVersionDeclarations declarations = GameVersionDeclarations.Load(repoRoot);
     var mods = new List<CodeMod>();
     var missing = new List<string>();
 
@@ -40,7 +42,8 @@ public sealed class ModInventory {
         continue;
       }
 
-      mods.Add(new CodeMod { Name = name, Dir = dir, DllPath = dllPath });
+      (var dev, IReadOnlyList<string> test) = declarations.For(csproj);
+      mods.Add(new CodeMod { Name = name, Dir = dir, DllPath = dllPath, DevVersion = dev, TestVersions = test });
     }
 
     return new ModInventory(mods, missing);
@@ -58,5 +61,7 @@ public sealed class ModInventory {
     public string Dir;
     public string DllPath;
     public string Name;
+    public string DevVersion;
+    public IReadOnlyList<string> TestVersions;
   }
 }

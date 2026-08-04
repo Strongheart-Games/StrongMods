@@ -49,8 +49,8 @@ public sealed class PatchPipeline {
   public IReadOnlyList<string> AbsentFromUnit { get; }
 
   public static PatchPipeline Run(PatcherHost host) {
-    var repoRoot = Path.GetFullPath(GameTree.Metadata("RepoRoot"));
-    IReadOnlyList<string> entryPoints = Fixtures.EntryPoints.Read(GameTree.Metadata("SdtdManagedDir"));
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
+    IReadOnlyList<string> entryPoints = Fixtures.EntryPoints.Read(AssemblyMetadata.Get("SdtdManagedDir"));
 
     host.Cache.Clear();
     try {

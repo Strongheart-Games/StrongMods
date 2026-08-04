@@ -1,71 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
 using System.Text.Json;
 
 namespace Tests;
 
 /// <summary>
-///   The unit under test: the game tree $(SdtdDir) resolved to at build time, with its assemblies (and the
-///   mod DLLs) loaded into an isolated AssemblyLoadContext. 0Harmony is deliberately deferred to the default
-///   context — the copy deployed beside the test assembly — so [HarmonyPatch] attribute instances read from
-///   mod assemblies share type identity with the HarmonyLib types this project compiles against.
+///   The identity of one on-disk game tree — which version, which unit, where — carried by every failure
+///   message. A record, not a host: it holds a label and paths and loads nothing (GameEngineHost and
+///   PatcherHost are the hosts that load universes FROM the tree this record names). Label shape:
+///   "V3.1.0-b14, game".
 /// </summary>
-public sealed class GameTree {
-  private readonly UnitLoadContext context;
-
-  // 0Harmony is compile-time referenced with Private=false (see Tests.csproj for why nothing may be copied
-  // from the game folder), so the default context must find it at runtime: hook fallback resolution to
-  // $(SdtdHarmonyDir) once. Fires only when normal probing misses — 0Harmony itself, and nothing else in
-  // practice: its MonoMod dependencies probe successfully to the modern-TFM package copies in the output dir
-  // (the game's net4x MonoMod builds cannot execute on modern .NET).
-  static GameTree() {
-    var harmonyDir = Metadata("SdtdHarmonyDir");
-    AssemblyLoadContext.Default.Resolving += (context, name) => {
-      var path = Path.Combine(harmonyDir, name.Name + ".dll");
-      return File.Exists(path) ? context.LoadFromAssemblyPath(path) : null;
-    };
+public sealed record GameTree(string Label, string Root, string ManagedDir, string ConfigDir) {
+  /// <summary>A registry tree: root baked by the build as SdtdTree:&lt;label&gt; for this build's unit and
+  ///   source, layout name baked as SdtdUnitDataDir — MSBuild stays the only path-resolution authority; this
+  ///   method only concatenates what it baked.</summary>
+  public static GameTree ForLabel(string label) {
+    var root = Path.GetFullPath(AssemblyMetadata.Get("SdtdTree:" + label));
+    return new GameTree($"{label}, {AssemblyMetadata.Get("SdtdUnit")}", root,
+      Path.Combine(root, AssemblyMetadata.Get("SdtdUnitDataDir"), "Managed"),
+      Path.Combine(root, "Data", "Config"));
   }
 
-  private GameTree(string managedDir, IReadOnlyList<string> modBinDirs) {
-    ManagedDir = managedDir;
-    Root = Path.GetFullPath(Path.Combine(managedDir, "..", ".."));
-    Label = DescribeVersion(managedDir);
-    context = new UnitLoadContext(managedDir, modBinDirs);
-    AssemblyCSharp = context.LoadFromAssemblyPath(Path.Combine(managedDir, "Assembly-CSharp.dll"));
-  }
-
-  public string ManagedDir { get; }
-  public string Root { get; }
-
-  /// <summary>Version identity carried by every failure message (plan D10), e.g. "V3.1.0-b14, game".</summary>
-  public string Label { get; }
-
-  public Assembly AssemblyCSharp { get; }
-
-  public static GameTree Load(IReadOnlyList<string> modBinDirs) {
-    var managedDir = Metadata("SdtdManagedDir");
-    if (!Directory.Exists(managedDir)) {
-      throw new DirectoryNotFoundException(
-        $"Unit under test not found: '{managedDir}' does not exist. The tests run against whatever " +
-        "$(SdtdDir) resolved to at build time — point it at a live install or a vendored tree, e.g. " +
-        "dotnet test -p:SdtdDir=vendor/game/V3.1.0-b14");
-    }
-
-    return new GameTree(managedDir, modBinDirs);
-  }
-
-  public Assembly LoadModAssembly(string dllPath) {
-    return context.LoadFromAssemblyPath(Path.GetFullPath(dllPath));
-  }
-
-  public static string Metadata(string key) {
-    return typeof(GameTree).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-      .First(a => a.Key == key).Value;
+  /// <summary>The build's default tree — what $(SdtdDir) resolved to. With an explicit -p:SdtdDir override
+  ///   this is the ONE tree the suite runs against (see SmokeTestCtx.TreeIsDeclared); its label is recovered
+  ///   from the tree's manifest, or from version info for a live install.</summary>
+  public static GameTree Default() {
+    var managedDir = AssemblyMetadata.Get("SdtdManagedDir");
+    var root = Path.GetFullPath(Path.Combine(managedDir, "..", ".."));
+    return new GameTree(DescribeVersion(managedDir), root, managedDir, Path.Combine(root, "Data", "Config"));
   }
 
   private static string DescribeVersion(string managedDir) {
@@ -88,35 +50,5 @@ public sealed class GameTree {
     return string.IsNullOrEmpty(version) || version.StartsWith("0.0.0")
       ? $"live install, {unit}"
       : $"{version}, {unit}";
-  }
-
-  private sealed class UnitLoadContext : AssemblyLoadContext {
-    private readonly List<string> searchDirs;
-
-    public UnitLoadContext(string managedDir, IReadOnlyList<string> modBinDirs) : base("unit-under-test") {
-      searchDirs = new List<string> { managedDir };
-      searchDirs.AddRange(modBinDirs);
-    }
-
-    protected override Assembly Load(AssemblyName name) {
-      // The default context first: framework assemblies must unify with the host runtime's (the game's
-      // Unity mscorlib must never load here), and 0Harmony must be the single copy deployed beside the
-      // test assembly so HarmonyLib type identity is shared. Only what the host cannot provide is loaded
-      // from the unit's own directories.
-      try {
-        return Default.LoadFromAssemblyName(name);
-      } catch (Exception) {
-        // not a framework or test-dependency assembly — resolve it from the unit under test
-      }
-
-      foreach (var dir in searchDirs) {
-        var path = Path.Combine(dir, name.Name + ".dll");
-        if (File.Exists(path)) {
-          return LoadFromAssemblyPath(path);
-        }
-      }
-
-      return null;
-    }
   }
 }
