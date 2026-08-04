@@ -1,8 +1,9 @@
 # Idempotent config patching — `<ensure>`
 
 **Version:** 1.0 (Draft 4)\
-**Status:** Proposed — design settled; testing strategy rebuilt around the Tests conformance harness (#43), then
-rescoped for the per-version test axis (#23/#37/#21, landed in `2b6d473`)\
+**Status:** **Implemented** — shipped in StrongMods 1.1.0 (#60). This is the design record: what was weighed, what
+was rejected, and why. `StrongMods/Docs/ensure.md` is the living specification; when the two disagree, the doc is
+right and this is history.\
 **Tracked by:** [#60](https://github.com/Strongheart-Games/StrongMods/issues/60)\
 **Applies to:** StrongMods XML patch extensions (alongside `<foreach>`)\
 **Audience:** Mod authors writing XPath config patches; StrongMods maintainers
@@ -188,6 +189,9 @@ load-bearing: whitespace between children is everywhere in these files and must 
   element, its position cannot change which value wins, so relocating a node the author never asked to move would be
   surprise for no benefit. An author who genuinely needs a node moved has `remove` plus `<ensure>`, or
   `insertBefore`/`insertAfter`.
+- **`position` applies at every level of a nested block**, not only the outermost. Settled while implementing: one
+  rule everywhere beats a rule that silently stops applying once you nest, and "supply a default others may beat"
+  means the same thing at any depth.
 
 Ordering is also why rule 4 warns rather than resolving the ambiguity by merging into the last match: for
 `<property>`, last-wins would make "merge the last one" defensible, but for `passive_effect` and `drop` — where the
@@ -370,6 +374,34 @@ gone quiet against every label fails — so forgetting it is itself a red test.
 
 One in-game sanity pass at landing is still warranted, for the single thing the host does not exercise: `ModApi`'s
 registration path running under the real game. Everything behavioral is the suite's job now.
+
+### 6.5 As built
+
+Landed across the four planned waves — `79224d9`, `81f8110`, `a20e9df`, `badb98d` — shipping
+`StrongMods/XmlPatchMethodEnsure.cs`, `Docs/ensure.md`, and 54 tests in seven files under `Tests/Ensure/`, one per
+doc section. StrongMods went to 1.1.0; StrongholdTweaks to 13.0.1, with its StrongMods dependency raised from `1.0`
+to `1.1` — the conversion made `<ensure>` a hard requirement, and a bare minimum of `1.0` would have let it load
+against a StrongMods that answers `Patch type (ensure) unknown`.
+
+Three semantics were settled at the keyboard rather than in this document, each because a test asked the question
+the design had not:
+
+- **Creating and merging must produce identical text**, or idempotency is only true on paper. A cloned template
+  keeps its authored whitespace while a merge sets trimmed text, so the clone normalizes its own leaf text.
+- **Merging text replaces text nodes individually**, never the element's whole value, which would take child
+  elements with it and break "ensure never removes".
+- **Prepending chains off the previously inserted sibling**, since prepending each new child in turn comes out
+  reversed.
+
+The `PatchApplicationTests` acceptance loop (§6.3) closed as designed: deleting the two declarations was forced by
+the suite, not remembered. Beyond it, a throwaway check applied the old idiom and the new `<ensure>` to real vanilla
+`items.xml` and `blocks.xml` and compared documents — byte-identical on both declared versions, so the conversion
+changed the log and nothing else. "No warnings" would not have proven that.
+
+Not converted: the `Stacknumber` pair in `StrongholdTweaks/Config/items.xml`. It looks like the same idiom but its
+two halves carry *different* predicates (`setattribute` only where `@value > 1`; `append` only for non-vehicle
+placeables), which no single `<ensure>` selector reproduces — and it never warned, which is why it was never
+declared. Left alone deliberately.
 
 ### 6.4 Landing plan
 
