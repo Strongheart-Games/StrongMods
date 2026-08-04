@@ -8,10 +8,14 @@
     "allow": [
       "Bash(rg *)",
 
+      "Bash(git --version)",
+      "Bash(git version)",
       "Bash(git status *)",
       "Bash(git add *)",
       "Bash(git mv *)",
 
+      "Bash(gh --version)",
+      "Bash(gh version)",
       "Bash(gh auth status *)",
       "Bash(gh label list *)",
       "Bash(gh issue list *)",
@@ -20,6 +24,7 @@
       "Bash(gh issue create *)",
       "Bash(gh issue reopen *)",
 
+      "Bash(dotnet --version)",
       "Bash(dotnet restore *)",
       "Bash(dotnet build *)",
       "Bash(dotnet test *)",
