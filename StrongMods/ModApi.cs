@@ -9,6 +9,7 @@ namespace StrongMods {
       InitServerOnlyClass(mod, harmony);
       InitBreadthFirstXmlPatcher(mod, harmony);
       InitXmlPatchMethodForeach(mod, harmony);
+      InitXmlPatchMethodEnsure();
       InitCaseSensitiveFilesystem(mod, harmony);
       InitModInfoDependencies(mod, harmony);
     }
@@ -38,6 +39,17 @@ namespace StrongMods {
       // Explicitly add this patch method so we control whether it's enabled or disabled
       MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodForeach), nameof(XmlPatchMethodForeach.Foreach));
       XmlPatcher.addXmlFilePatchMethod("foreach", method);
+    }
+
+    // Takes neither the mod nor Harmony: <ensure> patches nothing, it only adds a patch command.
+    private static void InitXmlPatchMethodEnsure() {
+      if (!Config.XmlPatchMethodEnsureEnabled) {
+        return;
+      }
+
+      // Explicitly add this patch method so we control whether it's enabled or disabled
+      MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodEnsure), nameof(XmlPatchMethodEnsure.Ensure));
+      XmlPatcher.addXmlFilePatchMethod("ensure", method);
     }
 
     private static void InitCaseSensitiveFilesystem(Mod mod, Harmony harmony) {

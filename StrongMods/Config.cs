@@ -6,6 +6,7 @@ namespace StrongMods {
     public static bool ServerOnlyClassEnabled => true;
     public static bool BreadthFirstXmlPatcherEnabled => true;
     public static bool XmlPatchMethodForeachEnabled => true; // requires BreadthFirstXmlPatcherEnabled
+    public static bool XmlPatchMethodEnsureEnabled => true;
     public static bool CaseSensitiveFilesystemEnabled => IsFilesystemCaseInsensitive();
     public static bool ModInfoDependenciesEnabled => true;
 

@@ -246,7 +246,8 @@ public sealed class PatcherHost {
   ///   Fills the patch-command registry by hand. In-game, XmlPatcher's initializer discovers the commands by
   ///   scanning every type for [XmlPatchMethod]; in here that scan comes up empty, because the stub CoreModule
   ///   only satisfies the types our paths touch and the scan needs all of them. So register the same vanilla
-  ///   commands the scan would have found, plus foreach exactly as StrongMods' ModApi registers it.
+  ///   commands the scan would have found, plus StrongMods' own exactly as its ModApi registers them — this is
+  ///   the second place that registration lives, so a command added there needs a line here too.
   /// </summary>
   private static void SeedPatchMethods(Assembly acs, Assembly strongMods, Type patcher) {
     MethodInfo add = patcher.GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -264,6 +265,9 @@ public sealed class PatcherHost {
 
     MethodInfo foreachMethod = strongMods.GetType("StrongMods.XmlPatchMethodForeach")!.GetMethod("Foreach")!;
     add.Invoke(null, new object[] { "foreach", foreachMethod, true });
+
+    MethodInfo ensureMethod = strongMods.GetType("StrongMods.XmlPatchMethodEnsure")!.GetMethod("Ensure")!;
+    add.Invoke(null, new object[] { "ensure", ensureMethod, true });
   }
 
   /// <summary>

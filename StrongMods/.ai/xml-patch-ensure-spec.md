@@ -201,7 +201,9 @@ exactly the untraceable corruption rule 4 exists to prevent.
 | `xpath` matched ≥1 parent                              | Return that count; no warning                                 |
 | `xpath` matched 0 parents                              | Return 0 → one vanilla `did not apply` warning                |
 | A parent has 2+ children matching the key              | `Log.Warning` naming file, line, parent, and key; that child skipped, other parents unaffected |
-| `<ensure>` has no template children                    | `Log.Error`, return 0                                         |
+| `xpath` matched an attribute rather than an element    | `Log.Warning` naming `setattribute` as the command that ensures an attribute, with the rewrite; that match skipped (§3.8) |
+| `xpath` matched some other non-element node            | `Log.Warning`, that match skipped                             |
+| `<ensure>` has no template children                    | `Log.Error`, return 0 — and when the block carries text, the message names `setattribute` (§3.8) |
 | Template child has no `@name`/`@class` and no `ensure-key` | `Log.Error`, return 0 (whole block; it would fail identically for every parent) |
 | Template child has an unusable `ensure-key`            | `Log.Error`, return 0                                         |
 | `position` is neither `append` nor `prepend`           | `Log.Error`, return 0                                         |
@@ -218,6 +220,31 @@ log line is diagnosable on sight.
 `<ensure>` is an upsert, not a general alternation. It cannot express "patch layout A, or if this is the older game
 build, layout B", or "remove whichever of these two nodes exists". Those remain two commands and one spurious warning.
 §8 keeps `<oneof>` on the shelf for that.
+
+### 3.8 Attributes are `setattribute`'s job, and the error says so
+
+`<ensure>` ensures **child elements**. Ensuring an *attribute* needs no new command, because vanilla `setattribute`
+already upserts (§2) — it creates the attribute when absent, overwrites it when present, applies to every matched
+element, and warns only when the xpath matched nothing. That is `<ensure>`'s contract exactly:
+
+```xml
+<setattribute xpath="/items/item[starts-with(@name, 'boss')]" name="extends">masterBoss</setattribute>
+```
+
+The natural-looking `<ensure xpath="/items/item[…]/@extends">masterBoss</ensure>` **cannot** be made to mean this, and
+the reason is structural rather than a matter of effort: XPath selects nodes that exist, so an attribute-targeting
+xpath returns only the elements that *already carry* the attribute. The create-if-absent half of "ensure" is invisible
+to it. Implemented literally it would update the items that already have `@extends`, silently skip exactly the ones
+the author was fixing, and — if none had it — warn `did not apply`, which is the noise this feature exists to remove.
+
+Attribute-targeting xpaths are otherwise idiomatic in vanilla (`csv` *requires* one), so authors will reach for this;
+the spec's own author did. It is therefore a **discoverability** gap, not a capability gap, and it gets vanilla's own
+answer — `remove` already detects attribute matches and names the attribute-specific command instead. `<ensure>` does
+the same, at both places the mistake surfaces: an attribute match during application, and the no-template-children
+error when the block is `<ensure xpath="…/@attr">value</ensure>`.
+
+Detecting "this xpath looks attribute-targeting" for the *message* may use a cheap heuristic. That would be
+unacceptable for semantics, but a diagnostic that guesses wrong costs a slightly-off hint, never wrong behavior.
 
 ## 4. Comparison
 
@@ -350,7 +377,8 @@ Waves, foreach-conformance style, each with its own explicit go and committed be
 
 1. `XmlPatchMethodEnsure.cs` + `Config` toggle + `ModApi` registration + `PatcherHost` seeding line +
    `Docs/ensure.md` + `UpsertBasicsTests` — the smallest shippable slice that proves the pipeline end to end.
-2. `IdentityTests` + `FailureModeTests` (the two suites most likely to push back on the implementation).
+2. `IdentityTests` + `FailureModeTests` (the two suites most likely to push back on the implementation), plus the
+   §3.8 attribute teaching errors and an "Ensuring an attribute" section in `Docs/ensure.md`.
 3. `NestedTemplateTests` + `TextContentTests` + `OrderingTests` + `ForeachCompositionTests`.
 4. StrongholdTweaks conversion + `ExpectedToLog` cleanup + README line + in-game sanity pass + `ModInfo.xml` version
    bumps. Verify with `dotnet test`, which now covers both declared versions (§6.3).
@@ -378,11 +406,14 @@ notification the workflow requires.
 8. **Draft 2's testability claim corrected, recommendation unchanged** (§4): the harness made every candidate design
    equally testable, so that argument for `<ensure>` is void; the set-based, warning-semantics, and idempotency
    arguments carry it alone.
-9. **`Ensure/*` conformance runs on the default host only; per-version assertion happens at the mod layer**
-   (§6.2, §6.3). Follows `.ai/testing-declared-versions.md` §3c rather than inventing a second policy: engine
-   semantics are version-independent, mod-to-vanilla compatibility is not. Consequence worth stating plainly — no
-   test proves `<ensure>` itself behaves identically on `V3.0.1-b4` until a mod using it declares that version, which
-   §6.3's conversion does immediately.
+9. **Attributes stay `setattribute`'s job; `<ensure>` signposts rather than absorbs them** (§3.8, §8). The
+   capability already exists in vanilla, and the syntax authors reach for cannot express create-if-absent at all.
+   Scope is a teaching error and a doc section, in wave 2.
+10. **`Ensure/*` conformance runs on the default host only; per-version assertion happens at the mod layer**
+    (§6.2, §6.3). Follows `.ai/testing-declared-versions.md` §3c rather than inventing a second policy: engine
+    semantics are version-independent, mod-to-vanilla compatibility is not. Consequence worth stating plainly — no
+    test proves `<ensure>` itself behaves identically on `V3.0.1-b4` until a mod using it declares that version,
+    which §6.3's conversion does immediately.
 
 ## 8. Alternatives considered
 
@@ -403,3 +434,19 @@ and the attribute is invisible to the patch method.
 **Extending `<conditional>` with an `xpath_exists()` boolean.** Fixes the `!= null` comparison and one layer of
 quoting, but leaves the selector written three times and the `Log.Out` spam untouched, and needs a Harmony patch on
 `XmlPatchConditionEvaluator`.
+
+**Teaching `<ensure>` to target attributes.** Raised during wave 1, when the attribute case turned out to be a
+reasonable expectation this design does not meet (§3.8). Three shapes were weighed against doing nothing:
+
+| Shape                                                     | Cost                                                              | Verdict                                                  |
+|-----------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------|
+| `<ensure xpath="…/@extends">masterBoss</ensure>`          | ~80–120 lines: split the trailing step off the xpath, evaluate the element half, set the attribute — plus a test matrix for `attribute::`, `/@*`, unions, and predicates containing `/@` | Rejected. Lexical surgery on an XPath expression, fragile in exactly the cases nobody tests, and semantically identical to `setattribute` |
+| `<ensure xpath="…" attribute="extends">masterBoss</ensure>` | ~40 lines, ~6 tests, doc section                                  | Rejected. A second spelling of `setattribute`, and it contradicts decision 1's naming grammar |
+| Teaching error plus an "Ensuring an attribute" doc section | ~15 lines, 1 test — the "not an element" branch already exists     | **Adopted**, wave 2                                       |
+
+The deciding evidence: `setattribute` already delivers the full contract (§2), verified against `3.1.0.14`'s
+`SetAttributeByXPath` — so every option but the last buys a synonym rather than a capability. What was missing was a
+signpost, and that is a fifteen-line problem.
+
+Worth revisiting only if the *multiple* attributes case bites — setting several attributes on one matched element is
+N `setattribute` commands today, which is the one ergonomic gap this leaves. Separate and much smaller question.
