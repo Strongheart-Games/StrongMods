@@ -28,8 +28,9 @@
 # currently shadows it (last match wins — `git check-ignore -v` credits the boilerplate line while both exist).
 /packages/
 
-# Claude Code local memory
+# Claude Code local memory, including backups (memory-backup-<date>) from the /dream skill
 .claude/memory/
+.claude/memory-backup-*/
 
 # Build results
 [Dd]ebug/
