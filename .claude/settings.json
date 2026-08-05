@@ -13,6 +13,14 @@
       "Bash(git status *)",
       "Bash(git add *)",
       "Bash(git mv *)",
+      "Bash(git check-ignore *)",
+      "Bash(git worktree add .scratch*)",
+      "Bash(git worktree add -d .scratch*)",
+      "Bash(git worktree add --detach .scratch*)",
+      "Bash(git worktree remove .scratch*)",
+      "Bash(git worktree remove -f .scratch*)",
+      "Bash(git worktree remove --force .scratch*)",
+      "Bash(git worktree prune)",
 
       "Bash(gh --version)",
       "Bash(gh version)",
@@ -35,11 +43,30 @@
       "Bash(msbuild * /t:Build *)",
       "Bash(msbuild * /t:VSTest *)",
       "Bash(msbuild * /t:Clean *)",
+      "Bash(msbuild * -getProperty:*)",
+      "Bash(msbuild * -getItem:*)",
+      "Bash(dotnet msbuild * -getProperty:*)",
+      "Bash(dotnet msbuild * -getItem:*)",
+
+      "Bash(tasklist *)",
+      "Bash(ildasm *)",
+
+      "Bash(mkdir .scratch*)",
+      "Bash(mkdir -p .scratch*)",
+      "Bash(rm .scratch/*)",
+      "Bash(rm -f .scratch/*)",
+      "Bash(rm -r .scratch/*)",
+      "Bash(rm -rf .scratch/*)",
+
+      "mcp__ccd_session_mgmt__search_session_transcripts",
+      "mcp__ccd_session_mgmt__list_sessions",
+      "mcp__ccd_session_mgmt__list_events",
 
       "Edit(*)"
     ],
     "ask": [
       "Bash(git branch *)",
+      "Bash(git worktree add * -b *)",
       "Bash(gh issue edit *)",
       "Bash(gh issue close *)"
     ],
@@ -57,12 +84,17 @@
       "Bash(git revert *)",
       "Bash(git cherry-pick *)",
       "Bash(git stash *)",
+      "Bash(git worktree *..*)",
+      "Bash(git worktree add * -B *)",
 
       "Bash(gh issue delete *)",
       "Bash(gh issue transfer *)",
 
       "Bash(curl *)",
       "Bash(wget *)",
+
+      "Bash(mkdir *..*)",
+      "Bash(rm *..*)",
 
       "Read(.env)",
       "Read(.env.*)",

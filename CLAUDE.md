@@ -314,7 +314,10 @@ cycle must produce self-contained edits.
   verification builds (`-p:ModsDir` and `-p:SdtdSavesDir`, both pointed inside `.scratch\`), baseline
   `git worktree`s, captured evaluation JSON, experiment output. Never use `C:\Temp` or other out-of-scope locations. Anything under
   `.scratch/` may be deleted at any time; clean up worktrees with `git worktree remove` before deleting their
-  directories so git's metadata does not dangle.
+  directories so git's metadata does not dangle. Spell scratch paths repo-relative in shell commands
+  (`mkdir -p .scratch\...`, `rm -rf .scratch/...` — never absolute): the `mkdir`/`rm`/`git worktree`
+  allowlist rules in `.claude/settings.json` key on the literal `.scratch` prefix, so relative spellings run
+  promptless while absolute ones fall back to prompting.
 * **Size Target:** Aim for ~100 lines of changed code (excluding auto-generated files or structural configuration
   boilerplate).
 * **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
