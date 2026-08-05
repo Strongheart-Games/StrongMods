@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
-(except `build`, `Template*`, `packages` and the `Tests` project) is one independent mod, and each is a separate SDK-style C#
+(except `build`, `Template*`, `packages`, the `Tests` project and `StrongDev`) is one independent mod, and each is a separate SDK-style C#
 class-library project (`Microsoft.NET.Sdk`, `net481`), **C# LangVersion 9**. All projects are listed in
 `StrongMods.sln`. See `README.md` for the one-line description of each mod.
 

@@ -32,6 +32,9 @@ Not a mod: `Tests` holds the repo's test suite, which verifies every mod's Harmo
 game's assemblies (`dotnet test StrongMods.sln`) — see [Tests/README.md](Tests/README.md) for what belongs
 there and how to run it.
 
+Also not a mod: `StrongDev` is development-time tooling for building and validating mods, rather than anything
+that ships into a game folder. It is at the genesis stage — see [StrongDev/README.md](StrongDev/README.md).
+
 ## Bugs and requests
 
 Please open an issue: <https://github.com/Strongheart-Games/StrongMods/issues>
