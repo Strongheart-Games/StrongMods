@@ -3,7 +3,8 @@
 Proposal for resolving 7 Days to Die XML inheritance inside XPath predicates, so that a selector can
 match nodes that inherit a property rather than only those that declare it.
 
-Nothing here is ratified yet. **§8 Open decisions** lists the calls that need a human before coding.
+Semantics (§3–§5) and every §8 decision are ratified. §6–§7 were re-planned 2026-08-03 against the
+#14/#43 test infrastructure, which postdates the first draft — §8.7–§8.8 record that cycle.
 
 ## 1. The problem
 
@@ -196,10 +197,15 @@ that walk happens in our code, where the order is ours.
 `XmlFile.GetXpathResultsInList(string _xpath, List<XObject> _matchList)` is the single funnel. Its
 IL is `_matchList.Clear()` then `AddRange(XmlDoc.XPathEvaluate(_xpath).Cast<XObject>())`;
 `GetXpathResults` does nothing but allocate and delegate to it. One Harmony prefix therefore covers
-every patch command, `<foreach>`, and `<bind>`.
+every consumer: all eleven vanilla commands (one shared delegate signature, dispatched through
+`XmlPatcher.XpathPatchMethods`), `<foreach>` and `<bind>` xpaths, `<conditional>`'s NCalc `xpath()`
+function (it calls `GetXpathResultsInList` directly), and any third-party patch command that
+evaluates xpaths through `XmlFile`. All facts in this section re-verified against the live install
+(V3.1.0-b14 line) on 2026-08-03 via Cecil dumps; the smoke suite re-proves the target's existence
+per unit from here on (see the registration paragraph below).
 
 ```csharp
-[HarmonyPatchCategory("XPathInheritance")]
+[HarmonyPatchCategory(XPathInheritance.Category)]
 [HarmonyPatch(typeof(XmlFile), nameof(XmlFile.GetXpathResultsInList))]
 public static class XmlFileGetXpathResultsInListPatch {
   public static bool Prefix(XmlFile __instance, string _xpath, List<XObject> _matchList, ref bool __result) {
@@ -223,7 +229,12 @@ Vanilla throws `InvalidCastException` from `Cast<XObject>` in that case; a logge
 command that does not apply is a better outcome than an exception crossing `singlePatch`.
 
 Registration follows the existing pattern in `ModApi.cs` — `Config.XPathInheritanceEnabled`, then
-`harmony.PatchCategory("XPathInheritance")` from a new `InitXPathInheritance`.
+`harmony.PatchCategory(XPathInheritance.Category)` from a new `InitXPathInheritance`; the `Category`
+constant lives on the feature class, per the categorized-patches convention. The prefix body is a
+thin adapter over a public engine seam, so tests can also probe the engine without going through
+dispatch. Because the patch is attribute-declared, the existing smoke suite verifies the target
+resolves on both units automatically, and no `[PatchTargetManifest]` is needed — nothing calls
+`harmony.Patch(...)` programmatically.
 
 ### 6.2 The key index is mandatory, not an optimization
 
@@ -262,7 +273,10 @@ and compose anywhere.
 
 ### 6.4 New files
 
-- `XPathInheritance.cs` — the walk, the key index, the compiled-expression cache.
+In StrongMods:
+
+- `XPathInheritance.cs` — the walk, the key index, the compiled-expression cache, the `Category`
+  constant, the public engine seam.
 - `XPathFunctionContext.cs` — the function table, the `IXsltContextFunction` implementations, the
   variable-free `XsltContext`, and the Harmony prefix.
 
@@ -270,26 +284,59 @@ and compose anywhere.
 `NavigatorListIterator` there is exactly the node-set return type these functions need and should be
 lifted to internal rather than duplicated.
 
-## 7. Staging
+In Tests:
 
-Three iterations, each independently compilable and each inside the 250-line ceiling:
+- `Tests.csproj` — `MonoMod.RuntimeDetour` (≥ 25.3.6) joins the existing Backports/Utils references,
+  per the S1b correction's pin rule (foreach-conformance-plan §2).
+- `Fixtures/GameRoom.cs` — applies the `XPathInheritance` category to its loaded StrongMods assembly
+  at room construction, beside the existing foreach registration. `PatchPipeline` becomes sm:-aware
+  through the same room with no change of its own.
+- `Inheritance/` — the conformance test classes (§7).
 
-1. **Plumbing.** Interception, the variable-free context, the function table, the `#Name`
-   desugaring, and `sm:chain` with the key index. Verifiable on its own: a `descends-from` selector
-   either matches deep descendants or it does not.
-2. **`sm:inherited`.** The nearest-wins walk over the machinery from (1).
-3. **Reach and docs.** `ScopeXsltContext.ResolveFunction`, `StrongMods/Docs/inheritance.md`, and
-   replace the manual widen-your-predicate advice in `foreach.md`'s **Gotchas** with a pointer.
+## 7. Staging and verification
 
-Verification is compilation plus a live run: no test suite here. Because these functions mutate
-nothing, `ConfigDump/` shows only whether the *consuming* patch applied — the chain itself is not
-visible there, so the warnings in §5.1 are the primary diagnostic and should be worded to stand
-alone.
+Re-planned 2026-08-03: the original §7 predated the #14/#43 test infrastructure and verified by
+"compilation plus a live run". The bar now is the one foreach set — **every clause of the shipped
+doc covered by a conformance test, with the D3 divergence rule** (a spec/implementation mismatch is
+a finding to raise, never silently encoded; `Tests/.ai/foreach-conformance-plan.md`) — and the
+mechanism is testable end to end since the S1b correction: rooms can apply Harmony patches on
+.NET 10, proven by a rerun whose test case was exactly this feature's prefix intercepting a marked
+xpath inside a real `singlePatch` dispatch.
+
+Iterations, each gated, each inside the size limits:
+
+1. **`Docs/inheritance.md` first.** Conformance tests are doc-clause-driven, so the doc is the test
+   inventory and precedes the code it specifies. Derived from §3–§5; says "declared or inherited"
+   wherever it describes `sm:inherited` (§8.3). Also swaps `foreach.md`'s **Gotchas**
+   widen-your-predicate advice for a pointer here.
+2. **Engine + prefix in StrongMods.** The walk, key index, `#Name` desugaring, both contexts, the
+   prefix over the public seam, `Config.XPathInheritanceEnabled` + `InitXPathInheritance`, and the
+   `ScopeXsltContext.ResolveFunction` hook. Verified by compilation plus the existing smoke suite,
+   which picks up the attribute-declared target on both units with no new test code.
+3. **Harness integration + first conformance wave.** The §6.4 Tests changes, then
+   `Inheritance/` opens with chain and effective-value basics: declared, inherited at depth,
+   overridden mid-chain, both link forms spelled explicitly, `#Name` versus the general form,
+   `@id` keys, population default and explicit.
+4. **Conformance waves to closure.** Failure modes — §5.1's table row by row with warning texts
+   asserted, §5.2 cardinality, the non-node-set error; interop — `sm:` inside `<foreach>`/`<bind>`
+   xpaths and `{...}` expressions, cross-file `source=` (the chain resolves in the source
+   document), unmarked-xpath fast-path fidelity, and variables still rejected in plain command
+   xpaths; scale — a chain query over the room's real vanilla `items.xml` (`VanillaConfigDir`);
+   and a test pinning §5.4's return-order caveat so the doc's warning stays true.
+
+Ongoing and free: `PatchApplicationTests` exercises any repo mod that adopts `sm:` against real
+vanilla config on both units in CI, under its declared-expectations regime.
+
+Risks: **(a)** detours on ubuntu CI are unproven — iteration 3's first CI run is the Linux proof,
+the same posture as #14's R1, which resolved positive; **(b)** a game update raising 0Harmony's
+MonoMod references above the Tests pin fails loudly (`FileLoadException`) and is fixed by bumping
+the pin — the S1b correction records the rule.
 
 ## 8. Decisions
 
-All open questions are settled; each went to the recommendation. Rationale is kept because the
-rejected side of two of them is a standing temptation to revisit.
+All open questions are settled — 1–4 as asked (2026-07-26, each going to the recommendation), 5–6
+recorded unprompted, 7–8 from the 2026-08-03 re-plan. Rationale is kept because the rejected side
+of several is a standing temptation to revisit.
 
 1. **Property shorthand: include `#Name`** (§4.1). The alternative — general form only, one syntax
    to learn — loses to the quoting arithmetic: three nesting levels against two quote characters
@@ -316,3 +363,16 @@ rejected side of two of them is a standing temptation to revisit.
    inside a string literal, which only changes which engine compiles the expression — and ours is a
    superset for variable-free expressions. A real tokenizer on every patch xpath in the game costs
    more than it protects. *(Recorded without being asked; raise it if you disagree.)*
+7. **Mechanism: the §6.1 Harmony prefix, re-ratified 2026-08-03 after a challenge cycle.** The
+   review against the new test infrastructure found the then-recorded S1b fact — "no Harmony
+   patching on .NET 10" — made the prefix untestable end to end, and designed a registry-wrapper
+   alternative (re-register the eleven vanilla commands through `XpathPatchMethods`, rewrite marked
+   xpaths into position-path unions). The owner challenged S1b itself; the rerun overturned it
+   (foreach-conformance-plan §2 S1b), and the wrapper died with its only advantage. What remains on
+   the ledger for the prefix: no rewrite machinery — it hands vanilla the exact node list, so the
+   union-scale and position-staleness questions never exist — and uniform coverage of every
+   `GetXpathResultsInList` consumer, including `<conditional>`'s `xpath()` and third-party
+   commands, which no wrapper set could reach.
+8. **Doc-first staging with the foreach-parity test bar** (§7). `inheritance.md` precedes
+   implementation because the conformance suite is doc-clause-driven; the bar is every clause
+   covered under the D3 divergence rule, with failure messages that teach.
