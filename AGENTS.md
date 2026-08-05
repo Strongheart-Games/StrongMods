@@ -2,6 +2,9 @@
 
 This file provides guidance to coding agents (e.g. Claude Code) when working with code in this repository.
 
+The repo's purpose and vocabulary live in @CONTEXT.md — read it before making design decisions; this file carries
+the working rules.
+
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
@@ -38,7 +41,7 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 
 **Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a mistake.**
 `Microsoft.Common.CurrentVersion.targets` derives `OutDir`/`TargetDir` from `$(OutputPath)` *during evaluation*, so a
-`Directory.Build.targets` is imported too late: `$(OutputPath)` reads back correct while `OutDir`stays latched at the
+`Directory.Build.targets` is imported too late: `$(OutputPath)` reads back correct while `OutDir` stays latched at the
 `bin\` fallback and the assembly lands in the wrong place. Import position is therefore explicit and load-bearing. The
 header comment in `build/Mod.targets` has the full story.
 
@@ -46,7 +49,6 @@ A code mod imports the props file as the first element of its body and the targe
 `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwich holds:
 
 ```xml
-
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <!-- deviations only: ModLoadTier, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
@@ -362,7 +364,9 @@ cycle must produce self-contained edits.
 
 **3. Verification Phase**
 
-* There is no automated test suite or linter for this repository. Verification is handled via compilation.
+* Verification is layered — see *Verifying* above. A clean build (which includes the XML well-formedness lint) is
+  the floor; `dotnet test StrongMods.sln -c Debug` runs the repo-wide suite (Harmony patch-target resolution,
+  project conventions) and must pass for any change touching code or patch targets.
 * You must run the specific build command for the mod you are working on to ensure it compiles perfectly against the
   game's DLLs (e.g., `dotnet build <ProjectName>/<ProjectName>.csproj -c Debug`).
 
