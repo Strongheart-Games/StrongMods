@@ -22,13 +22,44 @@
 # continue-on-error — a red advisory job means "these mods aren't on <newest> yet", never a red main.
 #
 # The .NET SDK is pinned to 10.x: the C# file-based tools (build/tools/*.cs) require it.
+#
+# The paths-ignore lists below skip runs for changes that provably cannot reach a compiler or a test. `.ai/`
+# carries the plan docs and is excluded three times over already — from the SDK's .cs glob
+# (build/Mod.targets, DefaultItemExcludes), from staged mod content (build/Modlet.targets,
+# build/Overlay.targets) and from the conformance source scan (Tests/ModInventory.cs, SourceFiles) — which
+# matters because .ai/ holds real .cs files, not just markdown. Markdown reaches the build only as Content to
+# copy (README.md, Docs\**), never as an input anything parses; XmlLint reads ModInfo.xml and Config\**\*.xml
+# only. .idea/ and .claude/ are IDE and agent config no job touches.
+#
+# Pattern shapes are load-bearing. `**` matches any character INCLUDING `/`, `*` does not — so a leading
+# `**/` needs a real `/` after it and cannot match a root-level file: `**/*.md` misses README.md and
+# CLAUDE.md, which is why the markdown entry is the documented `**.md` form. For the same reason `.ai/` is
+# listed twice: `.ai/**` is root-anchored, `**/.ai/**` covers the per-project copies.
+#
+# The two lists must stay identical (YAML anchors are not supported by the workflow parser, so they are
+# repeated). Do NOT add Config/**, ModInfo.xml, *.csproj, build/** or .github/** — all are real inputs.
+# workflow_dispatch takes no path filter, so a manual run is always available for an ignored-only change.
 
 name: Build & Test
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.ai/**'          # repo-wide plan docs
+      - '**/.ai/**'       # per-project plan docs ('.ai/**' is root-anchored and does not cover these)
+      - '**.md'
+      - '.idea/**'
+      - '.claude/**'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - '.ai/**'
+      - '**/.ai/**'
+      - '**.md'
+      - '.idea/**'
+      - '.claude/**'
+      - 'LICENSE'
   workflow_dispatch:
 
 permissions:
