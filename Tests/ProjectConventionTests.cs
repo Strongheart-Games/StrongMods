@@ -80,7 +80,7 @@ public class ProjectConventionTests {
   };
 
   // What each shape must open and close with. A modlet has no props half, so it constrains only its last
-  // element. See CLAUDE.md's "Shared build files" table for the sandwich each shape forms.
+  // element. See AGENTS.md's "Shared build files" table for the sandwich each shape forms.
   private static readonly Dictionary<string, (string First, string Last)> ShapeBookends = new() {
     ["code mod"] = ("Mod.props", "Mod.targets"),
     ["modlet"] = (null, "Modlet.targets"),
@@ -184,7 +184,7 @@ public class ProjectConventionTests {
       "The set of projects importing none of the three build\\ entry points changed.\n" +
       $"  expected: {string.Join(", ", expected)}\n" +
       $"  actual:   {string.Join(", ", unclassified)}\n" +
-      "  A new mod must import its shape's entry points (see CLAUDE.md, \"Adding a new mod\"); a new non-mod " +
+      "  A new mod must import its shape's entry points (see AGENTS.md, \"Adding a new mod\"); a new non-mod " +
       "project must be added to KnownNonMods with a reason. Silently falling outside every shape means no " +
       "convention test covers it.");
   }

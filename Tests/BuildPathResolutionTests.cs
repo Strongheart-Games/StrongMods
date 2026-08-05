@@ -20,7 +20,7 @@ namespace Tests;
 ///          unrooted (NETSDK1052) once a mod project entered the Tests build graph.
 ///     #52  TARGET-EXECUTION time — build\Deploy.targets computed the deploy destination inside the Deploy
 ///          target, where MSBuild has already pointed the process working directory at the PROJECT. So
-///          -p:ModsDir=.scratch/deploy — the redirect CLAUDE.md documents for safe verification — wrote 29
+///          -p:ModsDir=.scratch/deploy — the redirect AGENTS.md documents for safe verification — wrote 29
 ///          per-project folders, nothing at the repo root, and reported 0 Error(s).
 ///
 ///   Both were defended by prose alone, and the Deploy.targets prose asserted the opposite of the truth for its

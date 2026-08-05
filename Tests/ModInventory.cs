@@ -7,7 +7,7 @@ namespace Tests;
 /// <summary>
 ///   The code mods under test, derived from the repo rather than hardcoded (plan D5): every top-level
 ///   directory whose csproj imports build\Mod.props, except the Template* scaffolds (not shippable mods;
-///   CLAUDE.md carves them out of "one directory = one mod"). Each mod carries its effective declaration
+///   AGENTS.md carves them out of "one directory = one mod"). Each mod carries its effective declaration
 ///   (#23) — the versions its tests assert against. A code mod whose DLL is missing is a hard failure, not a
 ///   silent coverage shrink.
 /// </summary>

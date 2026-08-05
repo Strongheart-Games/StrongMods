@@ -211,7 +211,7 @@ Game types (`ConsoleCmdAbstract`, `Mod`, `Log`, `GameManager`, `SdtdConsole`, `W
 come from the referenced `Assembly-CSharp.dll` — they are not in this repo. `Log.Out/Warning/Error` is the game's
 logger; prefix messages with `[ModName]`.
 
-### `StrongMods` — the core project
+### `StrongMods` — the foundational runtime mod
 
 This is the foundational mod other mods depend on (only cross-project reference in the repo:
 `AutoCollectLoot` → `StrongMods` via `ProjectReference`). It provides two things:
@@ -326,7 +326,7 @@ cycle must produce self-contained edits.
 * **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
 * **Single Focus:** Address exactly ONE logical bug fix, ONE task, or ONE discrete component feature. Never combine
   functional changes with refactoring.
-* **Isolation:** When tasked with updating a standalone mod, do not modify the foundational `StrongMods` core project
+* **Isolation:** When tasked with updating a standalone mod, do not modify the foundational `StrongMods` runtime mod
   unless explicitly requested.
 * **Git**
   * Stage only the files you intentionally modified.
