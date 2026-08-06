@@ -13,8 +13,11 @@ namespace Tests;
 ///   human's identity, the permission allowlists were off, autoMemoryDirectory was ignored) with no error
 ///   surfaced anywhere. build\tools\settings_lint.cs is this check's runtime twin — a SessionStart hook runs
 ///   it at the harm point; this test is the enforcing gate (CI sees the tracked files, a local run also sees
-///   the machine-local ones). Same semantics by construction: strict System.Text.Json defaults, because that
-///   models the parser Claude Code itself uses. Change one, change both.
+///   the machine-local ones). The shared core — strict System.Text.Json defaults, because that models the
+///   parser Claude Code itself uses — must stay identical in both; change one, change both. The tool
+///   additionally carries session-only honored checks (declared env vars present with declared values, paths
+///   exist, autoMemoryDirectory shape); those live only there, because a test process outside any session has
+///   no session environment to assert against.
 /// </summary>
 public class SettingsLintTests {
   private static readonly string[] Candidates = {
