@@ -64,7 +64,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefugeHordeBaseS11", "Refug
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{AB244445-32E7-4AB8-B935-22ED100641A4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{31C8073A-EC70-4ED9-B4D1-91C6C23FB13B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		AGENTS.md = AGENTS.md
+		CLAUDE.md = CLAUDE.md
+		CONTEXT.md = CONTEXT.md
+		Local.props.sample = Local.props.sample
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ClaudeConfig", ".claude\ClaudeConfig.shproj", "{97BBE6EC-C211-45D6-AD69-E31286B879E0}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		.claude\ClaudeConfig.projitems*{97bbe6ec-c211-45d6-ad69-e31286b879e0}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -194,5 +210,8 @@ Global
 		{AB244445-32E7-4AB8-B935-22ED100641A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB244445-32E7-4AB8-B935-22ED100641A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB244445-32E7-4AB8-B935-22ED100641A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{97BBE6EC-C211-45D6-AD69-E31286B879E0} = {31C8073A-EC70-4ED9-B4D1-91C6C23FB13B}
 	EndGlobalSection
 EndGlobal
