@@ -35,9 +35,13 @@ actually loaded by the relevant agent harness.
 
 ### 1. Locate memory and current sources
 
-Find the active auto-memory directory rather than assuming its path. Read:
+Locate every memory store actually in play, not just the configured one. Determine where auto-memory resolves — check
+`autoMemoryDirectory` across the harness's settings scopes, then confirm against what the running session reports — and
+also check the harness's default location for strays: a redirect that is invalid, unapplied, or absent on a machine
+silently revives the default directory (2026-08-06: one trailing comma did exactly this). Skill-managed stores count
+too. Read:
 
-- `MEMORY.md` and every referenced memory file
+- every file in each store directory — not only what `MEMORY.md` indexes; an orphaned file is still a claim
 - `CONTEXT.md`
 - `AGENTS.md` and every instruction file it loads or points to
 - relevant repo docs and skills
