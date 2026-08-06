@@ -20,15 +20,16 @@ Use these destinations consistently:
 | `CONTEXT.md`                 | Everyone, this repository                 | Stable, descriptive project context: purpose, boundaries, terminology, and major relationships                                                                                            |
 | `AGENTS.md`                  | Everyone, this repository                 | Team-shared instructions and rules that apply throughout the repository                                                                                                                   |
 | Global personal instructions | The user, every repository                | Instructions the user wants everywhere, loaded through each agent's supported global configuration                                                                                        |
-| `AGENTS.personal.md`         | The user, this repository, every machine  | Personal project instructions that follow the user across machines; stored privately and synced                                                                                           |
+| `<store>/<repo>/AGENTS.md`   | The user, this repository, every machine  | Personal project instructions that follow the user across machines; stored privately and synced                                                                                           |
 | `AGENTS.local.md`            | This repository, this machine             | Machine-specific project instructions or operational facts; gitignored                                                                                                                    |
 | Harness configuration        | Whatever the harness governs              | Rules the tooling can enforce instead of restating: gated or forbidden command shapes, deterministic before/after actions. Claude Code: `.claude/settings.json` `permissions` and `hooks` |
 | Repo docs                    | Everyone, this repository                 | Detailed explanations, reference material, design rationale, and task-specific knowledge                                                                                                  |
 | A skill                      | Everyone or the user, by install location | A reusable, multi-step workflow that should load only when relevant                                                                                                                       |
 
-`AGENTS.local.md` and `AGENTS.personal.md` are project conventions, not filenames defined by the AGENTS.md standard.
-Check `setup.md` before the first harvest and verify that every destination is actually loaded by the relevant agent
-harness.
+Files in the private store use the standard `AGENTS.md` name — the directory encodes the scope, and nothing shares that
+directory. `AGENTS.local.md` is a repo-root convention rather than a filename defined by the AGENTS.md standard, because
+there it is a sibling of `AGENTS.md`. Check `setup.md` before the first harvest and verify that every destination is
+actually loaded by the relevant agent harness.
 
 ## Procedure
 

@@ -12,7 +12,11 @@ This project uses these additional conventions:
 
 - `CONTEXT.md`: shared project description and vocabulary
 - `AGENTS.local.md`: private instructions or operational facts for one checkout or machine
-- `AGENTS.personal.md`: private project instructions synced across the user's machines
+- `AGENTS.personal.md`: the in-repository name for a personal project file that lives in the private store, needed only
+  by agents that cannot import a file from outside the repository
+
+Files in the private store keep the standard `AGENTS.md` name. A distinguishing suffix is needed only where a file is a
+sibling of another AGENTS file, which is true in the repository root and false in the store.
 
 Claude Code reads `CLAUDE.md` and `CLAUDE.local.md`, not `AGENTS.md` directly. Its CLAUDE files can import AGENTS files
 with `@` syntax, so the CLAUDE files can remain loader-only.
@@ -21,7 +25,7 @@ with `@` syntax, so the CLAUDE files can remain loader-only.
 
 Tracked files:
 
-```text
+```
 <repo>/
   AGENTS.md
   CONTEXT.md
@@ -30,7 +34,7 @@ Tracked files:
 
 `CLAUDE.md` contains only:
 
-```markdown
+```
 @AGENTS.md
 ```
 
@@ -40,24 +44,26 @@ context is loaded.
 
 Private files, created only when needed:
 
-```text
+```
 <repo>/
   AGENTS.local.md
   CLAUDE.local.md
+  AGENTS.personal.md   # only for agents that cannot import from outside the repository
 ```
 
-Add both to `.gitignore`:
+Add each to `.gitignore` before creating it:
 
 ```gitignore
 AGENTS.local.md
 CLAUDE.local.md
+AGENTS.personal.md
 ```
 
 `CLAUDE.local.md` may contain:
 
-```markdown
+```
 @AGENTS.local.md
-@~/agents/StrongMods/AGENTS.personal.md
+@~/agents/StrongMods/AGENTS.md
 ```
 
 A project-level import outside the repository may require approval the first time Claude Code encounters it.
@@ -66,15 +72,18 @@ A project-level import outside the repository may require approval the first tim
 
 Use a private, synced location as the canonical store:
 
-```text
+```
 ~/agents/
   AGENTS.md
   StrongMods/
-    AGENTS.personal.md
+    AGENTS.md
 ```
 
 - `~/agents/AGENTS.md` contains the user's instructions for every project.
-- `~/agents/StrongMods/AGENTS.personal.md` contains the user's private instructions for StrongMods on every machine.
+- `~/agents/StrongMods/AGENTS.md` contains the user's private instructions for StrongMods on every machine.
+
+Both use the standard filename. The directory encodes the scope, and neither file shares a directory with another AGENTS
+file, so neither needs a distinguishing suffix.
 
 The store may be a private git repository, dotfiles repository, or synced folder.
 
@@ -85,22 +94,24 @@ configuration location.
 
 For Claude Code, create `~/.claude/CLAUDE.md` containing:
 
-```markdown
+```
 @~/agents/AGENTS.md
 ```
 
 For Codex, the global AGENTS file is under `~/.codex/`. Link or copy the canonical file to:
 
-```text
+```
 ~/.codex/AGENTS.md
 ```
 
 Other agents need their own supported loader, symlink, or configuration. Keep the canonical content in the private store
 and make the adapter agent-specific.
 
-`AGENTS.personal.md` is this project's convention, not an official counterpart to
-`CLAUDE.local.md`. Likewise, Codex's `AGENTS.override.md` is a Codex-specific override mechanism, not a portable
-personal-file standard.
+An agent that cannot import a file from outside the repository needs the store file placed inside it instead — a symlink
+or a copy at `<repo>/AGENTS.personal.md`, which must differ from `AGENTS.md` because the two are siblings. That name is
+this project's convention, not an official counterpart to `CLAUDE.local.md`. Codex's
+`AGENTS.override.md` is a Codex-specific override mechanism rather than a portable personal-file standard; verify it
+before relying on it.
 
 ## Verify
 
