@@ -254,6 +254,10 @@ pieces. Notable shared infrastructure worth reusing:
 - **Don't fake a table with consecutive `Label: value` lines.** Markdown joins adjacent lines into one paragraph, so
   they render as an unreadable run-on. Use a real table, or a bullet per field — never bare label lines. This applies
   especially to status/metadata headers at the top of a doc.
+- **Spell out "byte order mark"; never the bare acronym "BOM".** The acronym collides with "bill of materials" (as in
+  SBOM), so it forces disambiguation on every read. Write "byte order mark (U+FEFF)" where the code point helps. Applies
+  to prose, comments, commit messages, and tool/lint output; literal identifiers such as the `.editorconfig` value
+  `utf-8-bom` stay as-is.
 - **Namespaces match the project/assembly name.** The SDK defaults `RootNamespace` and `AssemblyName` to
   `$(MSBuildProjectName)`, so a project should not set them; the directory name *is* the mod name.
 - **Names must survive leaving their context.** A file or class name is read in places its declaration can't follow —
@@ -266,7 +270,7 @@ pieces. Notable shared infrastructure worth reusing:
   self-identifying name is impractical, every out-of-file reference carries qualification instead (`SmokeTests.Ctx`, a
   path). Existing violations are grandfathered — #64 enumerates them for one-by-one fixes — but a name a change already
   touches conforms as part of that change, and new names conform always.
-- `ModInfo.xml` is UTF-8-with-BOM and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
+- `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
 - AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project, or in the
   repo-root `.ai/` when the work spans the whole repo (e.g. `.ai/build-refactor-plan.md`).
