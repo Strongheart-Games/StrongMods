@@ -89,9 +89,9 @@ Ask what kind of artifact the claim belongs in:
 
    Context answers questions such as:
 
-- What is this repository for?
-- What are its important boundaries and relationships?
-- What vocabulary does the project use?
+   - What is this repository for?
+   - What are its important boundaries and relationships?
+   - What vocabulary does the project use?
 
 2. **Does it direct or constrain the agent?**
    First ask whether the harness can enforce it rather than restate it: a forbidden or gated command shape, or a
