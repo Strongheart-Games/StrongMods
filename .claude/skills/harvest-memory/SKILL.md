@@ -64,16 +64,20 @@ Split coupled statements when they have different destinations. For example:
 
 Choose one action before choosing a destination:
 
-| Condition                                                                | Action                                              |
-|--------------------------------------------------------------------------|-----------------------------------------------------|
-| Incorrect, obsolete, or no longer useful                                 | Delete                                              |
-| Already covered accurately                                               | Delete as a duplicate                               |
-| Partially covered                                                        | Improve the existing source, then delete the memory |
-| Tentative, inferred from weak evidence, or tied to an unsettled decision | Defer                                               |
-| Durable and useful                                                       | Promote                                             |
+| Condition                                                                | Action                                                                   |
+|--------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| Incorrect, obsolete, or no longer useful                                 | Delete                                                                   |
+| Already covered accurately                                               | Delete as a duplicate                                                    |
+| Partially covered                                                        | Improve the existing source, then delete the memory                      |
+| Conflicts with an existing source                                        | Resolve which side is stale, then update the source or delete the memory |
+| Tentative, inferred from weak evidence, or tied to an unsettled decision | Defer                                                                    |
+| Durable and useful                                                       | Promote                                                                  |
 
 An explicit user instruction may be durable after one occurrence. An inferred preference usually needs repeated
-evidence. Do not turn uncertainty into doctrine merely to empty the memory directory.
+evidence. Do not turn uncertainty into doctrine merely to empty the memory directory. A conflict between a memory and a
+codified source means one of them is stale, and it is not automatically the memory: verify against the code or system
+itself before choosing a side, and if the conflict cannot be resolved now, defer the claim with a note naming the
+contradicted source.
 
 ### 4. Classify the durable claim
 
