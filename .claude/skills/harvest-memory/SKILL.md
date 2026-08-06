@@ -124,6 +124,9 @@ keep only any necessary instruction to consult it.
 - Write instructions imperatively and concretely.
 - Include a brief reason only when it prevents a plausible misreading.
 - Keep always-loaded files concise. Move supporting detail to docs or a skill.
+- Integrate, never append: place each claim in the destination's existing section where a reader would look for it,
+  merging with related rules. Repeated harvests that each append a trailing bullet grow an unsorted tail — longer, not
+  better.
 - Do not create two sources of truth. When harness configuration now enforces a rule, delete the prose that stated it.
 
 ### 7. Present the routing plan
