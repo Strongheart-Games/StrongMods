@@ -108,8 +108,18 @@ Other agents need their own supported loader, symlink, or configuration. Keep th
 and make the adapter agent-specific.
 
 An agent that cannot import a file from outside the repository needs the store file placed inside it instead — a symlink
-or a copy at `<repo>/AGENTS.personal.md`, which must differ from `AGENTS.md` because the two are siblings. That name is
-this project's convention, not an official counterpart to `CLAUDE.local.md`. Codex's
+or a copy at `<repo>/AGENTS.personal.md`, which must differ from `AGENTS.md` because the two are siblings. Nothing loads
+that file by itself: the AGENTS.md standard defines no import syntax, so the loader is a prose instruction added to the
+repository's `AGENTS.md` as part of first use:
+
+> If `AGENTS.personal.md` exists beside this file, read it too: it holds one user's personal project instructions and
+> takes precedence over this file where they conflict.
+
+The instruction is harmless on checkouts where the file does not exist; an agent that already loads the store through
+its own mechanism will see the same content twice, which wastes context but conflicts with nothing. Prefer the symlink
+over a copy — a copy drifts from the store silently (on Windows, symlinks require Developer Mode or administrator
+rights) — and re-run the sentinel verification below after changing the store file. The name is this project's
+convention, not an official counterpart to `CLAUDE.local.md`. Codex's
 `AGENTS.override.md` is a Codex-specific override mechanism rather than a portable personal-file standard; verify it
 before relying on it.
 
