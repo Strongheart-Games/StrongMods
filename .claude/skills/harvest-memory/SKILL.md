@@ -27,10 +27,9 @@ Use these destinations consistently:
 | Repo docs                    | Everyone, this repository                 | Detailed explanations, reference material, design rationale, and task-specific knowledge                                                                                                  |
 | A skill                      | Everyone or the user, by install location | A reusable, multi-step workflow that should load only when relevant                                                                                                                       |
 
-Files in the private store use the standard `AGENTS.md` name — the directory encodes the scope, and nothing shares that
-directory. `AGENTS.local.md` is a repo-root convention rather than a filename defined by the AGENTS.md standard, because
-there it is a sibling of `AGENTS.md`. Check `setup.md` before the first harvest and verify that every destination is
-actually loaded by the relevant agent harness.
+Naming follows setup.md's suffix rule: files keep the standard `AGENTS.md` name unless they sit beside another AGENTS
+file, which is why the repo root has `AGENTS.local.md` while the private store does not. Check `setup.md` before the
+first harvest and verify that every destination is actually loaded by the relevant agent harness.
 
 ## Procedure
 

@@ -86,8 +86,8 @@ Use a private, synced location as the canonical store:
 - `~/agents/AGENTS.md` contains the user's instructions for every project.
 - `~/agents/StrongMods/AGENTS.md` contains the user's private instructions for StrongMods on every machine.
 
-Both use the standard filename. The directory encodes the scope, and neither file shares a directory with another AGENTS
-file, so neither needs a distinguishing suffix.
+Both use the standard filename: neither sits beside another AGENTS file, so the suffix rule above applies with no
+exception.
 
 The store may be a private git repository, dotfiles repository, or synced folder.
 
@@ -123,9 +123,8 @@ The instruction is harmless on checkouts where the file does not exist; an agent
 its own mechanism will see the same content twice, which wastes context but conflicts with nothing. Prefer the symlink
 over a copy — a copy drifts from the store silently (on Windows, symlinks require Developer Mode or administrator
 rights) — and re-run the sentinel verification below after changing the store file. The name is this project's
-convention, not an official counterpart to `CLAUDE.local.md`. Codex's
-`AGENTS.override.md` is a Codex-specific override mechanism rather than a portable personal-file standard; verify it
-before relying on it.
+convention, not an official counterpart to `CLAUDE.local.md`. Codex's `AGENTS.override.md` is Codex-specific, not a
+portable alternative.
 
 ## Verify
 
