@@ -1,13 +1,7 @@
 ﻿{
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "additionalDirectories": [
-      "C:\\Program Files (x86)\\Steam\\steamapps\\common\\7 Days To Die",
-      "C:\\Program Files (x86)\\Steam\\steamapps\\common\\7 Days To Die Dedicated Server"
-    ],
     "allow": [
-      "Bash(rg *)",
-
       "Bash(git --version)",
       "Bash(git version)",
       "Bash(git status *)",
@@ -30,39 +24,7 @@
       "Bash(gh issue view *)",
       "Bash(gh issue comment *)",
       "Bash(gh issue create *)",
-      "Bash(gh issue reopen *)",
-
-      "Bash(dotnet --version)",
-      "Bash(dotnet restore *)",
-      "Bash(dotnet build *)",
-      "Bash(dotnet test *)",
-      "Bash(dotnet format *)",
-      "Bash(dotnet clean *)",
-
-      "Bash(msbuild * /t:Restore *)",
-      "Bash(msbuild * /t:Build *)",
-      "Bash(msbuild * /t:VSTest *)",
-      "Bash(msbuild * /t:Clean *)",
-      "Bash(msbuild * -getProperty:*)",
-      "Bash(msbuild * -getItem:*)",
-      "Bash(dotnet msbuild * -getProperty:*)",
-      "Bash(dotnet msbuild * -getItem:*)",
-
-      "Bash(tasklist *)",
-      "Bash(ildasm *)",
-
-      "Bash(mkdir .scratch*)",
-      "Bash(mkdir -p .scratch*)",
-      "Bash(rm .scratch/*)",
-      "Bash(rm -f .scratch/*)",
-      "Bash(rm -r .scratch/*)",
-      "Bash(rm -rf .scratch/*)",
-
-      "mcp__ccd_session_mgmt__search_session_transcripts",
-      "mcp__ccd_session_mgmt__list_sessions",
-      "mcp__ccd_session_mgmt__list_events",
-
-      "Edit(*)"
+      "Bash(gh issue reopen *)"
     ],
     "ask": [
       "Bash(git branch *)",
@@ -88,22 +50,7 @@
       "Bash(git worktree add * -B *)",
 
       "Bash(gh issue delete *)",
-      "Bash(gh issue transfer *)",
-
-      "Bash(curl *)",
-      "Bash(wget *)",
-
-      "Bash(mkdir *..*)",
-      "Bash(rm *..*)",
-
-      "Read(.env)",
-      "Read(.env.*)",
-      "Read(**/*.pem)",
-      "Read(secrets/**)",
-      "Read(~/.ssh/**)",
-      "Read(~/.claude/**)",
-
-      "Edit(//c/Program Files (x86)/Steam/steamapps/common/7 Days To Die*/**)"
+      "Bash(gh issue transfer *)"
     ]
   }
 }
