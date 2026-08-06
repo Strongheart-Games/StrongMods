@@ -15,9 +15,13 @@
 # currently shadows it (last match wins — `git check-ignore -v` credits the boilerplate line while both exist).
 /packages/
 
+# Agent local configuration and context
+AGENTS.local.md
+AGENTS.personal.md
+
 # Claude local configuration and context
-settings.local.json
 CLAUDE.local.md
+settings.local.json
 .claude/memory/
 .claude/memory-backup-*/
 
