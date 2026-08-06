@@ -63,6 +63,9 @@ CLAUDE.local.md
 AGENTS.personal.md
 ```
 
+Gitignored files exist only in the checkout where they were created — a git worktree of the same repository starts
+without them; re-create or re-link them there if a worktree session needs them.
+
 `CLAUDE.local.md` may contain:
 
 ```
@@ -70,7 +73,8 @@ AGENTS.personal.md
 @~/agents/StrongMods/AGENTS.md
 ```
 
-A project-level import outside the repository may require approval the first time Claude Code encounters it.
+A project-level import outside the repository requires approval the first time Claude Code encounters it. If declined,
+the imports stay disabled silently and the dialog never reappears.
 
 ## Personal store
 

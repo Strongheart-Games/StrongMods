@@ -171,5 +171,5 @@ Report:
 - what remains outside the agent's filesystem scope
 - what files are left uncommitted
 
-Verify that instruction loaders and imports work in a fresh session. For Claude Code, use
-`/context` to inspect loaded memory files.
+Verify that instruction loaders and imports work in a fresh session. For Claude Code, `/context` shows what actually
+loaded into the session; `/memory` lists the memory file locations and opens them for editing.
