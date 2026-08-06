@@ -42,6 +42,10 @@ Tracked files:
 `CONTEXT.md` for project purpose, boundaries, and vocabulary unless another part of the harness already guarantees that
 context is loaded.
 
+A narrower directory scope repeats the same pattern nested: `<dir>/AGENTS.md` holds the subtree's instructions, with a
+sibling `<dir>/CLAUDE.md` containing only `@AGENTS.md`. Claude Code reads subdirectory CLAUDE files on demand when it
+works under that directory; agents that read nested AGENTS.md files per the standard need no loader at all.
+
 Private files, created only when needed:
 
 ```
