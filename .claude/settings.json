@@ -36,6 +36,9 @@
       "Bash(gh issue close *)"
     ],
     "deny": [
+      "Edit(CONTEXT.md)",
+      "Write(CONTEXT.md)",
+
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git pull *)",

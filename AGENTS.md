@@ -5,6 +5,12 @@ This file provides guidance to coding agents (e.g. Claude Code) when working wit
 The repo's purpose and vocabulary live in @CONTEXT.md — read it before making design decisions; this file carries
 the working rules.
 
+**CONTEXT.md is human-authored and read-only to agents.** It is the human's own voice and judgment — the baseline the
+rest of the repo is measured against — so an agent editing it, *or drafting prose a human then pastes in*, destroys the
+one thing it exists to be. `.claude/settings.json` denies `Edit`/`Write` on it, but the rule is the fence, not the deny:
+never route around it with a shell command, a patch file, or a git operation. If something in it reads wrong, stale, or
+missing, say so in a sentence or file an issue — and leave the wording to the human.
+
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
