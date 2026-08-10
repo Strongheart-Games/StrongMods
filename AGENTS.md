@@ -395,3 +395,23 @@ cycle must produce self-contained edits.
   --porcelain` must show no uncommitted changes to files *this effort* has touched (including its plan doc).
   Pre-existing untracked or modified files unrelated to the effort do not block. If the gate fails, stop and ask for the
   commit rather than proceeding on top of unreviewed work.
+
+## Agent skills
+
+Per-repo configuration for the installed agent skills. Each section below is a one-line summary; the detail lives in
+the linked file under `docs/agents/`.
+
+### Issue tracker
+
+Issues live in GitHub Issues on `Strongheart-Games/StrongMods`, driven with the `gh` CLI under the bot identity.
+See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five triage roles use a `triage:` facet, matching the repo's `type:` / `mod:` / `scope:` style; `wontfix` stays
+unfaceted. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one human-authored `CONTEXT.md` at the repo root, with durable decisions as ADRs under `docs/adr/`
+and effort-scoped plans under `.ai/`. See `docs/agents/domain.md`.
