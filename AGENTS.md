@@ -70,11 +70,10 @@ path properties, which would otherwise expand empty.
 **Everything compiles against the game's own assemblies** — game types from `$(SdtdManagedDir)`, `0Harmony.dll`
 from `$(SdtdHarmonyDir)` (derived from `$(SdtdDir)`, **not** from `$(ModsDir)`, so redirecting the deploy target never
 breaks compilation), *and framework types too*: `build/Mod.props` sets `FrameworkPathOverride` to the game's Managed
-folder, so no .NET Framework targeting pack is needed anywhere. **This is a necessity, not a preference** — the code
-uses APIs the game's Unity Mono runtime provides that official net481 reference assemblies lack, so
-`Microsoft.NETFramework.ReferenceAssemblies` cannot compile this repo (evidence: `.ai/f1-sdk-migration.md` §3). It also
-means what compiles is what the runtime actually has. A **game tree** must be present to build — by default the declared
-version's restored package tree (`dotnet restore build/GameAssemblies.csproj --packages packages
+folder, so no .NET Framework targeting pack is needed anywhere. **This is a necessity, not a preference**, and it means
+what compiles is what the runtime actually has — ADR-0002 (`docs/adr/0002-compile-against-the-games-assemblies.md`) has
+the pilot that settled it and the API that ruled out the alternative. A **game tree** must be present to build — by
+default the declared version's restored package tree (`dotnet restore build/GameAssemblies.csproj --packages packages
 --configfile build/GameAssemblies.nuget.config`, once per version; needs a read PAT in `PACKAGES_READ_TOKEN`); a game
 *install* is needed only to deploy or to vendor. `build/Mod.targets` raises one readable, per-source error if the tree
 is missing. To add a game assembly to a project: `<GameAssembly Include="Noemax.GZip" />`.
@@ -235,16 +234,13 @@ This is the foundational mod other mods depend on (only cross-project reference 
 
 ### `StrongUtils` — shared administration/modding grab-bag
 
-Not a library the others link against — it's its own standalone mod bundling many small server features and reusable
-pieces. Notable shared infrastructure worth reusing:
+Not a library the others link against — it's its own standalone mod bundling many small server features alongside
+infrastructure worth reusing (`ConfigManager`, `KeyValueStore`, `Chat`, `StrongAudit`, `ServerLifecycle`).
+**`StrongUtils/README.md` has the inventory**; read it before writing something the mod already provides.
 
-- `ConfigManager.cs` — singleton (`ConfigManager.Instance`, `Init(dir)`) that registers XML config files with defaults
-  and optional hot-reload via `FileSystemWatcher`.
-- `Commands/` — server console commands, each a `ConsoleCmdAbstract` subclass (see
-  `Commands/GracefulShutdownCommand.cs` for the standard shape: `getCommands`, `getDescription`, `getHelp`,
-  `Execute`). The game auto-discovers these; no registration needed.
-- `KeyValueStore/` — a small persistence abstraction (`IKeyValueStore`, XML-backed impl).
-- Chat helpers (`Chat.cs`), audit logging (`StrongAudit.cs`), server lifecycle hooks (`ServerLifecycle.cs`).
+Its `Commands/` folder is also the reference for server console commands generally: each is a `ConsoleCmdAbstract`
+subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `getCommands`, `getDescription`,
+`getHelp`, `Execute`), and the game auto-discovers them with no registration.
 
 ## Conventions
 
@@ -276,8 +272,8 @@ pieces. Notable shared infrastructure worth reusing:
   touches conforms as part of that change, and new names conform always.
 - `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
-- AI artifacts such as specs and handoff docs can be found in the `.ai/` directory of the relevant project, or in the
-  repo-root `.ai/` when the work spans the whole repo (e.g. `.ai/build-refactor-plan.md`).
+- **Docs have homes** — effort-scoped plans, specs and handoffs in `.ai/` (per project, or repo-root for repo-wide
+  work); durable decisions as ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
 - **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options weighed,
   the verification. The issue carries the work and its status. **Never add a status or follow-on table to a doc:** it
   becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number. The older plans
@@ -321,11 +317,10 @@ cycle must produce self-contained edits.
   those locations outside of that build path without explicit human approval, and use a redirected build (see *Scratch
   space* below) whenever deploying is not the goal. Treat everything else on the machine as out of scope.
 * **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected
-  verification builds (`-p:ModsDir` and `-p:SdtdSavesDir`, both pointed inside `.scratch\`), baseline
-  `git worktree`s, captured evaluation JSON, experiment output. Never use `C:\Temp` or other out-of-scope locations.
-  Anything under
-  `.scratch/` may be deleted at any time; clean up worktrees with `git worktree remove` before deleting their
-  directories so git's metadata does not dangle. Spell scratch paths repo-relative in shell commands
+  verification builds (recipe under *Verifying*), baseline `git worktree`s, captured evaluation JSON, experiment
+  output. Never use `C:\Temp` or other out-of-scope locations. Anything under `.scratch/` may be deleted at any time;
+  clean up worktrees with `git worktree remove` before deleting their directories so git's metadata does not dangle.
+  Spell scratch paths repo-relative in shell commands
   (`mkdir -p .scratch\...`, `rm -rf .scratch/...` — never absolute): the `mkdir`/`rm`/`git worktree`
   allowlist rules in `.claude/settings.json` key on the literal `.scratch` prefix, so relative spellings run promptless
   while absolute ones fall back to prompting.
@@ -341,20 +336,10 @@ cycle must produce self-contained edits.
   * Do not commit, push, or rewrite Git history — and do not ask to. These are blocked by permission deny rules, so
     offering to commit claims a capability you don't have and makes the human decline something that was never on the
     table. Committing is the human's step, not a gated one of yours.
-* **Issues**
-  * File and update issues with the `gh` CLI, against
-    [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues).
-  * Label with a `type:` facet, plus `scope:repo-wide` or `mod:<Name>` for where it applies. Priority is **not** a
-    label — ranking lives on the Project board so there is only one ordering.
-  * **Labels are human-managed: apply existing labels only, never create one.** The bot's repo role is Triage, which can
-    apply labels but not create them — `gh label create` fails with HTTP 403 regardless of the token's grants, so don't
-    retry or troubleshoot it (issue #27 has the analysis). If a needed label doesn't exist, file the issue with the
-    labels that do exist and ask the human to create the missing one.
-  * Resolve by **closing**, never by deleting. Deleting and transferring issues are blocked by permission deny rules,
-    and the bot account lacks the admin rights to do either.
-  * Agents authenticate as a dedicated bot account, configured per machine via `GH_CONFIG_DIR`. Do not assume that
-    identity is active — confirm with `gh auth status` before writing, since an unset variable silently falls back to
-    the human owner's credentials.
+* **Issues** — the backlog lives in GitHub Issues on
+  [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues), driven with the `gh` CLI.
+  `docs/agents/issue-tracker.md` is the whole contract: the bot identity to confirm before writing, the label facets,
+  and the apply-only / close-never-delete rules. Read it before filing or labelling anything.
 
 ### Required Agent Workflow
 
@@ -372,11 +357,9 @@ cycle must produce self-contained edits.
 
 **3. Verification Phase**
 
-* Verification is layered — see *Verifying* above. A clean build (which includes the XML well-formedness lint) is
-  the floor; `dotnet test StrongMods.sln -c Debug` runs the repo-wide suite (Harmony patch-target resolution,
-  project conventions) and must pass for any change touching code or patch targets.
-* You must run the specific build command for the mod you are working on to ensure it compiles perfectly against the
-  game's DLLs (e.g., `dotnet build <ProjectName>/<ProjectName>.csproj -c Debug`).
+* Verification is layered — see *Verifying* above for the three levels. Two gates are mandatory: build the project you
+  changed (`dotnet build <ProjectName>/<ProjectName>.csproj -c Debug`), and run `dotnet test StrongMods.sln -c Debug`
+  for any change touching code or patch targets.
 
 **4. Handoff & Review Phase**
 
@@ -406,8 +389,8 @@ See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-The five triage roles use a `triage:` facet, matching the repo's `type:` / `mod:` / `scope:` style; `wontfix` stays
-unfaceted. See `docs/agents/triage-labels.md`.
+All five triage roles use a `triage:` facet, matching the repo's `type:` / `mod:` / `scope:` style; the repo has no
+unfaceted labels at all. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
