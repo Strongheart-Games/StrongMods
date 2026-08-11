@@ -35,9 +35,11 @@ gh issue close <number> --comment "..."
 ## Rules
 
 - **Every issue carries a `type:` facet** — `type:bug`, `type:feature`, `type:build`, `type:tooling`, `type:docs`,
-  `type:tech-debt`, `type:security`.
+  `type:tech-debt`, `type:security`, `type:research`.
 - **Plus a where facet** — `scope:repo-wide`, or `mod:<Name>` for a single mod.
-- **Triage state is a third facet** — `triage:*`, described in `triage-labels.md`. It never replaces the other two.
+- **An `area:` facet marks a cross-cutting effort** that is neither one mod nor the whole repo — currently
+  `area:testing` only. It is additive: it sits alongside the `type:` and where facets, never instead of them.
+- **Triage state is a further facet** — `triage:*`, described in `triage-labels.md`. It never replaces the others.
 - **Priority is not a label.** Ranking lives on the Project board so there is only one ordering.
 - **Labels are human-managed: apply existing labels only, never create one.** The bot's repo role is Triage, which can
   apply labels but not create them — `gh label create` fails with HTTP 403 regardless of the token's grants, so don't
