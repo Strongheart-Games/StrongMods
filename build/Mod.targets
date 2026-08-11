@@ -9,16 +9,14 @@
         <Import Project="..\build\Mod.targets" />
       </Project>
 
-    That position matters and is not negotiable. Sdk.targets (imported implicitly after the body) pulls in
-    Microsoft.Common.CurrentVersion.targets, which derives OutDir, TargetDir and TargetPath from $(OutputPath)
-    *during evaluation*, at the point it is imported. Setting OutputPath any later — e.g. from a
-    Directory.Build.targets, which is imported at the very end — leaves OutDir latched to the bin\$(Configuration)\
-    fallback, so the assembly is written to the wrong place while $(OutputPath) reads back correct. Querying
-    $(OutputPath) alone does not reveal this; verify $(OutDir) and $(TargetDir).
+    That position matters and is not negotiable. This file sets OutputPath, and Sdk.targets (imported implicitly
+    after the body) derives OutDir, TargetDir and TargetPath from it *during evaluation*. Set OutputPath any later
+    and OutDir stays latched at the bin\$(Configuration)\ fallback, so the assembly is written to the wrong place
+    while $(OutputPath) reads back correct. Querying $(OutputPath) alone does not reveal this; verify $(OutDir)
+    and $(TargetDir).
 
-    This is why the repo has no Directory.Build.props/.targets at all: their import positions are fixed by MSBuild
-    and one of them is wrong for this. Every import here is explicit and positioned deliberately, and both project
-    shapes (code mods, modlets) use the same mechanism.
+    ADR-0001 (docs\adr\0001-no-auto-imported-msbuild-files.md) records why the repo therefore has no
+    Directory.Build.props/.targets at all, what else was rejected, and the incidents that decided it.
 
     A project may set $(ModLoadTier) (preferred; see build\Deploy.targets) or $(ModLoadPrefix), override $(ModsDir),
     or add <GameAssembly Include="..." /> items above the import.

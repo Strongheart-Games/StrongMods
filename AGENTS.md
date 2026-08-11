@@ -46,10 +46,8 @@ canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and on
 | `build/tools/compare-eval.cs`                   | Verification helper; not imported by MSBuild. See *Verifying* below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 **Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a mistake.**
-`Microsoft.Common.CurrentVersion.targets` derives `OutDir`/`TargetDir` from `$(OutputPath)` *during evaluation*, so a
-`Directory.Build.targets` is imported too late: `$(OutputPath)` reads back correct while `OutDir` stays latched at the
-`bin\` fallback and the assembly lands in the wrong place. Import position is therefore explicit and load-bearing. The
-header comment in `build/Mod.targets` has the full story.
+Import position is explicit and load-bearing. ADR-0001 (`docs/adr/0001-no-auto-imported-msbuild-files.md`) has the
+mechanism, the rejected alternatives and the two incidents that decided it.
 
 A code mod imports the props file as the first element of its body and the targets file as the last; the SDK's implicit
 `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwich holds:
