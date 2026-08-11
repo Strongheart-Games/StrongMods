@@ -3,9 +3,9 @@
 The `triage` skill sorts issues into five canonical roles. This file maps each role to the label string this repo
 actually uses.
 
-Four of the five carry a **`triage:` facet**, matching the repo's existing `type:` / `mod:` / `scope:` convention, so
-triage state reads as its own axis and does not crowd the top-level label namespace. `wontfix` is GitHub's stock label
-and stays unfaceted — it already existed and already means exactly this.
+All five carry a **`triage:` facet**, matching the repo's existing `type:` / `mod:` / `scope:` convention, so triage
+state reads as its own axis rather than crowding the top-level label namespace. `triage:wontfix` was GitHub's stock
+`wontfix`, renamed when the unused stock label set was retired — see the facet rules in `issue-tracker.md`.
 
 | Role              | Label                    | Meaning                                             |
 |-------------------|--------------------------|-----------------------------------------------------|
@@ -13,7 +13,7 @@ and stays unfaceted — it already existed and already means exactly this.
 | `needs-info`      | `triage:needs-info`      | Blocked on more information before it can be worked |
 | `ready-for-agent` | `triage:ready-for-agent` | Scoped well enough for an agent to pick up          |
 | `ready-for-human` | `triage:ready-for-human` | Ready to work, but needs human judgement            |
-| `wontfix`         | `wontfix`                | Will not be worked on                               |
+| `wontfix`         | `triage:wontfix`         | Will not be worked on                               |
 
 ## Rules
 

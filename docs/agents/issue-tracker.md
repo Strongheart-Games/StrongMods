@@ -40,6 +40,16 @@ gh issue close <number> --comment "..."
 - **An `area:` facet marks a cross-cutting effort** that is neither one mod nor the whole repo — currently
   `area:testing` only. It is additive: it sits alongside the `type:` and where facets, never instead of them.
 - **Triage state is a further facet** — `triage:*`, described in `triage-labels.md`. It never replaces the others.
+- **Every label carries a facet; there are no unfaceted labels.** GitHub's stock set (`bug`, `enhancement`,
+  `documentation`, `question`, `invalid`, `duplicate`) was retired — each shadowed a faceted equivalent and none was
+  ever applied to an issue — and stock `wontfix` was renamed to `triage:wontfix`. An unfaceted label appearing on the
+  repo is a mistake, not a new convention.
+- **Two reserved unfaceted names, currently absent by choice.** `good first issue` and `help wanted` are the one
+  deliberate exception to the rule above, and are to be recreated *verbatim and unfaceted* if this repo ever starts
+  courting outside contributions. GitHub recognises those exact strings: its documentation states that the
+  `good first issue` label feeds an algorithm surfacing approachable issues to potential contributors, so a faceted
+  rename would convert a platform feature into a private convention that does nothing. (Documented for
+  `good first issue`; `help wanted` is conventionally treated the same, but that page does not confirm it.)
 - **Priority is not a label.** Ranking lives on the Project board so there is only one ordering.
 - **Labels are human-managed: apply existing labels only, never create one.** The bot's repo role is Triage, which can
   apply labels but not create them — `gh label create` fails with HTTP 403 regardless of the token's grants, so don't
