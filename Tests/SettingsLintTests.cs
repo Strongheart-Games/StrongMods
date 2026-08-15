@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -66,5 +67,35 @@ public class SettingsLintTests {
     }
 
     Assert.True(offenders.Count == 0, string.Join("\n\n", offenders));
+  }
+
+  [Theory]
+  [InlineData("claude", ".claude/settings.json", ".codex/hooks.json")]
+  [InlineData("codex", ".codex/hooks.json", ".claude/settings.json")]
+  public void Harness_argument_lints_only_selected_harness(
+      string harness, string selectedCandidate, string otherCandidate) {
+    var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
+    var fixtureRoot = Path.Combine(repoRoot, "Tests", "Fixtures", "SettingsLint", "HarnessIsolation");
+    var startInfo = new ProcessStartInfo {
+      FileName = "dotnet",
+      WorkingDirectory = fixtureRoot,
+      RedirectStandardOutput = true,
+      RedirectStandardError = true,
+      UseShellExecute = false
+    };
+    startInfo.ArgumentList.Add("run");
+    startInfo.ArgumentList.Add(Path.Combine(repoRoot, "build", "tools", "settings_lint.cs"));
+    startInfo.ArgumentList.Add("--");
+    startInfo.ArgumentList.Add("--harness");
+    startInfo.ArgumentList.Add(harness);
+
+    using Process process = Process.Start(startInfo)!;
+    string stdout = process.StandardOutput.ReadToEnd();
+    string stderr = process.StandardError.ReadToEnd();
+    process.WaitForExit();
+
+    Assert.True(process.ExitCode == 0, $"settings_lint exited {process.ExitCode}: {stderr}");
+    Assert.Contains(selectedCandidate, stdout);
+    Assert.DoesNotContain(otherCandidate, stdout);
   }
 }
