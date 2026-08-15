@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "dotnet run build/tools/settings_lint.cs"
+            "command": "dotnet run build/tools/settings_lint.cs -- --harness codex"
           }
         ]
       }

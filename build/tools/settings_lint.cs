@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet
 #:property Nullable=enable
 #:property PublishAot=false
-// Lint the agent-harness JSON config for the two silent failure modes that actually shipped (2026-08-06):
+// Lint the Claude Code and Codex JSON config for the two silent failure modes that actually shipped (2026-08-06):
 //
 //   * Not-strict-JSON: Claude Code parses its settings files strictly and silently ignores a file that fails —
 //     every permission rule, env var, hook, and setting in it goes inert. The incident: one trailing comma in
@@ -10,10 +10,12 @@
 //   * Byte order mark: Claude Code happens to tolerate one, but strict RFC 8259 parsers (python json,
 //     JSON.parse) reject the file, so downstream tooling sees a different config than the harness does.
 //
-// Two consumers:
-//   * The SessionStart hook in .claude\settings.json runs this at the harm point. Contract: findings go to
-//     STDOUT and the exit code is 0 even then — Claude Code adds SessionStart stdout to the session context
-//     only on exit 0, and surfacing beats signalling here. Clean runs print nothing.
+// Three consumers:
+//   * The SessionStart hooks in .claude\settings.json and .codex\hooks.json run this for their own harness at
+//     the harm point. Contract: findings go to STDOUT and the exit code is 0 even then — both harnesses add
+//     SessionStart stdout to the session context only on exit 0, and surfacing beats signalling here. Clean
+//     runs print nothing. Harness-specific runs stay isolated: broken Claude config never affects Codex startup,
+//     and vice versa.
 //   * Tests\SettingsLintTests.cs implements the same FILE checks (syntax + byte order mark) as the enforcing
 //     gate (CI + dotnet test). That shared core must stay identical in both; change one, change both.
 //
@@ -25,7 +27,9 @@
 // fully-qualified *_DIR/*_FILE values must exist on this machine regardless of session; and a declared
 // autoMemoryDirectory must be absolute or ~/-prefixed — Claude Code silently ignores other shapes.
 //
-//     dotnet run build/tools/settings_lint.cs                  # lint, from the repo root
+//     dotnet run build/tools/settings_lint.cs                  # lint both harnesses, from the repo root
+//     dotnet run build/tools/settings_lint.cs -- --harness claude
+//     dotnet run build/tools/settings_lint.cs -- --harness codex
 //     dotnet run build/tools/settings_lint.cs -- --selftest
 //
 // Exit codes: 0 = ran (with findings or without — the hook contract above), 1 = selftest failure,
@@ -35,30 +39,45 @@ using System.Text;
 using System.Text.Json;
 
 switch (args) {
-  case []: return SettingsLint.Run();
+  case []: return SettingsLint.Run(AgentHarness.All);
+  case ["--harness", "claude"]: return SettingsLint.Run(AgentHarness.Claude);
+  case ["--harness", "codex"]: return SettingsLint.Run(AgentHarness.Codex);
   case ["--selftest"]: return SettingsLint.Selftest();
   default:
-    Console.Error.WriteLine("usage: settings_lint.cs [--selftest]");
+    Console.Error.WriteLine("usage: settings_lint.cs [--harness claude|codex | --selftest]");
     return 2;
 }
 
+internal enum AgentHarness { All, Claude, Codex }
+
 internal static class SettingsLint {
-  // Every JSON file the agent harness reads from this repo. settings.local.json is machine-local and
-  // gitignored; a candidate that does not exist is simply not this machine's concern.
-  private static readonly string[] Candidates = {
+  // Every JSON file each agent harness reads from this repo. settings.local.json is machine-local and
+  // gitignored; a candidate that does not exist is simply not this machine's concern. .mcp.json belongs to
+  // the Claude group because that is the harness whose startup currently owns and validates it here.
+  private static readonly string[] ClaudeCandidates = {
     ".claude/settings.json", ".claude/settings.local.json", ".claude/launch.json", ".mcp.json"
   };
+  private static readonly string[] CodexCandidates = { ".codex/hooks.json" };
 
-  public static int Run() {
-    if (!Directory.Exists(".claude")) {
+  public static int Run(AgentHarness harness) {
+    bool claudeMissing = (harness is AgentHarness.All or AgentHarness.Claude) && !Directory.Exists(".claude");
+    bool codexMissing = (harness is AgentHarness.All or AgentHarness.Codex) && !Directory.Exists(".codex");
+    if (claudeMissing || codexMissing) {
       Console.Error.WriteLine(
-        $"error: no .claude directory under {Directory.GetCurrentDirectory()} — run from the repo root");
+        $"error: expected agent config directories under {Directory.GetCurrentDirectory()} — run from the repo root");
       return 2;
     }
 
-    List<string> findings = Candidates.Where(File.Exists)
+    IEnumerable<string> candidates = harness switch {
+      AgentHarness.Claude => ClaudeCandidates,
+      AgentHarness.Codex => CodexCandidates,
+      _ => ClaudeCandidates.Concat(CodexCandidates)
+    };
+    List<string> findings = candidates.Where(File.Exists)
       .SelectMany(path => Check(path, File.ReadAllBytes(path))).ToList();
-    findings.AddRange(HonoredFindings(Environment.GetEnvironmentVariable));
+    if (harness is AgentHarness.All or AgentHarness.Claude) {
+      findings.AddRange(HonoredFindings(Environment.GetEnvironmentVariable));
+    }
     if (findings.Count > 0) {
       Console.WriteLine($"settings_lint: {findings.Count} problem(s) in agent config files:");
       findings.ForEach(finding => Console.WriteLine($"  {finding}"));
@@ -80,17 +99,19 @@ internal static class SettingsLint {
       return findings;
     }
     if (bytes is [0xEF, 0xBB, 0xBF, ..]) {
-      findings.Add($"{path}: starts with a UTF-8 byte order mark (U+FEFF). Claude Code tolerates it, but " +
-        "strict JSON parsers (RFC 8259) reject the file — save as UTF-8 without byte order mark.");
+      findings.Add($"{path}: starts with a UTF-8 byte order mark (U+FEFF), which strict JSON parsers " +
+        "(RFC 8259) reject — save as UTF-8 without byte order mark.");
       bytes = bytes[3..];
     }
 
     try {
       JsonDocument.Parse(Encoding.UTF8.GetString(bytes), Strict).Dispose();
     } catch (JsonException e) {
-      findings.Add($"{path} line {(e.LineNumber ?? 0) + 1}: {Reason(e)} Claude Code silently ignores the " +
-        "WHOLE file when it cannot parse — every permission rule, env var, hook, and setting in it is inert " +
-        "until this is fixed.");
+      string consequence = path.Replace('\\', '/').StartsWith(".claude/")
+        ? "Claude Code silently ignores the WHOLE file when it cannot parse — every permission rule, env var, " +
+          "hook, and setting in it is inert until this is fixed."
+        : "Codex cannot load this hook file until its JSON is fixed.";
+      findings.Add($"{path} line {(e.LineNumber ?? 0) + 1}: {Reason(e)} {consequence}");
     }
     return findings;
   }

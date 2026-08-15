@@ -7,21 +7,22 @@ using Xunit;
 namespace Tests;
 
 /// <summary>
-///   The agent-harness JSON config must be strict JSON with no byte order mark. Claude Code silently ignores a
-///   settings file that fails its strict parse — the 2026-08-06 incident: one trailing comma in
+///   The Claude Code and Codex JSON config must be strict JSON with no byte order mark. Claude Code silently
+///   ignores a settings file that fails its strict parse — the 2026-08-06 incident: one trailing comma in
 ///   .claude\settings.local.json disabled that whole file (dead GH_CONFIG_DIR meant gh fell back to the
 ///   human's identity, the permission allowlists were off, autoMemoryDirectory was ignored) with no error
-///   surfaced anywhere. build\tools\settings_lint.cs is this check's runtime twin — a SessionStart hook runs
-///   it at the harm point; this test is the enforcing gate (CI sees the tracked files, a local run also sees
-///   the machine-local ones). The shared core — strict System.Text.Json defaults, because that models the
-///   parser Claude Code itself uses — must stay identical in both; change one, change both. The tool
-///   additionally carries session-only honored checks (declared env vars present with declared values, paths
-///   exist, autoMemoryDirectory shape); those live only there, because a test process outside any session has
-///   no session environment to assert against.
+///   surfaced anywhere. Codex likewise cannot load a malformed hooks file. build\tools\settings_lint.cs is
+///   this check's runtime twin — isolated SessionStart hooks run it at the harm point for their own harness;
+///   this test is the enforcing gate across both (CI sees the tracked files, a local run also sees the
+///   machine-local ones). The shared strict System.Text.Json core must stay identical in both; change one,
+///   change both. The tool additionally carries Claude-session-only honored checks (declared env vars present
+///   with declared values, paths exist, autoMemoryDirectory shape); those live only there, because a test
+///   process outside any session has no session environment to assert against.
 /// </summary>
 public class SettingsLintTests {
   private static readonly string[] Candidates = {
-    ".claude/settings.json", ".claude/settings.local.json", ".claude/launch.json", ".mcp.json"
+    ".claude/settings.json", ".claude/settings.local.json", ".claude/launch.json", ".mcp.json",
+    ".codex/hooks.json"
   };
 
   [Fact]
@@ -42,8 +43,8 @@ public class SettingsLintTests {
         continue;
       }
       if (bytes is [0xEF, 0xBB, 0xBF, ..]) {
-        offenders.Add($"{relative}: starts with a UTF-8 byte order mark (U+FEFF). Claude Code tolerates it, " +
-          "but strict JSON parsers (RFC 8259) reject the file — save as UTF-8 without byte order mark.");
+        offenders.Add($"{relative}: starts with a UTF-8 byte order mark (U+FEFF), which strict JSON parsers " +
+          "(RFC 8259) reject — save as UTF-8 without byte order mark.");
         bytes = bytes[3..];
       }
 
@@ -56,9 +57,11 @@ public class SettingsLintTests {
       } catch (JsonException e) {
         var reason = e.Message.Split(" Path: ")[0].Split(" LineNumber: ")[0]
           .Replace("Change the reader options.", "").Trim();
-        offenders.Add($"{relative} line {(e.LineNumber ?? 0) + 1}: {reason} Claude Code silently ignores the " +
-          "WHOLE file when it cannot parse — every permission rule, env var, hook, and setting in it is " +
-          "inert until this is fixed.");
+        string consequence = relative.Replace('\\', '/').StartsWith(".claude/")
+          ? "Claude Code silently ignores the WHOLE file when it cannot parse — every permission rule, env var, " +
+            "hook, and setting in it is inert until this is fixed."
+          : "Codex cannot load this hook file until its JSON is fixed.";
+        offenders.Add($"{relative} line {(e.LineNumber ?? 0) + 1}: {reason} {consequence}");
       }
     }
 
