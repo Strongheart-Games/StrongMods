@@ -324,6 +324,9 @@ cycle must produce self-contained edits.
   (`mkdir -p .scratch\...`, `rm -rf .scratch/...` — never absolute): the `mkdir`/`rm`/`git worktree`
   allowlist rules in `.claude/settings.json` key on the literal `.scratch` prefix, so relative spellings run promptless
   while absolute ones fall back to prompting.
+* **Windows shell:** Prefer Git Bash for shell commands. When the execution tool supports explicit shell selection, use
+  `C:\Program Files\Git\bin\bash.exe`. Use PowerShell when the task or command requires Windows- or PowerShell-specific
+  behavior.
 * **Size Target:** Aim for ~100 lines of changed code (excluding auto-generated files or structural configuration
   boilerplate).
 * **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
