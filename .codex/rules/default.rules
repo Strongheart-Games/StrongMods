@@ -1,0 +1,52 @@
+# Commands agents must never perform in this repository.
+
+prefix_rule(
+    pattern = ["git", [
+        "commit",
+        "push",
+        "pull",
+        "fetch",
+        "rebase",
+        "reset",
+        "clean",
+        "checkout",
+        "switch",
+        "restore",
+        "revert",
+        "cherry-pick",
+        "stash",
+    ]],
+    decision = "forbidden",
+    justification = "Repository policy prohibits agents from committing, synchronizing, or rewriting Git history.",
+    match = [
+        "git commit -m example",
+        "git push origin main",
+        "git reset --hard HEAD",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "worktree", "add", "-B"],
+    decision = "forbidden",
+    justification = "Repository policy prohibits resetting an existing branch through git worktree add -B.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["delete", "transfer"]],
+    decision = "forbidden",
+    justification = "Repository policy prohibits agents from deleting or transferring issues.",
+)
+
+# Commands that require explicit human approval.
+
+prefix_rule(
+    pattern = ["git", "branch"],
+    decision = "prompt",
+    justification = "Creating, deleting, or otherwise changing branches requires human approval.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["edit", "close"]],
+    decision = "prompt",
+    justification = "Changing issue metadata or closing an issue requires human approval.",
+)
