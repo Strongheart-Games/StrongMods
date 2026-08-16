@@ -14,20 +14,25 @@ after its approved destination is maintained.
 
 ### 1. Bound the review
 
-Read the memories the user selected, or the active project's current memory when no subset was named. Read only the
-maintained sources needed to check those claims. Expand the search when a claim points elsewhere or conflicts with an
-existing source.
+Honor the user's inclusions and exclusions. When no subset is named, inventory every active memory store associated
+with the repository across all harnesses, not only the invoking harness. Exclude backups, archives, and inactive
+snapshots. Use repository configuration, memory indexes, and harness-provided locations to discover stores; do not
+assume that one harness's paths or loaders apply to another.
 
-Before proposing changes, identify the active harness's supported memory-update mechanism and the repository's rules
-for destination files. Do not assume that another agent's paths, commands, or loaders apply.
+Record each candidate's harness, file, and section. Read only the maintained sources needed to check those claims;
+expand the search when a claim points elsewhere or conflicts with an existing source. Identify each source store's
+supported update mechanism and the repository's rules for destination files before proposing changes.
 
-Complete this step when every candidate claim has a source and its relevant maintained source has been checked.
+Complete this step when every included candidate has linkable memory evidence, every relevant maintained source has
+been checked, and every source store has a known update mechanism or is marked inaccessible.
 
 ### 2. Split and triage claims
 
-Split each memory into atomic claims when its statements have different actions, destinations, or scopes. Separate an
-underlying fact from its task-specific implications; route each independently and discard implications already obvious
-from maintained sources. Assign one action:
+Split each memory into atomic claims when its statements have different meanings, actions, destinations, or scopes.
+Preserve the source's exact meaning: keep claims with similar symptoms but different causes separate. Merge only
+semantically equivalent claims, and retain links to every memory source on the merged claim. Separate an underlying
+fact from its task-specific implications; route each independently and discard implications already obvious from
+maintained sources. Assign a category and one action:
 
 | Action  | Use when                                                                          |
 |---------|-----------------------------------------------------------------------------------|
@@ -38,6 +43,12 @@ from maintained sources. Assign one action:
 An explicit user instruction may be durable after one occurrence. Require corroboration for an inferred preference.
 Verify conflicts against the code or system where practical; defer unresolved conflicts and name the conflicting
 source.
+
+Check repository status before treating a repository file as a maintained destination. Treat an untracked,
+nonignored file, or relevant uncommitted changes to a tracked file, as in flight: surface the claim and destination,
+recommend `Defer`, and leave both untouched unless the user overrides. Gitignored memory stores are staging sources,
+not in-flight destinations; count an ignored destination as maintained only when the repository deliberately defines
+it as a local source of truth.
 
 Complete this step when every atomic claim has exactly one action and supporting evidence.
 
@@ -65,13 +76,16 @@ do not also retain the same rule as prose.
 
 ### 4. Propose the harvest
 
-Present the complete plan and stop for explicit approval:
+Lead with a concise recommended disposition. List explicitly excluded memory sets before the plan without assigning
+them actions. Present the complete plan and stop for explicit approval:
 
-| Claim | Memory source | Action | Destination | Intended change | Reason |
-|-------|---------------|--------|-------------|-----------------|--------|
+| # | Claim | Memory evidence | Category | Action | Destination | Intended change | Reason |
+|---|-------|-----------------|----------|--------|-------------|-----------------|--------|
 
-Include discards and deferrals. For a human-owned destination, make the intended change a concise recommendation, not
-replacement wording.
+Use stable claim numbers throughout review; suffix a number when splitting it instead of renumbering later claims.
+Link memory evidence to the precise file or section when the interface supports file links, and identify the harness
+and topic in each link label. Include every source for a merged claim. Include discards and deferrals. For a human-owned
+destination, make the intended change a concise recommendation, not replacement wording.
 
 Complete this step only when the user approves or revises every row.
 
@@ -85,9 +99,10 @@ Apply only the approved rows:
 - Keep one source of truth for each claim.
 - Respect filesystem scope and human-owned files.
 
-Then use the active harness's supported memory-update mechanism to retire only claims that were promoted or approved for
-discard. If a memory contains deferred claims, preserve those claims rather than deleting the whole file. Keep indexes
-and links consistent when the memory system exposes them for maintenance.
+Then use each source store's supported update mechanism to retire only claims that were promoted or approved for
+discard. If a source is inaccessible, report it and preserve its claim. If a memory contains deferred claims, preserve
+those claims rather than deleting the whole file. Keep indexes and links consistent when the memory system exposes
+them for maintenance.
 
 Complete this step when every approved destination is updated and no retired claim remains as active memory.
 
@@ -98,5 +113,6 @@ Verify changed files and any loader or configuration behavior touched by the har
 - promotions and their destinations
 - discarded claims
 - deferred claims and why they remain
+- excluded memory sets
 - recommendations for human-owned or inaccessible destinations
 - modified files and uncommitted changes
