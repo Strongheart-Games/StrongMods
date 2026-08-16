@@ -385,6 +385,9 @@ cycle must produce self-contained edits.
 Per-repo configuration for the installed agent skills. Each section below is a one-line summary; the detail lives in
 the linked file under `docs/agents/`.
 
+Verify agent skill and plugin discovery empirically with a positive control and a clean negative control; remove
+cached plugin and marketplace registrations before interpreting the negative result.
+
 ### Issue tracker
 
 Issues live in GitHub Issues on `Strongheart-Games/StrongMods`, driven with the `gh` CLI under the bot identity.
