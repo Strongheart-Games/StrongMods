@@ -25,6 +25,11 @@ settings.local.json
 .claude/memory/
 .claude/memory-backup-*/
 
+# Harness-created worktrees (the EnterWorktree tool and subagents run with isolation: "worktree") land here, one
+# checkout per branch. Untracked content inside the working tree would otherwise trip the AGENTS.md commit gate,
+# which wants `git status --porcelain` clean before each phase. Repo-convention baseline worktrees go in .scratch/.
+.claude/worktrees/
+
 # Agent/developer scratch: verification builds, baseline worktrees, throwaway experiments. Untracked but
 # deliberately inside the repo so lingering stale files are visible. Safe to delete wholesale at any time.
 .scratch/
