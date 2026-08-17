@@ -24,16 +24,16 @@
       "Bash(gh auth status *)",
       "Bash(gh label list *)",
       "Bash(gh issue list *)",
-      "Bash(gh issue view *)",
-      "Bash(gh issue comment *)",
       "Bash(gh issue create *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue edit *)",
+      "Bash(gh issue comment *)",
+      "Bash(gh issue close *)",
       "Bash(gh issue reopen *)"
     ],
     "ask": [
       "Bash(git branch *)",
-      "Bash(git worktree add * -b *)",
-      "Bash(gh issue edit *)",
-      "Bash(gh issue close *)"
+      "Bash(git worktree add * -b *)"
     ],
     "deny": [
       "Edit(CONTEXT.md)",
