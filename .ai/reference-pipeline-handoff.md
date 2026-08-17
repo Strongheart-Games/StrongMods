@@ -1,9 +1,9 @@
 # StrongMods 7DtD Reference Pipeline — Handoff
 
-> Provenance: handoff document authored in a ChatGPT design session, imported 2026-08-16. Wording is verbatim from the
-> handoff, with two import-time changes: markdown structure (headings, bold terms) was restored because the paste
-> flattened it, and the *Goal and method* section was added the same day from strongheart's own framing — it is not
-> part of the original ChatGPT text.
+> Provenance: handoff document authored in a ChatGPT design session, imported 2026-08-16, with markdown structure
+> (headings, bold terms) restored because the paste flattened it. Since import the doc is maintained in-repo: the
+> *Goal and method* section, the licensing constraint under *Non-negotiable requirements*, and the *Purpose* scope
+> rewrite are post-import edits (2026-08-16, approved by strongheart); the rest is verbatim ChatGPT text.
 
 ## Goal and method
 
@@ -35,9 +35,11 @@ The intended sequence after this document:
 
 ## Purpose
 
-Continue a design review of the StrongMods tooling that acquires proprietary 7 Days to Die files from Steam, packages
-the subset needed for StrongMods development/testing, publishes those packages privately, and manages supported game
-versions.
+Continue a design review of the process that supplies StrongMods with proprietary 7 Days to Die reference material: it
+acquires files from Steam, packages the subset needed for StrongMods development/testing, publishes those packages
+privately, adopts published versions as development/test targets, and validates what is declared. The whole chain is in
+scope; the five programs below implement it through publish-and-record, while adoption and validation live in the build
+declarations, tests, and CI.
 
 The relevant programs are:
 
@@ -69,6 +71,10 @@ The system must be able to support:
   * Linux
 * any 7DtD version available through Steam, including historical versions where practical
 * CI and other automation
+
+One requirement is a constraint rather than a capability: the acquired files are licensed, proprietary game content.
+No part of the process may ever make them public — no public feed, no repo-linked package, no committed copy, no CI
+artifact. (`.ai/ci-feed-and-workflow.md` records the full leak model.)
 
 Everything else is open for reconsideration, including names, boundaries between tools, package structure, workflow,
 metadata, retention policy, and how the process is conceptualized.
