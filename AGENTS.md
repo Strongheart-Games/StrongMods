@@ -398,6 +398,11 @@ See `docs/agents/issue-tracker.md`.
 All five triage roles use a `triage:` facet, matching the repo's `type:` / `mod:` / `scope:` style; the repo has no
 unfaceted labels at all. See `docs/agents/triage-labels.md`.
 
+### Wayfinder
+
+A map and its tickets are GitHub issues carrying a `wayfinder:` facet, wired with native sub-issues and issue
+dependencies. See the *Wayfinding operations* section of `docs/agents/issue-tracker.md`.
+
 ### Domain docs
 
 Single-context: one human-authored `CONTEXT.md` at the repo root, with durable decisions as ADRs under `docs/adr/`

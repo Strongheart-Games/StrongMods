@@ -62,6 +62,90 @@ gh issue close <number> --comment "..."
   weighed, the verification. The issue carries the work and its status. Never add a status or follow-on table to a doc;
   two trackers always drift.
 
+## Wayfinding operations
+
+The `wayfinder` skill charts a foggy effort as a **map** issue whose **tickets** are child issues. This section is only
+the GitHub *expression* of those concepts — the skill itself supplies their meaning.
+
+### Labels
+
+`wayfinder:` is a further facet, additive like `area:` and `triage:`; it never replaces the `type:` facet or the where
+facet. So a ticket carries three or more labels.
+
+| Role   | Wayfinder label                                                                       |
+|--------|---------------------------------------------------------------------------------------|
+| Map    | `wayfinder:map`                                                                       |
+| Ticket | one of `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, `wayfinder:task` |
+
+Like every label here, these are human-created — see *Rules*.
+
+### Map and tickets
+
+A ticket is a GitHub **sub-issue** of the map. `gh` addresses sub-issues by issue number, so no node id lookup is
+needed:
+
+```bash
+gh issue create --parent 80 --title "Where does the reference tree live?" --body-file ticket.md \
+  --label "wayfinder:grilling" --label "type:research" --label "scope:repo-wide"
+```
+
+To attach or detach a ticket that already exists:
+
+```bash
+gh issue edit 80 --add-sub-issue 81,82
+```
+
+```bash
+gh issue edit 81 --remove-parent
+```
+
+### Blocking
+
+Blocking uses GitHub's native issue dependencies, not a body convention, so the tracker's own UI shows what is
+takeable. Wire the edges in a **second pass**, after the tickets have numbers:
+
+```bash
+gh issue edit 83 --add-blocked-by 81,82
+```
+
+`--add-blocking`, `--remove-blocked-by` and `--remove-blocking` are the counterparts.
+
+### Claiming
+
+The assignee **is** the claim. A session assigns the ticket to the dev driving the map before doing any work; an open,
+unassigned ticket is unclaimed. Agent sessions assign the bot account:
+
+```bash
+gh issue edit 81 --add-assignee str0ngh34rt-bot
+```
+
+### The frontier
+
+The frontier is the map's children that are open, unblocked and unclaimed. One query answers it:
+
+```bash
+gh issue list --state open --limit 100 --json number,title,parent,assignees,blockedBy --jq '
+  .[]
+  | select(.parent.number == 80)
+  | select(.assignees | length == 0)
+  | select([.blockedBy.nodes[] | select(.state == "OPEN")] | length == 0)
+  | "\(.number)\t\(.title)"'
+```
+
+`blockedBy` lists blockers whatever their state, which is why the last clause keeps only tickets with no *open*
+blocker. Each node carries `id`, `number`, `state` (`OPEN` or `CLOSED`), `title` and `url`.
+
+### Recording a resolution
+
+Post the answer as a comment, close the ticket, then edit the map body to add its line to *Decisions so far*:
+
+```bash
+gh issue close 81 --comment "$(cat resolution.md)"
+```
+
+The close-never-delete rule in *Rules* applies unchanged. A ticket ruled out of scope is also **closed** — with the
+reason — and is indexed under the map's *Out of scope* section rather than *Decisions so far*.
+
 ## PRs as a request surface
 
 **Off.** Pull requests are not treated as incoming requests to triage. Flip this to on if external PRs should enter the
