@@ -1,7 +1,37 @@
 # StrongMods 7DtD Reference Pipeline — Handoff
 
 > Provenance: handoff document authored in a ChatGPT design session, imported 2026-08-16. Wording is verbatim from the
-> handoff; only markdown structure (headings, bold terms) was restored, because the paste flattened it.
+> handoff, with two import-time changes: markdown structure (headings, bold terms) was restored because the paste
+> flattened it, and the *Goal and method* section was added the same day from strongheart's own framing — it is not
+> part of the original ChatGPT text.
+
+## Goal and method
+
+This exercise re-derives the vocabulary and conceptual model for this problem space from scratch, deliberately
+irrespective of the current implementation. The vocabulary around these tools grew confusing — much of it came from
+earlier agent sessions before an effective agentic design and review workflow was established — and this document
+exists to start the process of backfilling what was skipped.
+
+Naming is load-bearing: a confusing name usually marks a poor design, and the right name gives real power over a thing
+(Le Guin's "true names", minus the magic). So the exercise asked an independent model to define the right names first
+and look at the code second.
+
+Consequences for the reader:
+
+* **Re-proposing something that already exists is the point, not an oversight.** The proposed conceptual model is a
+  way of thinking about the problem, not a feature list. A good design often matches its conceptual model in
+  structure, but it does not have to.
+* Where the independent derivation converges with existing machinery, treat that as evidence the concept is real (and
+  cheap to keep). Where it diverges, that flags the current vocabulary, not the proposal.
+* Current-state facts enter the design as evidence and as backfill cost, never as objections. "The code already says
+  X" is not an argument against a proposal.
+
+The intended sequence after this document:
+
+1. Agree a vocabulary and conceptual model.
+2. Update `CONTEXT.md` (human-written, by design) with an overview and a pointer to more detail, plus a note that the
+   vocabulary may not match the code for a while during backfill.
+3. Backfill the implementation.
 
 ## Purpose
 
