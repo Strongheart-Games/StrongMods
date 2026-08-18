@@ -11,9 +11,14 @@ derived from a demonstrated test need, not speculation.
 - Scope of every claim: V3.1.0 (b14), read from source / XML / IL. Anything needing a running server or client is
   labelled, not assumed.
 
-Tags used throughout: **[IL]** patch-target/static · **[UNIT]** off-game logic (stub + fixtures) · **[LINT]** XML/CSV
-structure · **[T1]** server-side, telnet-drivable · **[T2]** client→server protocol/ownership · **[IN-GAME]** needs the
-#49 runner or a real client.
+Tags used throughout: **[IL]** patch-target/static · **[UNIT]** logic tested with no game running (stub + fixtures) ·
+**[LINT]** XML/CSV structure · **[T1]** server-side, telnet-drivable · **[T2]** client→server protocol/ownership ·
+**[IN-GAME]** needs the #49 runner or a real client.
+
+**"Seam"** below always means the same thing: a small code change that lets a test call a mod's decision logic
+directly, with no game running. Three shapes — extract the calculation into its own method, pass the game state in as
+a parameter instead of reading it inside, or make a private member `internal` and add `InternalsVisibleTo`. Most
+[UNIT] gaps are seams: the logic already needs no game, but today nothing outside the class can reach it.
 
 ## The most important framing: two big regression classes are already covered
 
@@ -27,10 +32,10 @@ a gap, and the test-idea list should not re-file them.
    unit's real vanilla config headlessly and fails on any undeclared warning. A game update that moves an xpath target
    fails CI today.
 
-This reframes the whole exercise: the genuine gaps are **not** "does the patch attach / apply" — they are (a) off-game
-*logic* correctness, (b) what the patch *does or references* beyond attaching, (c) transpiler *bodies* (as opposed to
-their outer method), and (d) *runtime behavior* needing a controllable player/world. That is where the test ideas and
-the gaps concentrated.
+This reframes the whole exercise: the genuine gaps are **not** "does the patch attach / apply" — they are (a) the
+correctness of *logic* that needs no game to run, (b) what the patch *does or references* beyond attaching, (c)
+transpiler *bodies* (as opposed to their outer method), and (d) *runtime behavior* needing a controllable player/world.
+That is where the test ideas and the gaps concentrated.
 
 ## Consolidated test-idea list (highest-value, by mod/feature)
 
@@ -95,7 +100,7 @@ and how it maps to the existing inventory. Cheap-and-broad first.
 
 | # | Tool gap | Maps to inventory | Cost | Unblocks (breadth) |
 |---|----------|-------------------|------|--------------------|
-| **U1** | Off-game **logic seams + expanded game-type stubs** (Vector3i/WorldChunkCache, BiomeDefinition, EntityPlayer.Buffs/CVar, constructible ClientInfo/EntityPlayer, WorldBase double; small extract/inject seams; InternalsVisibleTo for private-static) | extends the existing stub + fixtures | low, but part per-mod refactor | **widest** — StrongZone, PlayerDamage, DFS, DLCC, StrongHorns, StrongBoxes, AuthZ, both chat mods, StrongFill |
+| **U1** | **Test seams + expanded game-type stubs** — make mod logic callable with no game running (Vector3i/WorldChunkCache, BiomeDefinition, EntityPlayer.Buffs/CVar, constructible ClientInfo/EntityPlayer, WorldBase double; small extract/inject seams; InternalsVisibleTo for private-static) | extends the existing stub + fixtures | low, but part per-mod refactor | **widest** — StrongZone, PlayerDamage, DFS, DLCC, StrongHorns, StrongBoxes, AuthZ, both chat mods, StrongFill |
 | **S3** | **Post-patch XML reference/graph validator** (`Extends`/`SpawnClass`/`Next`, ingredients, prefab/model paths, entitygroup names, alt-block lists, loc keys) — deeper than #41's planned schema lint | new; complements #41 | low–med | every XML modlet; StrongMining, PlayerSpawnedTraders, StrongholdTweaks B, PootPavillion |
 | **S1** | **Transpiler match-point / IL-body verification** — assert the CIL pattern a transpiler keys on still exists (TargetResolver sees the method, not the instruction sequence); run against **both** units | extends TargetResolver | med | every transpiler: DFS×2, DLCC (Linux-fragile), StrongZones×2, TouchlessLootContainers, LootCommandPatch, BloodRain InitParty |
 | **R1+R2** | **Tier-1.5 world-control harness**: a telnet-scriptable **named persistent player** (real `entityId`, settable bedroll/admin/position/CVars) + **place-block-as-player and read TileEntity/inventory** | new layer above Tier-1; **depends on player-spawn reachability** (see strategic note) | high | the largest block of *behavior* tests — StrongLocks, StrongZones, StrongAudit, DLCC, AuthZ, AutoCloseDoors, StrongBoxes, StrongMining, chat mods |
@@ -106,7 +111,7 @@ and how it maps to the existing inventory. Cheap-and-broad first.
 | **S5** | **Post-patch document *value* assertion** in the replay (today asserts clean-apply only) | extends PatchApplicationTests | low | StrongholdTweaks Group A (health/stamina/lockpick balance edits) |
 | **R3–R6** | Runtime **observers/actuators**: spawn-entity+read-flag, buff-set read, spawn/death trigger+observe, force-loot-roll + loot-drop-at-P, port-binding, GamePrefs/weather, proximity positioning | new, atop R1+R2 | high | StrongLocks vehicle, buff_no_loot, no-hostiles, DisableLAN, AutoCollectLoot, LootDiagnostics, AutoCloseDoors, DFS |
 | **U2** | **Deterministic clock + timezone injection** | new seam (BloodRain refactor) | low | BloodRain scheduling (untestable until it exists) |
-| **U3** | **Off-game population of game-data tables** (`ItemClass.nameToItem`, `EntityClass.list`) | extends stub/fixtures | low–med | AutoCollectLoot loot-map, BackpackItems |
+| **U3** | **Populating game-data tables with no game running** (`ItemClass.nameToItem`, `EntityClass.list`) | extends stub/fixtures | low–med | AutoCollectLoot loot-map, BackpackItems |
 | **T2a** | **Tier-2 client reaches a spawned target entity** — the spoofed-damage/ownership tests need a real `entityId` in the world | extends the #82 Tier-2 client | med | AuthZ, StrongAudit spoofed-damage |
 | **F1** | **Breadth-first coroutine / ordering seam** — a synthetic ordered multi-mod/multi-file set to test load-order visibility, phase-2 malformed-patch resilience, eligibility filters | extends the patcher fixtures | med | StrongMods (its headline guarantee, currently untested above the cache) |
 | **#49** | **In-game runner** — real client render, full quest flow, live AI, spawn confirmation | = #49 (planned) | high | AEC/Stronghold quest flows, DFS biome behavior, POI name render, trader growth, remote loot collect |
