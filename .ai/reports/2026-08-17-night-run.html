@@ -1,0 +1,794 @@
+<title>Night Run 2026-08-17</title>
+
+<style>
+  :root {
+    --ground:      #f6f7f9;
+    --surface:     #ffffff;
+    --surface-alt: #eef1f5;
+    --ink:         #141a22;
+    --ink-soft:    #4a5563;
+    --ink-faint:   #78838f;
+    --hairline:    #dce1e8;
+    --accent:      #2f5d8c;
+    --accent-soft: #e4ecf5;
+    --critical:    #a83a2c;
+    --critical-bg: #f7e6e3;
+    --warning:     #8a6210;
+    --warning-bg:  #f7eeda;
+    --good:        #2a6b4e;
+    --good-bg:     #e2f0e8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #11151a;
+      --surface:     #181e25;
+      --surface-alt: #1f262f;
+      --ink:         #e7ebf0;
+      --ink-soft:    #b3bcc7;
+      --ink-faint:   #8a95a1;
+      --hairline:    #2a323c;
+      --accent:      #86aed8;
+      --accent-soft: #1d2a38;
+      --critical:    #e58a7d;
+      --critical-bg: #33211e;
+      --warning:     #d6a441;
+      --warning-bg:  #322813;
+      --good:        #74c096;
+      --good-bg:     #172b22;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #11151a;
+    --surface:     #181e25;
+    --surface-alt: #1f262f;
+    --ink:         #e7ebf0;
+    --ink-soft:    #b3bcc7;
+    --ink-faint:   #8a95a1;
+    --hairline:    #2a323c;
+    --accent:      #86aed8;
+    --accent-soft: #1d2a38;
+    --critical:    #e58a7d;
+    --critical-bg: #33211e;
+    --warning:     #d6a441;
+    --warning-bg:  #322813;
+    --good:        #74c096;
+    --good-bg:     #172b22;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  code, .mono, th, .num {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  code {
+    font-size: 0.86em;
+    background: var(--surface-alt);
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  h1 { font-size: 2.45rem; line-height: 1.15; }
+  h2 { font-size: 1.6rem; line-height: 1.25; }
+  h3 { font-size: 1.08rem; line-height: 1.35; }
+
+  p { margin: 0; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---- masthead ------------------------------------------------------- */
+
+  .masthead { display: flex; flex-direction: column; gap: 0.9rem; }
+  .masthead p { color: var(--ink-soft); max-width: 44rem; }
+
+  .status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1px;
+    background: var(--hairline);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  .status div { background: var(--surface); padding: 0.85rem 1rem; }
+  .status .value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.32rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    display: block;
+  }
+  .status .label { font-size: 0.76rem; color: var(--ink-faint); }
+  .status .pass { color: var(--good); }
+
+  /* ---- sections ------------------------------------------------------- */
+
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  section > p, section > ul { max-width: 44rem; }
+
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--hairline);
+    margin: 0;
+  }
+
+  ul { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  li { color: var(--ink-soft); }
+  li strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- findings ------------------------------------------------------- */
+
+  .findings { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--sev, var(--ink-faint));
+    border-radius: 5px;
+    padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .finding.crit { --sev: var(--critical); }
+  .finding.warn { --sev: var(--warning); }
+  .finding.info { --sev: var(--accent); }
+
+  .finding header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem; }
+  .finding h3 { flex: 1 1 18rem; }
+  .finding p { color: var(--ink-soft); font-size: 0.95rem; }
+  .finding .where { font-size: 0.82rem; color: var(--ink-faint); }
+
+  .chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .chip.crit  { background: var(--critical-bg); color: var(--critical); }
+  .chip.warn  { background: var(--warning-bg);  color: var(--warning); }
+  .chip.info  { background: var(--accent-soft); color: var(--accent); }
+  .chip.filed { background: var(--good-bg);     color: var(--good); }
+
+  /* ---- tables --------------------------------------------------------- */
+
+  .scroll { overflow-x: auto; border: 1px solid var(--hairline); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  th { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 500; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.mono { font-size: 0.82rem; }
+
+  /* ---- figures -------------------------------------------------------- */
+
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 1.25rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    overflow-x: auto;
+  }
+  figure svg { max-width: 100%; height: auto; display: block; color: var(--ink-soft); }
+  figcaption { font-size: 0.85rem; color: var(--ink-faint); max-width: 42rem; }
+  figcaption b { color: var(--ink-soft); font-weight: 600; }
+
+  .diagram-strong { color: var(--accent); }
+  .diagram-bad { color: var(--critical); }
+  .diagram-good { color: var(--good); }
+
+  /* ---- details -------------------------------------------------------- */
+
+  details {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+    padding: 0.75rem 1.1rem;
+  }
+  details[open] { padding-bottom: 1.1rem; }
+  summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; }
+  details > *:not(summary) { margin-top: 0.75rem; }
+
+  .note {
+    background: var(--accent-soft);
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
+    font-size: 0.93rem;
+    color: var(--ink-soft);
+  }
+  .note strong { color: var(--ink); }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">Unattended session &middot; 2026-08-17</span>
+    <h1>Night Run</h1>
+    <p>
+      Four harnesses from the #50 tool-gap list, built and run across the repo. Everything below is
+      <strong>uncommitted</strong> &mdash; the working tree holds new files plus one modified tracked file.
+      Every game-behavior claim is scoped to V3.1.0&nbsp;b14 and V3.0.1&nbsp;b4, game unit.
+      BountifulQuests and #32/#33 were left alone.
+    </p>
+
+    <div class="status">
+      <div><span class="value pass">403</span><span class="label">tests passing (was 269)</span></div>
+      <div><span class="value pass">0</span><span class="label">build warnings, 0 errors</span></div>
+      <div><span class="value">9</span><span class="label">new defects found</span></div>
+      <div><span class="value">4</span><span class="label">tool gaps closed</span></div>
+      <div><span class="value">1</span><span class="label">tracked file modified</span></div>
+    </div>
+  </header>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Decide first</span>
+    <h2>What needs you</h2>
+    <p>
+      Nothing here was committed, closed, or filed &mdash; an unattended session does none of those. Three
+      things need a human call.
+    </p>
+    <ul>
+      <li>
+        <strong>Review and commit.</strong> The suite is green and the build is clean at every checkpoint.
+        The one tracked file touched is <code>Tests/Fixtures/PatchPipeline.cs</code> &mdash; a single added
+        property, <code>Documents</code>, exposing the merged post-patch documents the replay already built
+        and discarded.
+      </li>
+      <li>
+        <strong>File the defects you agree with.</strong> Seven are ready to become issues; the shapes are
+        suggested beside each finding. #88 already covers the PootPavillion pair &mdash; the linter
+        re-found it independently, which is the evidence that its rule works.
+      </li>
+      <li>
+        <strong>Answer one question I could not.</strong> StrongholdTweaks references twelve
+        <code>planted&lt;Crop&gt;1Sel2</code> block names. Nothing in the game or this repo defines them.
+        They sit behind a <code>mod_loaded('ProjectZ')</code> conditional, so only a ProjectZ install can
+        settle whether they resolve &mdash; that is #61 in miniature.
+      </li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Findings</span>
+    <h2>Nine defects, all verified against source</h2>
+
+    <div class="findings">
+
+      <article class="finding crit">
+        <header>
+          <h3>The key-value store writes numbers in the current culture</h3>
+          <span class="chip crit">measured</span>
+        </header>
+        <p>
+          <code>3.5f</code> stored under a <code>de-DE</code> locale persists as <code>value="3,5"</code>
+          and reads back as <code>35</code> under <code>en-US</code>. No exception, no log line, no fallback
+          &mdash; the caller gets a plausible wrong number, off by a factor of ten. Production is Linux and
+          development is this Windows box, so the cross-locale case is the normal one.
+        </p>
+        <p class="where">
+          <code>StrongUtils/KeyValueStore/XmlKeyValueStore.cs</code> &middot; four writers use
+          <code>ToString("R")</code>, <code>Get&lt;T&gt;</code> uses <code>Convert.ChangeType</code>, both
+          current-culture. Fix is <code>CultureInfo.InvariantCulture</code> on both sides.
+        </p>
+        <p class="where">
+          Dormant this season &mdash; the store has no live callers &mdash; which is exactly why it is cheap
+          to fix now: no persisted files to migrate.
+        </p>
+      </article>
+
+      <article class="finding crit">
+        <header>
+          <h3>A <code>buff</code>-tagged zone declared in XML grants no buff</h3>
+          <span class="chip crit">source-read</span>
+        </header>
+        <p>
+          <code>StrongZone.FromXml</code> never reads or passes a buff name &mdash; the constructor's
+          <code>buffName</code> parameter is filled only by the prefab path. So a zone declared in
+          <code>strong_zones.xml</code> and tagged <code>buff</code> gets <code>Buff == true</code> and
+          <code>BuffName == null</code>, and <code>BuffManager.OnPlayerEntered</code> returns early on
+          exactly that pair. The zone is silently inert.
+        </p>
+        <p class="where">
+          <code>StrongUtils/StrongZones.cs:507</code> (parse) and <code>:559</code> (<code>ToXml</code>,
+          which has the mirror hole &mdash; a round trip loses a buff name that was set). One attribute each.
+        </p>
+      </article>
+
+      <article class="finding crit">
+        <header>
+          <h3>Five placeable trader blocks ship with no description text</h3>
+          <span class="chip crit">measured</span>
+        </header>
+        <p>
+          <code>blocks.xml</code> declares <code>DescriptionKey="traderRektPlaceableDesc"</code> and four
+          siblings. The mod's <code>Localization.csv</code> defines the <em>name</em> key for each
+          (<code>traderRektPlaceable</code>) and the <code>…Desc</code> companion for the variant helper,
+          so the convention was intended and five rows are simply missing. In game each renders as the raw key.
+        </p>
+        <p class="where">
+          PlayerSpawnedTraders &middot; <code>Config/blocks.xml</code> lines 35, 52, 69, 86, 103.
+          Suggested issue: <code>type:bug</code> + <code>mod:PlayerSpawnedTraders</code>.
+        </p>
+      </article>
+
+      <article class="finding crit">
+        <header>
+          <h3>The stronghold buff has neither a name nor a description</h3>
+          <span class="chip crit">measured</span>
+        </header>
+        <p>
+          <code>buffs.xml</code> declares <code>name_key="buff_in_stronghold_name"</code> and
+          <code>description_key="buff_in_stronghold_desc"</code>; neither key exists in the mod's
+          <code>Localization.csv</code>, which defines only the <code>buff_strongsworn_*</code> and
+          <code>buff_no_claims_*</code> families. This is the buff a player receives on entering a stronghold
+          zone, so it is the most player-visible of the localization defects.
+        </p>
+        <p class="where">
+          StrongUtils &middot; <code>Config/buffs.xml</code> lines 5&ndash;6.
+        </p>
+      </article>
+
+      <article class="finding warn">
+        <header>
+          <h3>A stray comma blanks an item name</h3>
+          <span class="chip warn">measured</span>
+        </header>
+        <p>
+          <code>AEC_Groenland_ResearchPapers,items,item,,Greenland research papers</code> has five fields
+          against a four-column header. The empty fourth field pushes the English text into a fifth column
+          the header never declares, so the surplus is dropped and the <code>English</code> column gets the
+          empty string. Every other row in the file has four fields.
+        </p>
+        <p class="where">
+          AECInternationalMarketFixes &middot; <code>Config/Localization.csv:8</code>.
+        </p>
+      </article>
+
+      <article class="finding warn">
+        <header>
+          <h3>Twelve recipe ingredients name blocks nothing defines</h3>
+          <span class="chip warn">needs #61</span>
+        </header>
+        <p>
+          Twelve &ldquo;Strong crop&rdquo; recipes take <code>planted&lt;Crop&gt;1Sel2</code> as their seed
+          ingredient. <strong>No vanilla block or item carries a <code>Sel&lt;n&gt;</code> suffix in either
+          declared version</strong> &mdash; the convention does not exist in the game's naming, where the
+          chain is <code>plantedAloe1 → plantedAloe2 → plantedAloe3HarvestPlayer</code> &mdash; and no mod
+          in this repo defines one.
+        </p>
+        <p class="where">
+          StrongholdTweaks &middot; <code>Config/recipes.xml</code>. The recipes sit inside
+          <code>&lt;conditional&gt;&lt;if cond="mod_loaded('PootPavillion') and …"&gt;</code>, so the one
+          remaining possibility is that ProjectZ or Z_Bosses defines them. Unverifiable here. Declared in
+          <code>KnownDangling</code> with the reason rather than fixed blind.
+        </p>
+      </article>
+
+      <article class="finding info">
+        <header>
+          <h3>Three smaller things, read from source</h3>
+          <span class="chip info">low</span>
+        </header>
+        <p>
+          <strong>Config path guard is inconsistent</strong> &mdash; <code>ConfigManager.ReadConfigFile</code>
+          is the only one of five methods that does not reject a rooted path, and
+          <code>Path.Combine</code> returns the rooted path, so a read escapes the config directory. No
+          caller passes one today.
+          <strong>A damaged store file throws out of init</strong> &mdash;
+          <code>XmlKeyValueStore.Load</code> calls <code>Enum.Parse</code> unguarded and dereferences
+          <code>doc.Root</code>, and the constructor calls it, so a hand-edited <code>kvstore.xml</code>
+          throws out of <code>KeyValueStore.Init</code>, which has no <code>try</code>.
+          <strong><code>Clear()</code> and <code>Remove()</code> disagree</strong> &mdash;
+          <code>Remove</code> reports the old value on its <code>VarChanged</code>; <code>Clear</code>
+          reports null, contradicting the interface doc.
+        </p>
+      </article>
+
+      <article class="finding info">
+        <header>
+          <h3>PootPavillion's two missing display-name keys</h3>
+          <span class="chip filed">already #88</span>
+        </header>
+        <p>
+          <code>pootPavillion_Name</code> and <code>pootPavillion_Done_Name</code>. Listed here only because
+          the new linter found them independently &mdash; the positive control that says the rule works.
+        </p>
+      </article>
+
+    </div>
+
+    <div class="note">
+      <strong>One false positive was found and fixed before reporting.</strong> The linter first flagged
+      <code>resourceEmptyJarDescription</code> in PootPavillion's <code>items.xml</code>. That reference lives
+      inside an XML comment &mdash; a disabled item block with the note <em>&ldquo;seem to break empty jars in
+      2.5&rdquo;</em>. Commented-out config is inert. The tool now blanks XML comments before matching,
+      preserving newlines so line numbers still hold, and three self-test cases cover it. Any future
+      text-scanning lint over this repo's XML needs the same treatment; the configs carry a lot of
+      commented-out history.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Mechanism</span>
+    <h2>The stub does not scale, so there are two universes</h2>
+    <p>
+      Gap U1 in the seed doc assumed &ldquo;expanded game-type stubs&rdquo;. Measured, that does not hold:
+      <code>Tests/Stubs/UnityStubs.cs</code> declares 13 CoreModule types, and Assembly-CSharp references
+      <strong>225 CoreModule types the stub does not have</strong>. <code>EntityPlayer</code> will not even
+      load against it &mdash; it dies on <code>UnityEngine.Vector3</code>. Mirroring CoreModule is not a
+      two-lines-and-rerun job, and struct layouts would have to be right for real execution.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 740 340" role="img"
+           aria-label="A mod assembly is loaded into one of two isolated assembly universes. The stubbed universe can run Log but cannot load entity types; the real-Unity universe can load entity types but cannot run Log.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- source -->
+        <rect x="270" y="8" width="200" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="370" y="27" text-anchor="middle" font-size="12.5" fill="currentColor">mod assembly</text>
+        <text x="370" y="41" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.7">StrongUtils.dll (net481)</text>
+
+        <!-- split arrows -->
+        <path d="M 330 48 L 185 96" stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+        <path d="M 410 48 L 555 96" stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+        <text x="196" y="72" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.85">if the code logs</text>
+        <text x="548" y="72" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.85">if it touches entities</text>
+
+        <!-- left universe -->
+        <rect x="20" y="100" width="330" height="222" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="36" y="122" font-size="12.5" font-weight="600" fill="currentColor">stubbed universe</text>
+        <line x1="36" y1="132" x2="334" y2="132" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+        <text x="36" y="152" font-size="11" fill="currentColor" opacity="0.8">CoreModule = clean-room stub</text>
+
+        <rect x="36" y="166" width="298" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        <text x="50" y="187" font-size="11.5" class="diagram-good" fill="currentColor">Log runs</text>
+        <text x="322" y="187" text-anchor="end" font-size="11.5" class="diagram-good" fill="currentColor">yes</text>
+
+        <rect x="36" y="208" width="298" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        <text x="50" y="229" font-size="11.5" class="diagram-bad" fill="currentColor">entity types load</text>
+        <text x="322" y="229" text-anchor="end" font-size="11.5" class="diagram-bad" fill="currentColor">no &mdash; 225 absent</text>
+
+        <text x="36" y="270" font-size="10.5" fill="currentColor" opacity="0.7">ConfigManager</text>
+        <text x="36" y="286" font-size="10.5" fill="currentColor" opacity="0.7">ServerLifecycleCommands</text>
+        <text x="36" y="302" font-size="10.5" fill="currentColor" opacity="0.7">XmlKeyValueStore</text>
+
+        <!-- right universe -->
+        <rect x="390" y="100" width="330" height="222" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="406" y="122" font-size="12.5" font-weight="600" fill="currentColor">real-Unity universe</text>
+        <line x1="406" y1="132" x2="704" y2="132" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+        <text x="406" y="152" font-size="11" fill="currentColor" opacity="0.8">CoreModule = the game's own</text>
+
+        <rect x="406" y="166" width="298" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        <text x="420" y="187" font-size="11.5" class="diagram-bad" fill="currentColor">Log runs</text>
+        <text x="692" y="187" text-anchor="end" font-size="11.5" class="diagram-bad" fill="currentColor">no &mdash; initializer throws</text>
+
+        <rect x="406" y="208" width="298" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        <text x="420" y="229" font-size="11.5" class="diagram-good" fill="currentColor">entity types load</text>
+        <text x="692" y="229" text-anchor="end" font-size="11.5" class="diagram-good" fill="currentColor">yes</text>
+
+        <text x="406" y="270" font-size="10.5" fill="currentColor" opacity="0.7">PlayerDamage</text>
+        <text x="406" y="286" font-size="10.5" fill="currentColor" opacity="0.7">StrongZone + the zone diff</text>
+      </svg>
+      <figcaption>
+        <b>The choice is forced, not preferred.</b> Each universe is an isolated <code>AssemblyLoadContext</code>;
+        which one a subject goes in is decided by whether its code path logs or touches entity types. Only
+        logic needing <em>both</em> is genuinely blocked &mdash; a far smaller set than gap U1 implies, and one
+        no amount of stub-writing would reach.
+      </figcaption>
+    </figure>
+
+    <p>
+      No <code>InternalsVisibleTo</code> and no per-mod refactor was needed for any subject.
+      <code>RuntimeHelpers.GetUninitializedObject</code> yields an <code>EntityPlayer</code> whose
+      <code>entityId</code> a test can set, and the server/client gate is reachable by planting
+      <code>ConnectionManager.Instance</code> with a <code>ProtocolManager</code> in the mode the test wants
+      &mdash; read from IL: <code>get_IsClient</code> is <code>protocolManager.CurrentMode == Client</code>.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Mechanism</span>
+    <h2>Vanilla's own broken references are not yours</h2>
+    <p>
+      The reference validator resolves 16,821 cross-references on V3.1.0 b14 (16,752 on V3.0.1 b4) &mdash; every
+      <code>Extends</code>, <code>Next</code>, <code>DowngradeBlock</code>, recipe output, ingredient, loot
+      group, loot drop and triggered buff. Asserting &ldquo;zero dangling&rdquo; would have been wrong:
+      vanilla ships twelve of its own, every one a buff reference, including <code>twitch_cooldown</code> adding
+      <code>twitch_Cooldown</code> &mdash; a case-only mismatch against its own name.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 740 250" role="img"
+           aria-label="Two lanes resolve the same reference rules: one over untouched vanilla XML yielding twelve dangling references, one over vanilla plus every mod's patches yielding twenty-four. Subtracting the first from the second leaves the twelve the mods introduced.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- lane A -->
+        <rect x="14" y="30" width="176" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="102" y="50" text-anchor="middle" font-size="11.5" fill="currentColor">vanilla Data/Config</text>
+        <text x="102" y="65" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">read straight off disk</text>
+
+        <line x1="190" y1="53" x2="272" y2="53" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar2)"/>
+        <text x="231" y="45" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">resolve</text>
+
+        <rect x="274" y="30" width="150" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="349" y="50" text-anchor="middle" font-size="11.5" fill="currentColor">baseline</text>
+        <text x="349" y="66" text-anchor="middle" font-size="12" fill="currentColor" font-weight="600">12 dangling</text>
+
+        <!-- lane B -->
+        <rect x="14" y="150" width="176" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="102" y="170" text-anchor="middle" font-size="11.5" fill="currentColor">vanilla + every mod</text>
+        <text x="102" y="185" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">the game's own patcher</text>
+
+        <line x1="190" y1="173" x2="272" y2="173" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar2)"/>
+        <text x="231" y="165" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">resolve</text>
+
+        <rect x="274" y="150" width="150" height="46" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="349" y="170" text-anchor="middle" font-size="11.5" fill="currentColor">merged</text>
+        <text x="349" y="186" text-anchor="middle" font-size="12" fill="currentColor" font-weight="600">24 dangling</text>
+
+        <!-- subtract -->
+        <line x1="424" y1="53" x2="500" y2="97" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar2)"/>
+        <line x1="424" y1="173" x2="500" y2="129" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar2)"/>
+        <circle cx="520" cy="113" r="19" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="520" y="118" text-anchor="middle" font-size="17" fill="currentColor">&#8722;</text>
+
+        <line x1="539" y1="113" x2="576" y2="113" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar2)"/>
+
+        <rect x="578" y="88" width="148" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="2" class="diagram-strong"/>
+        <text x="652" y="108" text-anchor="middle" font-size="11.5" fill="currentColor" class="diagram-strong">introduced by mods</text>
+        <text x="652" y="126" text-anchor="middle" font-size="14" font-weight="600" fill="currentColor" class="diagram-strong">12</text>
+
+        <text x="652" y="160" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.75">the only findings</text>
+      </svg>
+      <figcaption>
+        <b>Only the difference is a finding.</b> Running the same rules over both documents and subtracting
+        removes The Fun Pimps' own broken references without a hand-maintained exemption list &mdash; and it
+        catches the reverse case for free, where a mod <em>removes</em> something vanilla still points at.
+      </figcaption>
+    </figure>
+
+    <p>
+      Getting the universe right mattered as much as the rules. Item modifiers are craftable: before
+      <code>item_modifiers.xml</code> joined the recipe and loot universe, 81 recipe outputs and 126 loot
+      entries looked dangling. All false. Comma-separated lists needed splitting too &mdash; without it,
+      <code>buff="a,b,c"</code> read as one missing name and produced over a hundred phantom findings.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Built</span>
+    <h2>Four harnesses</h2>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Gap</th>
+            <th>What it is</th>
+            <th>Where</th>
+            <th class="num">Scale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">U1</td>
+            <td><b>Mod-logic host</b> &mdash; executes a mod's own decision logic with no game running, in
+              either universe.</td>
+            <td class="mono">Tests/Fixtures/ModLogicHost.cs<br>Tests/ModLogic/*.cs</td>
+            <td class="num">134 tests</td>
+          </tr>
+          <tr>
+            <td class="mono">S4</td>
+            <td><b>Localization linter</b> &mdash; CSV structure plus every localization key the XML
+              references, with rules read from the game's own <code>loadCsv</code> IL.</td>
+            <td class="mono">StrongDev/.ai/tools/loclint.cs</td>
+            <td class="num">28 mods, 21 self-tests</td>
+          </tr>
+          <tr>
+            <td class="mono">S3</td>
+            <td><b>Reference integrity</b> &mdash; nine cross-reference rules over the merged post-patch
+              config, differential against vanilla.</td>
+            <td class="mono">Tests/Fixtures/ReferenceGraph.cs<br>Tests/Patcher/ReferenceIntegrityTests.cs</td>
+            <td class="num">16,821 refs/version</td>
+          </tr>
+          <tr>
+            <td class="mono">S1</td>
+            <td><b>Transpiler verification</b> &mdash; every transpiler run against its target's real IL, on
+              every version its mod declares.</td>
+            <td class="mono">Tests/Fixtures/IlReader.cs<br>Tests/TranspilerVerification.cs<br>Tests/TranspilerTests.cs</td>
+            <td class="num">13 transpilers &times; 2</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details>
+      <summary>Harmony's own IL reader will not run on this test runner</summary>
+      <p>
+        <code>PatchProcessor.GetOriginalInstructions</code> routes through MonoMod, whose runtime detection
+        refuses outright: <code>PlatformNotSupportedException: CoreCLR version 10.0.10 is not supported</code>,
+        from <code>MonoMod.Core.Platforms.Runtimes.CoreBaseRuntime.CreateForVersion</code>. Measured on the
+        pinned <code>MonoMod.Utils 25.0.6</code> and on the newest published <code>25.0.14</code> &mdash;
+        bumped, tested, reverted, so <code>Tests.csproj</code> is unchanged.
+      </p>
+      <p>
+        <code>IlReader</code> reads the bytes directly instead: <code>GetILAsByteArray</code> plus
+        <code>Module.ResolveMethod</code> / <code>ResolveField</code> / <code>ResolveType</code> /
+        <code>ResolveString</code>. Pure BCL &mdash; it removes a dependency rather than adding one. Fidelity
+        is scoped to what a transpiler matches on; exception-handler regions are not reconstructed, and this
+        IL is only ever read, never re-emitted.
+      </p>
+    </details>
+
+    <details>
+      <summary>Two harness bugs that looked like mod bugs</summary>
+      <p>
+        <b><code>MethodType.Enumerator</code> targets the generated <code>MoveNext</code>, not the declared
+        method.</b> StrongMods patches <code>ModManager.LoadUiAtlases</code> and <code>LoadLocalizations</code>
+        that way. Resolving the declared method reaches only the stub that builds the state machine, so the
+        mod's own <em>&ldquo;Cannot find any Exists() calls.&rdquo;</em> fired against a perfectly healthy
+        transpiler. Fixed with <code>AccessTools.EnumeratorMoveNext</code>, the same hop Harmony makes.
+      </p>
+      <p>
+        <b><code>MethodInfo.ToString()</code> omits the declaring type.</b> Both <code>File.Exists</code> and
+        <code>CaseSensitiveFilesystem.Exists</code> render as <code>Boolean Exists(System.String)</code>.
+        StrongMods' transpilers swap one for the other, so a before/after diff on the bare string showed no
+        change and reported a working transpiler as broken. A diff is only as good as its rendering, and an
+        identical-signature swap is exactly what a transpiler often does.
+      </p>
+    </details>
+
+    <details>
+      <summary>Every harness carries a guard against asserting nothing</summary>
+      <p>
+        A rename that broke discovery would otherwise leave a suite green while checking nothing. The
+        reference tests fail below 5,000 collected references; the transpiler tests fail below 13 discovered
+        transpilers, and run an inert transpiler as a negative control to prove the harness can fail; the
+        <code>KnownDangling</code> and <code>ExpectedToLog</code> lists are checked in both directions, so a
+        declared exception that stops applying fails too. The linter ships 21 self-tests
+        (<code>-- --selftest</code>).
+      </p>
+    </details>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Negative results</span>
+    <h2>What turned out to be fine</h2>
+    <p>A negative result is a result, and three of these save work you might otherwise have scheduled.</p>
+    <ul>
+      <li>
+        <strong>The localization header inconsistency is cosmetic, not functional.</strong> Five distinct
+        headers across ten files, and by the loader's actual rules none of the differences changes what
+        loads: the first column's name is overwritten with <code>KEY</code> before the check that reads it,
+        so that check is dead code, and every other column matches vanilla case-insensitively &mdash;
+        <code>English</code> and <code>english</code> are one column. Worth standardizing as a chore.
+        <em>Not</em> a bug, and it should not be filed as one.
+      </li>
+      <li>
+        <strong>No mod's localization file is rejected today.</strong> A header column that is neither
+        <code>^[A-Za-z]+$</code> nor <code>context</code>-prefixed makes the loader discard the entire file.
+        All ten headers pass.
+      </li>
+      <li>
+        <strong>Every <code>Extends</code> chain resolves</strong> &mdash; 5,966 block and 1,139 item
+        references, on both versions. The seed doc named StrongMining's nine vanilla parents as its top
+        guard; this covers those and every other mod's.
+      </li>
+      <li>
+        <strong>No transpiler has lost its match point</strong> on either declared version, including
+        DynamicLandClaimCount's, which its own source comment calls Linux-fragile. This runs on the Windows
+        tree and cannot speak to Linux &mdash; but the Windows behavior is now pinned on both versions,
+        which it was not yesterday.
+      </li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ================================================================== -->
+  <section>
+    <span class="eyebrow">Limits</span>
+    <h2>What this run could not reach</h2>
+    <ul>
+      <li>
+        <strong>Anything needing a running world.</strong> A command actually reaching
+        <code>SdtdConsole</code>, a buff actually landing on a player, a zone actually entered &mdash; all
+        gap R1/R2. The queue-drain tests still hold, because the mod swallows each command's failure and the
+        drain happens either way, which is itself the behavior under test.
+      </li>
+      <li>
+        <strong>Three <code>PlayerDamage</code> handlers.</strong> <code>HandleEntityKilled</code>,
+        <code>HandlePlayerDisconnected</code> and <code>ValidateDamageEntityPackage</code> all log
+        <em>and</em> need <code>GameManager.Instance.World</code> &mdash; the one intersection neither
+        universe covers.
+      </li>
+      <li>
+        <strong>Whether ProjectZ defines the twelve crop blocks.</strong> #61, and the reason those twelve
+        are declared rather than fixed.
+      </li>
+      <li>
+        <strong>Linux.</strong> Everything here ran against the Windows game tree. Production is Linux, so
+        no result above is a platform claim.
+      </li>
+    </ul>
+    <p class="where" style="color: var(--ink-faint); font-size: 0.85rem;">
+      Full detail, per topic, in <code>.ai/overnight/</code> &mdash; <code>INDEX.md</code> lists every report.
+    </p>
+  </section>
+
+</div>
