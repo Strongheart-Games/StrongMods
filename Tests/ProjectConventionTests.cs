@@ -358,8 +358,16 @@ public class ProjectConventionTests {
 
   private static string Relative(string from, string to) => Path.GetRelativePath(from, to);
 
+  /// <summary>
+  ///   A project the repo's shape conventions govern. Build output, the scratch area and the vendored game
+  ///   trees are obviously not; <c>.ai\</c> is the less obvious one. Effort-scoped prototypes live there
+  ///   (AGENTS.md, "Docs have homes"), they are excluded from every mod project's compile glob, and they are
+  ///   deliberately outside StrongMods.sln — so a mod-shape entry point is exactly what they must NOT import.
+  ///   ModInventory already skips <c>.ai\</c> for the same reason. Added when #82's Tier-2 client and its
+  ///   isolation mod landed under StrongDev\.ai\.
+  /// </summary>
   private static bool IsSourceProject(string path) {
     var parts = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-    return !parts.Any(p => p is "bin" or "obj" or ".scratch" or "vendor" or ".git");
+    return !parts.Any(p => p is "bin" or "obj" or ".scratch" or "vendor" or ".git" or ".ai");
   }
 }

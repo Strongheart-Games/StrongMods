@@ -79,12 +79,22 @@ test needs. Deliberately absent: the live `Mods/`, and any third-party mod state
 
 ### 3b. `0_TFP_Harmony` is mandatory
 
-Every code mod depends on it implicitly. A tree without it loads **no code mods at all while looking perfectly
-healthy** — no error, just silence. `Mods_Vanilla/` in the install holds a pristine copy; that is the better
-source than the live `Mods/`.
+Every code mod depends on it implicitly. A tree without it leaves **no code mod functioning**. `Mods_Vanilla/` in the
+install holds a pristine copy; that is the better source than the live `Mods/`.
 
 The minimum viable test mod set is therefore `0_TFP_Harmony` + whatever is under test. This is a rule the harness
 should encode, not something left to whoever assembles a mod set by hand.
+
+> **Corrected 2026-08-17** (issue #80 run R4; ledger `.ai/mod-side-classifier.md` §6e). This section previously said
+> such a tree "loads no code mods at all while looking perfectly healthy — no error, just silence." Measured, both
+> halves are wrong. The assemblies **do** load (`[MODS] Loaded assembly StrongMods`, `[MODS] Loaded Mod: …`) and the
+> mods **do** appear in `version`; what fails is `IModApi` initialization, **loudly** —
+> `ERR [MODS] Failed initializing ModAPI instance on mod '<name>'` followed by
+> `EXC Could not load file or assembly '0Harmony, Version=2.13.0.0, …'`. The outcome the section warns about is real;
+> the diagnosis is one grep away, not invisible.
+>
+> The reusable lesson is bigger than this section: **`version` listing a mod proves the folder was read, not that the
+> mod's code runs.** Pair it with a `Loaded assembly` / `ERR [MODS]` log check before asserting a mod is working.
 
 ### 3c. Server configuration
 
@@ -129,6 +139,11 @@ blocks in the world) → the dymesh marker.
 That progression is why readiness is best modelled as a **capability ladder** rather than a single boolean —
 different operations become safe at different points, and a test should wait for the level it actually needs.
 Emitting our own staged markers is tracked as work; see the architecture doc.
+
+**A rung above the dymesh marker, added 2026-08-17** (issue #82): the dymesh marker is
+**not** sufficient for Tier 2. A protocol client that connects before the server finishes coming up is denied
+`EKickReason 14 GameStillLoading` — that kick reason is the "connected too early" signal for the Tier-2 rung, the way
+the dymesh marker is for Tier 1.
 
 ### 4b. Telnet output is parseable
 
