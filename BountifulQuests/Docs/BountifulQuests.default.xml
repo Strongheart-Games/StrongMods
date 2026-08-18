@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+  BountifulQuests server settings.
+
+  Every value below is the vanilla behaviour, so this file as shipped changes nothing. Edit it, restart the server.
+  A value outside its bounds is clamped and logged; a malformed file falls back to these defaults entirely.
+
+  Full explanation of each knob, and what vanilla does instead, is in Docs/configuration.md.
+-->
+<BountifulQuests>
+
+  <!--
+    per_tier   How many quests a trader offers on one tier page.        4..64,  vanilla 7
+               21 is the most the shipped dialog and UI patches can show; higher values still generate, and the
+               log says so on startup.
+    min_tier   Lowest tier page offered.                                1..6,   vanilla 1
+    max_tier   Highest tier page offered. 0 = the player's own tier.    0..6,   vanilla 0
+    sort       distance | tier | type | none.                                   vanilla distance
+  -->
+  <offers per_tier="7" min_tier="1" max_tier="0" sort="distance" />
+
+  <!--
+    min / max      Hard distance window in metres from the trader area. 0 disables that end.
+                   Vanilla has NO cap: it prefers a band and silently falls back to any other one.
+                   A window with nothing in it means fewer offers, never a further one.
+    near / mid     Band edges in metres. Vanilla hardcodes 500 and 1500.
+    band_weights   How many of each page's offers prefer near, mid, far. Vanilla is effectively 3,1,3.
+  -->
+  <distance min="0" max="0" near="500" mid="1500" band_weights="3,1,3" />
+
+  <!--
+    Relative draw weights per quest type. match is a case-insensitive glob over the quest id, anchored at both
+    ends, so *_clear matches tier3_clear and not tier3_clear_infested. When two rows match, the LONGER pattern
+    wins, so row order in this file never changes the outcome.
+
+      weight  relative chance. 0 removes the type from offers entirely.
+      max     cap per tier page. 0 = uncapped.
+
+    Vanilla has no weighting at all: it draws uniformly from the rows a trader's quest_list happens to declare,
+    so the mix is an accident of how the XML was written. The table below reproduces nothing in particular; it is
+    commented out so the shipped defaults stay vanilla. Uncomment and edit to take control.
+  -->
+  <types default_weight="1">
+    <!--
+    <type match="*_clear"           weight="3" max="4" />
+    <type match="*_clear_infested"  weight="2" max="2" />
+    <type match="*_fetch"           weight="2" max="3" />
+    <type match="*_fetch_clear"     weight="2" max="3" />
+    <type match="*_restore_power"   weight="1" max="2" />
+    <type match="*_buried_supplies" weight="1" max="2" />
+    -->
+  </types>
+
+  <!--
+    avoid_offered  Prefer not to put the same quest id on a page twice. It stays a preference: when nothing else
+                   is eligible the page fills with repeats rather than ending short.
+                   Vanilla has no page-level memory at all; only completed POIs are remembered, per trader per
+                   tier. Shipped off so the defaults stay vanilla; turning it on is the single biggest variety win
+                   on a page bigger than the candidate pool.
+  -->
+  <repeats avoid_offered="false" />
+
+</BountifulQuests>

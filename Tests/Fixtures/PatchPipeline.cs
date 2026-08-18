@@ -34,11 +34,13 @@ public sealed class PatchPipeline {
   private static readonly Regex IncludeFilename = new(@"<include\s+filename\s*=\s*""([^""]+)""");
 
   private PatchPipeline(IReadOnlyList<string> entryPoints, IReadOnlyList<PatchApplication> applications,
-                        IReadOnlyList<DeadPatchFile> deadFiles, IReadOnlyList<string> absentFromUnit) {
+                        IReadOnlyList<DeadPatchFile> deadFiles, IReadOnlyList<string> absentFromUnit,
+                        IReadOnlyDictionary<string, object> documents) {
     EntryPoints = entryPoints;
     Applications = applications;
     DeadFiles = deadFiles;
     AbsentFromUnit = absentFromUnit;
+    Documents = documents;
   }
 
   public IReadOnlyList<string> EntryPoints { get; }
@@ -47,6 +49,14 @@ public sealed class PatchPipeline {
 
   /// <summary>Entry points this unit ships no document for — legal, XmlLoadInfo has an ignore-missing flag.</summary>
   public IReadOnlyList<string> AbsentFromUnit { get; }
+
+  /// <summary>
+  ///   The MERGED documents — vanilla with every mod's patches applied, keyed by entry-point name. These are
+  ///   the host's own XmlFile objects, so read them with <see cref="PatcherHost.XmlOf" />. This is what the
+  ///   game would actually hold in memory, and therefore the only honest subject for a cross-reference check:
+  ///   a mod may legitimately reference something another mod appends.
+  /// </summary>
+  public IReadOnlyDictionary<string, object> Documents { get; }
 
   /// <summary>
   ///   Replays the pipeline against the host's tree. With a label, only the projects DECLARING that version
@@ -112,7 +122,7 @@ public sealed class PatchPipeline {
         dead.AddRange(DeadFilesIn(mod, configDir, opened));
       }
 
-      return new PatchPipeline(entryPoints, applications, dead, absent);
+      return new PatchPipeline(entryPoints, applications, dead, absent, vanilla);
     } finally {
       host.Cache.Clear();
     }

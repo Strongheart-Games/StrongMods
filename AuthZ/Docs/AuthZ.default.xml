@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+  AuthZ settings.
+
+  Every invariant is a statement a well-behaved client never violates. Each one has a mode:
+
+    off     Do not check. Costs nothing: the engine does not even patch the package.
+    log     Check, write a violation line, let the packet through. The default.
+    block   Check, write a violation line, and drop the packet.
+
+  Nothing blocks unless you say so. Read your own logs first: a rule that has never run against your server's real
+  traffic has no business dropping its packets.
+
+  Violation lines look like this, and are rate-limited to 3 per client per invariant per minute:
+
+    WRN [AuthZ] violation pve.buff | client=Bob/Steam_7656... | package=NetPackageAddRemoveBuff
+        | expected=under NoKilling, a client does not buff or debuff another player or an entity they own
+        | observed=tried to buff or debuff EntityDrone owned by Steam_7656... (entity 4210)
+
+  Docs/invariants.md lists every id, what it detects, and its false-positive risk.
+-->
+<AuthZ>
+
+  <defaults mode="log" />
+
+  <thresholds max_experience_per_packet="100000" />
+
+  <invariants>
+
+    <!-- Family A: the entity a packet names is the sender's own. No false positives; one integer comparison. -->
+    <invariant id="exp.self-only"        mode="log" />
+    <invariant id="skill.self-only"      mode="log" />
+    <invariant id="score.self-only"      mode="log" />
+    <invariant id="itemaction.self-only" mode="log" />
+    <invariant id="smell.self-only"      mode="log" />
+    <invariant id="lasersight.self-only" mode="log" />
+    <invariant id="chat.identity"        mode="log" />
+
+    <!-- Family B: under NoKilling, no harm to another player or anything they own. Inert in other killing modes. -->
+    <invariant id="pve.damage"        mode="log" />
+    <invariant id="pve.buff"          mode="log" />
+    <invariant id="pve.velocity"      mode="log" />
+    <invariant id="pve.attack-target" mode="log" />
+
+    <!-- Family F: a field is outside the range the game itself can produce. -->
+    <invariant id="skill.range"      mode="log" />
+    <invariant id="buff.known-name"  mode="log" />
+    <invariant id="exp.delta"        mode="log" />
+
+    <!-- Family D: a one-shot bootstrap packet arrives once. -->
+    <invariant id="lifecycle.enter-game-once"  mode="log" />
+    <invariant id="lifecycle.spawn-once"       mode="log" />
+    <invariant id="lifecycle.spawn-when-unbound" mode="log" />
+
+    <!-- Family G: world-editor traffic on a live server. Set these to off if you edit the world live. -->
+    <invariant id="editor.volume-add"    mode="log" />
+    <invariant id="editor.volume-update" mode="log" />
+
+  </invariants>
+
+</AuthZ>

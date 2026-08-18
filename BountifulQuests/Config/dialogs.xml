@@ -8,4 +8,114 @@
   <!-- Always offer jobs, even if player has already accepted one from this trader -->
   <remove xpath="dialogs/dialog[@id='trader']/response[@id='jobsnone']" />
   <remove xpath="dialogs/dialog[@id='trader']/response[starts-with(@id, 'jobshave')]/requirement[@type='QuestStatus']" />
+
+  <!--
+    Offer rows 8..21 on every tier page. Vanilla declares listindex 0..6 and stops; a listindex with no quest
+    behind it resolves to an invalid response and renders nothing, so declaring rows the generator did not
+    fill is harmless. 21 is the display budget: the response grid holds 24 rows (see
+    Config/XUi_InGame/windows.xml), and three are spent on "nevermind" plus the deduplicated prev and next
+    links. Rows stay ahead of the response_entry elements so quests render above navigation, as in vanilla.
+  -->
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs1']/response_entry[1]">
+    <quest_entry listindex="7" tier="1" />
+    <quest_entry listindex="8" tier="1" />
+    <quest_entry listindex="9" tier="1" />
+    <quest_entry listindex="10" tier="1" />
+    <quest_entry listindex="11" tier="1" />
+    <quest_entry listindex="12" tier="1" />
+    <quest_entry listindex="13" tier="1" />
+    <quest_entry listindex="14" tier="1" />
+    <quest_entry listindex="15" tier="1" />
+    <quest_entry listindex="16" tier="1" />
+    <quest_entry listindex="17" tier="1" />
+    <quest_entry listindex="18" tier="1" />
+    <quest_entry listindex="19" tier="1" />
+    <quest_entry listindex="20" tier="1" />
+  </insertbefore>
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs2']/response_entry[1]">
+    <quest_entry listindex="7" tier="2" />
+    <quest_entry listindex="8" tier="2" />
+    <quest_entry listindex="9" tier="2" />
+    <quest_entry listindex="10" tier="2" />
+    <quest_entry listindex="11" tier="2" />
+    <quest_entry listindex="12" tier="2" />
+    <quest_entry listindex="13" tier="2" />
+    <quest_entry listindex="14" tier="2" />
+    <quest_entry listindex="15" tier="2" />
+    <quest_entry listindex="16" tier="2" />
+    <quest_entry listindex="17" tier="2" />
+    <quest_entry listindex="18" tier="2" />
+    <quest_entry listindex="19" tier="2" />
+    <quest_entry listindex="20" tier="2" />
+  </insertbefore>
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs3']/response_entry[1]">
+    <quest_entry listindex="7" tier="3" />
+    <quest_entry listindex="8" tier="3" />
+    <quest_entry listindex="9" tier="3" />
+    <quest_entry listindex="10" tier="3" />
+    <quest_entry listindex="11" tier="3" />
+    <quest_entry listindex="12" tier="3" />
+    <quest_entry listindex="13" tier="3" />
+    <quest_entry listindex="14" tier="3" />
+    <quest_entry listindex="15" tier="3" />
+    <quest_entry listindex="16" tier="3" />
+    <quest_entry listindex="17" tier="3" />
+    <quest_entry listindex="18" tier="3" />
+    <quest_entry listindex="19" tier="3" />
+    <quest_entry listindex="20" tier="3" />
+  </insertbefore>
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs4']/response_entry[1]">
+    <quest_entry listindex="7" tier="4" />
+    <quest_entry listindex="8" tier="4" />
+    <quest_entry listindex="9" tier="4" />
+    <quest_entry listindex="10" tier="4" />
+    <quest_entry listindex="11" tier="4" />
+    <quest_entry listindex="12" tier="4" />
+    <quest_entry listindex="13" tier="4" />
+    <quest_entry listindex="14" tier="4" />
+    <quest_entry listindex="15" tier="4" />
+    <quest_entry listindex="16" tier="4" />
+    <quest_entry listindex="17" tier="4" />
+    <quest_entry listindex="18" tier="4" />
+    <quest_entry listindex="19" tier="4" />
+    <quest_entry listindex="20" tier="4" />
+  </insertbefore>
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs5']/response_entry[1]">
+    <quest_entry listindex="7" tier="5" />
+    <quest_entry listindex="8" tier="5" />
+    <quest_entry listindex="9" tier="5" />
+    <quest_entry listindex="10" tier="5" />
+    <quest_entry listindex="11" tier="5" />
+    <quest_entry listindex="12" tier="5" />
+    <quest_entry listindex="13" tier="5" />
+    <quest_entry listindex="14" tier="5" />
+    <quest_entry listindex="15" tier="5" />
+    <quest_entry listindex="16" tier="5" />
+    <quest_entry listindex="17" tier="5" />
+    <quest_entry listindex="18" tier="5" />
+    <quest_entry listindex="19" tier="5" />
+    <quest_entry listindex="20" tier="5" />
+  </insertbefore>
+
+  <insertbefore xpath="/dialogs/dialog[@id='trader']/statement[@id='currentjobs6']/response_entry[1]">
+    <quest_entry listindex="7" tier="6" />
+    <quest_entry listindex="8" tier="6" />
+    <quest_entry listindex="9" tier="6" />
+    <quest_entry listindex="10" tier="6" />
+    <quest_entry listindex="11" tier="6" />
+    <quest_entry listindex="12" tier="6" />
+    <quest_entry listindex="13" tier="6" />
+    <quest_entry listindex="14" tier="6" />
+    <quest_entry listindex="15" tier="6" />
+    <quest_entry listindex="16" tier="6" />
+    <quest_entry listindex="17" tier="6" />
+    <quest_entry listindex="18" tier="6" />
+    <quest_entry listindex="19" tier="6" />
+    <quest_entry listindex="20" tier="6" />
+  </insertbefore>
 </config>

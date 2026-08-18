@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModInfo>
   <Name value="AuthZ" />
-  <Version value="0.0.1" />
+  <Version value="0.1.0" />
   <DisplayName value="AuthZ" />
-  <Description value="Server-side authorization checks that detect griefing, such as unauthorized damage to other players and their vehicles." />
+  <Description value="Server-side authorization checks on inbound network packets: states what a well-behaved client never sends, then detects and logs everything else." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/AuthZ" />
   <Dependencies>

@@ -57,6 +57,7 @@ namespace StrongMods {
         return;
       }
 
+      CaseSensitiveFilesystem.Init();
       ModUnloader.Init(harmony);
       harmony.PatchCategory(CaseSensitiveFilesystem.Category);
       CaseSensitiveFilesystem.ValidateModInfos();

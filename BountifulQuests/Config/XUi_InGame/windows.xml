@@ -1,0 +1,20 @@
+<config>
+  <!--
+    Grow the trader dialog response list from 10 rows to 24.
+
+    XUiC_DialogResponseList.Init() renders exactly as many responses as this grid produced children, and
+    XUiV_Grid.RepeatCount is cols * rows, so rows="24" IS the row budget. Rows with no response bind
+    showresponse=false and hide themselves, so over-provisioning costs nothing but empty space.
+
+    Sizing: the XUi canvas is 1080 tall. anchor="Right" puts the origin at the middle of the right edge and the
+    window hangs downward from pos.y, so a height of 1006 centres at pos.y = 503 and stays inside the canvas.
+    46 px of that is the header; 24 rows x 40 px is the rest.
+
+    XUi_InGame/windows is server-synced (WorldStaticData sends it to every joining client), so this is a
+    server-side-only change despite being a UI change.
+  -->
+  <setattribute xpath="/windows/window[@name='windowResponses']" name="height">1006</setattribute>
+  <setattribute xpath="/windows/window[@name='windowResponses']" name="pos">-825,503</setattribute>
+  <setattribute xpath="/windows/window[@name='windowResponses']/grid[@name='items']" name="rows">24</setattribute>
+  <setattribute xpath="/windows/window[@name='windowResponses']/grid[@name='items']" name="height">960</setattribute>
+</config>
