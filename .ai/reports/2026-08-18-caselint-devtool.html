@@ -1,0 +1,387 @@
+<title>Caselint</title>
+<style>
+  :root {
+    --ground: #F0F1F3; --surface: #FFFFFF; --surface-2: #E4E6EA;
+    --ink: #14161A; --ink-2: #3A404A; --ink-3: #656D79;
+    --hair: #D0D4DA; --hair-strong: #A6ADB7;
+    --accent: #1F5FA8; --accent-bright: #2C7CD4; --accent-tint: #E1EBF7;
+    --alarm: #9A2622; --alarm-tint: #F5E2E0;
+    --calm: #1B6048; --calm-tint: #DDEBE5;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Consolas, monospace;
+    --measure: 68ch; --pad: clamp(20px, 4vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+      --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+      --hair: #242C35; --hair-strong: #38424E;
+      --accent: #6FA8E8; --accent-bright: #96C4F5; --accent-tint: #14202E;
+      --alarm: #E8837A; --alarm-tint: #2A1917;
+      --calm: #62C79A; --calm-tint: #142520;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong);
+              padding: 24px 0 28px; display: flex; flex-direction: column; gap: 16px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--accent); display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  h1 { margin: 0; font-size: clamp(34px, 6vw, 58px); line-height: 1.02; letter-spacing: -0.035em;
+       font-weight: 800; text-wrap: balance; max-width: 22ch; }
+  .standfirst { margin: 0; max-width: var(--measure); font-size: clamp(17px, 2.1vw, 20px);
+                line-height: 1.5; color: var(--ink-2); }
+  .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .chip { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; padding: 5px 10px;
+          border: 1px solid var(--hair-strong); color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+  .chip.ok { color: var(--calm); background: var(--calm-tint); border-color: var(--calm); }
+  .chip.open { color: var(--accent); background: var(--accent-tint); border-color: var(--accent); }
+  .chip.bad { color: var(--alarm); background: var(--alarm-tint); border-color: var(--alarm); }
+  section { padding: 44px 0 8px; border-bottom: 1px solid var(--hair); display: flex;
+            flex-direction: column; gap: 18px; }
+  section:last-of-type { border-bottom: none; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--ink-3); margin: 0; }
+  h2 { margin: -8px 0 0; font-size: clamp(24px, 3.4vw, 33px); line-height: 1.12; letter-spacing: -0.022em;
+       font-weight: 750; text-wrap: balance; max-width: 28ch; }
+  h3 { margin: 14px 0 -6px; font-size: 19px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 700; }
+  p, li { margin: 0; max-width: var(--measure); }
+  ul, ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 8px; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  code, .m { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2);
+             padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--surface); border: 1px solid var(--hair); padding: 14px 16px;
+        overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.5; max-width: 100%; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 14.5px; min-width: 640px; }
+  th, td { border: 1px solid var(--hair); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+       text-transform: uppercase; color: var(--ink-2); }
+  td { background: var(--surface); }
+  .note { border-left: 3px solid var(--accent); background: var(--accent-tint); padding: 12px 16px;
+          max-width: var(--measure); }
+  .warn { border-left: 3px solid var(--alarm); background: var(--alarm-tint); padding: 12px 16px;
+          max-width: var(--measure); }
+  .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; font-family: var(--mono);
+          font-size: 13px; max-width: 100%; }
+  .flow .box { border: 1px solid var(--hair-strong); background: var(--surface); padding: 10px 12px;
+               display: flex; flex-direction: column; gap: 2px; justify-content: center; min-width: 150px; }
+  .flow .box .t { font-weight: 700; }
+  .flow .box .s { color: var(--ink-3); font-size: 12px; }
+  .flow .box.hot { border-color: var(--alarm); background: var(--alarm-tint); }
+  .flow .arrow { align-self: center; padding: 0 10px; color: var(--ink-3); font-size: 18px; }
+</style>
+<div class="page">
+  <header class="masthead">
+    <div class="kicker"><span>StrongMods</span><span>2026-08-18</span><span>Effort: case-sensitivity-devtool</span><span>Issue #95</span></div>
+    <h1>The Case for Dev Time</h1>
+    <p class="standfirst">
+      Whether the case-sensitivity check StrongMods ships as an always-on runtime feature belongs at development
+      time instead — grounded in the game's own IL, prototyped as a lint, and run against every mod in the repo.
+    </p>
+    <div class="statusbar">
+      <span class="chip ok">selftest 17/17</span>
+      <span class="chip ok">28 mods scanned — 0 findings</span>
+      <span class="chip ok">seeded mutation: 4/4 detected</span>
+      <span class="chip bad">1 new StrongMods defect found</span>
+      <span class="chip">suite untouched</span>
+    </div>
+  </header>
+
+  <section>
+    <p class="eyebrow">Scope</p>
+    <h2>What was attempted</h2>
+    <p>This effort resumes a run that died mid-flight at about 12:15; the earlier attempt had already written
+       <code>StrongDev/.ai/tools/caselint.cs</code>, disassembled the relevant game classes into
+       <code>.scratch/caselint/*.il</code>, and left a skeleton of this report. This session verified all of that
+       rather than trusting it, then finished the four task parts:</p>
+    <ol>
+      <li><strong>Research</strong> — what the runtime <code>CaseSensitiveFilesystem</code> feature checks today and
+          what #89/#90/#91 say is broken (all read via <code>gh issue view 95 89 90 91</code> and the current source).</li>
+      <li><strong>IL evidence</strong> — which game load paths probe exact composed path strings, re-verified this
+          session against the captured disassembly with the greps quoted below.</li>
+      <li><strong>The tool</strong> — <code>caselint.cs</code> finished and proven: selftest green, a repo-wide run,
+          an independent bash cross-check, and a seeded-mutation run against a copy of a real mod.</li>
+      <li><strong>The #95 recommendation</strong> — what dev time covers, what residue genuinely needs runtime, and
+          what to do with the runtime feature.</li>
+    </ol>
+    <p>The hazard class, restated: production servers run Linux (case-sensitive), development happens on Windows
+       (case-insensitive), so a wrong-case file reference works in dev and silently breaks in production.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Research</p>
+    <h2>The runtime feature today, and what its three bugs say</h2>
+    <p>StrongMods ships <code>CaseSensitiveFilesystem</code> (<code>StrongMods/CaseSensitiveFilesystem.cs</code>):
+       a Harmony transpiler that replaces <code>File.Exists</code>, <code>Directory.Exists</code>,
+       <code>SdFile.Exists</code> and <code>SdDirectory.Exists</code> with its own case-checking
+       <code>Exists</code> inside four game methods (<code>Localization.LoadPatchDictionaries</code>,
+       <code>ModManager.LoadUiAtlases</code>, <code>ModManager.LoadLocalizations</code>,
+       <code>XmlPatchMethods.Include</code> — lines 284–314), plus <code>ValidateModInfos</code> (line 236), which
+       <em>unloads any mod</em> whose <code>ModInfo.xml</code> fails the case-sensitive probe. The whole feature is
+       gated on <code>Config.CaseSensitiveFilesystemEnabled</code> (<code>StrongMods/Config.cs:10</code>), an
+       auto-probe of whether the host filesystem ignores case.</p>
+    <p>There is also a <strong>fifth call site the issues do not mention</strong>:
+       <code>StrongMods/BreadthFirstXmlPatcher.cs:106</code> calls <code>CaseSensitiveFilesystem.Exists</code>
+       directly for every mod-config probe. That one turned out to matter — see the finding below.</p>
+    <h3>State of the three open bugs (all OPEN per <code>gh</code> at 12:33 today)</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Issue</th><th>Claim</th><th>State in current source (read this session)</th></tr>
+      <tr><td>#89</td><td>The walk started at the filesystem root, and an ancestor that was traversable but not
+          listable threw <code>UnauthorizedAccessException</code> uncaught, crashing a shared Linux host at
+          <code>GameManager.Awake</code>.</td>
+          <td>Fix-direction code is present: the walk anchors at the game's declared content roots
+          (<code>ResolveAnchors</code>, lines 48–56), an unlistable directory degrades to
+          <code>SegmentMatch.Unverifiable</code> with a one-time warning (lines 199–234), and <code>Exists</code>
+          catches everything and falls back to the BCL answer (lines 92–107).</td></tr>
+      <tr><td>#90</td><td>The case-insensitivity probe was defeated by the literal <code>/..</code> that
+          <code>GameIO.GetGamePath()</code> carries, so the feature ran on Linux — the exact environment it was
+          written to stay out of.</td>
+          <td>Fix-direction code is present: <code>OppositeCaseSpelling</code> normalizes first and inverts only the
+          leaf segment (<code>Config.cs:48–66</code>), and the gate never throws — unsure answers "case-sensitive"
+          (lines 18–29).</td></tr>
+      <tr><td>#91</td><td>One <code>Exists</code> replaces four differently-typed BCL methods, so
+          <code>File.Exists("&lt;mod&gt;/Config")</code> now answers <em>true</em> — the file/directory
+          discrimination the game relies on is gone.</td>
+          <td><strong>Not fixed.</strong> A single replacement method is still swapped in for all four targets
+          (lines 247–277); nothing distinguishes file from directory at the final segment.</td></tr>
+    </table></div>
+    <p>#95's framing survives contact with the source: each bug is a cost paid at runtime on a deployed server for a
+       diagnostic whose entire audience is a mod author at development time. Two of the three are patched in place;
+       the pattern that produced them is untouched.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Finding</p>
+    <h2>The gate does not gate the fifth call site</h2>
+    <p class="warn"><strong>New defect, found this session.</strong> When
+       <code>Config.CaseSensitiveFilesystemEnabled</code> is false — i.e. on every production Linux server, which is
+       the state #90's fix exists to guarantee — <code>CaseSensitiveFilesystem.Init()</code> is never called
+       (<code>StrongMods/ModApi.cs:55–64</code> returns before it), so <code>s_anchors</code> stays the empty array
+       it was initialized to (<code>CaseSensitiveFilesystem.cs:20</code>). But
+       <code>BreadthFirstXmlPatcher</code> is gated separately and is always on
+       (<code>Config.cs:7</code>, <code>ModApi.cs:25–31</code>), and its phase-2 loop probes every mod's patch file
+       through <code>CaseSensitiveFilesystem.Exists</code> unconditionally
+       (<code>BreadthFirstXmlPatcher.cs:105–108</code>). With no anchors, <code>AnchorFor</code> falls back to
+       <code>Path.GetPathRoot</code> (lines 165–175) — so every probe walks segment-by-segment <em>from the
+       filesystem root</em>, enumerating every ancestor directory (lines 109–158).</p>
+    <div class="flow">
+      <div class="box"><span class="t">Config gate = off</span><span class="s">production Linux (#90 fixed)</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><span class="t">Init() skipped</span><span class="s">ModApi.cs:55–64</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><span class="t">s_anchors empty</span><span class="s">CaseSensitiveFilesystem.cs:20</span></div>
+      <div class="arrow">→</div>
+      <div class="box hot"><span class="t">BFXP still calls Exists</span><span class="s">BreadthFirstXmlPatcher.cs:106</span></div>
+      <div class="arrow">→</div>
+      <div class="box hot"><span class="t">walk anchors at "/"</span><span class="s">AnchorFor → GetPathRoot, :165–175</span></div>
+    </div>
+    <p>Consequences on a production Linux server, per boot: one root-anchored directory walk for every mod × every
+       eligible vanilla XML file (order: ~25 mods × dozens of files — roughly a thousand walks; structural claim, not
+       measured), each enumerating every ancestor from <code>/</code> down. On a multi-tenant host that is exactly the
+       I/O pattern #89 was about — now non-fatal (the catch degrades it to a warning per unlistable directory), but the
+       feature the gate says is off is still running its most expensive path, and its
+       <code>Log.Error</code> mismatch messages (lines 147–151) can still fire in production. The gate is off in name
+       only for this call site.</p>
+    <p>Fix direction (either suffices): have <code>Exists</code> fast-path to
+       <code>File.Exists(path) || Directory.Exists(path)</code> when the feature never initialized, or route the
+       breadth-first patcher's probe through the gate so an off state uses <code>SdFile.Exists</code> directly.
+       Proposed as a ticket below.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Evidence</p>
+    <h2>What the game's loaders actually probe — from the IL</h2>
+    <p>Scope of every claim in this table: <strong>V3.1.0 b14, game unit</strong>, read from
+       <code>packages/7DtD.Assemblies.Game/3.1.0.14</code>, disassembled by the earlier attempt of this same effort
+       into <code>.scratch/caselint/*.il</code> and re-verified this session by grepping for each literal and the
+       adjacent <code>Exists</code> call (commands below). What the IL establishes is that the game composes exact
+       path strings and branches on <code>Exists</code>; that those probes are case-sensitive on Linux is a property
+       of the OS and Mono's file APIs, asserted from platform behavior, <em>not</em> verified by running on Linux
+       this session.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Load path</th><th>IL evidence (file:line in .scratch/caselint/)</th><th>On a wrong-case name (Linux)</th></tr>
+      <tr><td><code>Mod.LoadDefinitionFromFolder</code><br>folder + <code>"/ModInfo.xml"</code></td>
+          <td><code>Mod.il:931</code> <code>ldstr "/ModInfo.xml"</code> → Concat → <code>:939</code>
+              <code>SdFile::Exists</code>; miss logs <code>"[MODS] Folder … does not contain a ModInfo.xml, ignoring"</code></td>
+          <td>The folder is not a mod at all — one log line, then ignored.</td></tr>
+      <tr><td><code>XmlPatcher.LoadAndPatchConfig</code><br>mod.Path + <code>"/Config/"</code> + vanilla name</td>
+          <td><code>XmlPatcher.il:558</code> <code>ldstr "/Config/"</code> → <code>:566</code>
+              <code>SdFile::Exists</code> → <code>:567</code> <code>brfalse IL_021b</code>, whose target is the
+              loop's <code>MoveNext</code> (verified) — <strong>no log on the miss path</strong></td>
+          <td>The patch silently never applies. (On a StrongMods server this loop is replaced by
+              <code>BreadthFirstXmlPatcher</code>, which composes the same string — <code>BreadthFirstXmlPatcher.cs:105</code>.)</td></tr>
+      <tr><td><code>ModManager.LoadLocalizations</code><br>mod.Path + <code>"/Config"</code></td>
+          <td><code>ModManager.il:251</code> <code>ldstr "/Config"</code> → <code>:256</code> <code>SdDirectory::Exists</code></td>
+          <td>Silent gate: everything in the directory is skipped.</td></tr>
+      <tr><td><code>Localization.LoadPatchDictionaries</code><br>dir + <code>"/Localization.csv"</code></td>
+          <td><code>Localization.il:768</code> (method) → <code>:778</code> <code>ldstr "/Localization.csv"</code> →
+              <code>:783</code> <code>SdFile::Exists</code>; the hit path logs, the miss path does not</td>
+          <td>The mod's localization silently never loads.</td></tr>
+      <tr><td><code>ModManager.LoadUiAtlases</code><br>mod.Path + <code>"/UIAtlases"</code></td>
+          <td><code>ModManager.il:605</code> <code>ldstr "/UIAtlases"</code> → <code>:610</code> <code>SdDirectory::Exists</code></td>
+          <td>Atlases silently never load.</td></tr>
+      <tr><td><code>XmlPatchMethods.Include</code><br><code>Path.Combine(GetDirectoryName(patch), filename)</code></td>
+          <td><code>XmlPatchMethods.il:2125</code> <code>GetDirectoryName</code> → <code>:2136</code>
+              <code>ldstr "Given file not found: "</code></td>
+          <td>The one loud failure: the game logs the miss.</td></tr>
+    </table></div>
+    <pre><code># adjacency checks run this session, from .scratch/caselint/
+grep -n '"/ModInfo.xml"' Mod.il                    # 931
+grep -n '"/Config/"\|SdFile::Exists' XmlPatcher.il  # 558, 566
+grep -n '"/Config"\|"/UIAtlases"' ModManager.il     # 251, 605
+grep -n '"/Localization.csv"' Localization.il       # 747 (vanilla), 778 (mod dir)
+grep -n 'Given file not found' XmlPatchMethods.il   # 2136
+sed -n '…' XmlPatcher.il   # brfalse IL_021b target = List&lt;Mod&gt; enumerator MoveNext → next mod, no log</code></pre>
+    <p>Scoped negative: <code>grep -n -i 'icon\|preview' Mod.il ModManager.il</code> found nothing — no mod-icon or
+       preview-image load path exists in those two classes' IL. No claim is made about classes not disassembled.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">The tool</p>
+    <h2>caselint.cs — six rules, disk is the authority</h2>
+    <p><code>StrongDev/.ai/tools/caselint.cs</code> (written by the earlier attempt, verified and run this session;
+       usage: <code>dotnet run StrongDev/.ai/tools/caselint.cs</code>, <code>-- --selftest</code>,
+       <code>-- &lt;ModName&gt;</code>). Two design rules keep it honest:</p>
+    <ul>
+      <li><strong>Disk is the authority.</strong> A reference is flagged only when a target exists under the mod with
+          a <em>different spelling</em> — a case-insensitive hit that is not an ordinal match. A reference matching
+          nothing at all is a broken-reference problem (#50 gap S3), not a casing problem, and is not reported —
+          except <code>&lt;include&gt;</code>, where the miss is certain and cheap to see (reported as a warning).</li>
+      <li><strong>Host-independent by construction.</strong> The resolver enumerates real directory entries and
+          compares names itself (<code>Resolve</code>, lines 252–281), never asking the host filesystem whether a
+          spelling resolves — so it answers identically on Windows and Linux. (Design property; an actual Linux run
+          remains unverified.)</li>
+    </ul>
+    <div class="tablewrap"><table>
+      <tr><th>Rule</th><th>Severity</th><th>What it checks</th><th>Loader it mirrors</th></tr>
+      <tr><td><code>modinfo-name</code></td><td>Error</td><td><code>ModInfo.xml</code> spelled exactly</td><td><code>Mod.LoadDefinitionFromFolder</code></td></tr>
+      <tr><td><code>config-dir-name</code> / <code>uiatlases-dir-name</code></td><td>Error</td><td><code>Config</code> / <code>UIAtlases</code> directory spelling</td><td><code>ModManager.LoadLocalizations</code>, <code>LoadUiAtlases</code></td></tr>
+      <tr><td><code>localization-name</code></td><td>Error</td><td><code>Localization.csv</code> spelling</td><td><code>Localization.LoadPatchDictionaries</code></td></tr>
+      <tr><td><code>config-file-name</code></td><td>Error</td><td>every Config file vs the vanilla tree's 59 names (ordinal)</td><td><code>XmlPatcher.LoadAndPatchConfig</code> / <code>BreadthFirstXmlPatcher</code></td></tr>
+      <tr><td><code>include-case</code> / <code>include-missing</code></td><td>Error / Warn</td><td><code>&lt;include filename&gt;</code> resolves beside the patch file with matching case</td><td><code>XmlPatchMethods.Include</code></td></tr>
+      <tr><td><code>xml-path-ref</code></td><td>Warn</td><td>any XML attribute naming a file (incl. <code>@modfolder(…)</code> prefixes, <code>?asset</code> suffixes)</td><td>asset resolution, heuristic</td></tr>
+      <tr><td><code>code-literal</code></td><td>Warn</td><td>C# string literals that look like relative file paths</td><td>any path a mod composes itself</td></tr>
+    </table></div>
+    <p>The last two are warnings on purpose: they are regex-harvested and the resolve step culls false positives, but
+       the mapping from string to load path is heuristic, not IL-proven. Exit code: 1 when any error exists, 0
+       otherwise — CI-usable as is. Vanilla baseline resolves from <code>packages/</code> automatically;
+       <code>SDTD_TREE</code> overrides.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Runs</p>
+    <h2>Three runs: selftest, the repo, a seeded mutation</h2>
+    <h3>1 — Selftest: 17/17</h3>
+    <pre><code>$ CASELINT_SELFTEST_DIR=.scratch/caselint-selftest dotnet run StrongDev/.ai/tools/caselint.cs -- --selftest
+  ok   a wrong-case vanilla config file name is an error
+  ok   a wrong-case Localization.csv is an error
+  ok   a wrong-case include target is an error
+  …14 more…
+selftest: all cases pass</code></pre>
+    <h3>2 — Repo-wide: clean</h3>
+    <pre><code>$ dotnet run StrongDev/.ai/tools/caselint.cs
+vanilla baseline: …\packages\7DtD.Assemblies.Game\3.1.0.14\Data\Config (59 files)
+28 mods scanned — 0 error(s), 0 warning(s)</code></pre>
+    <p>A clean result from a new tool deserves suspicion, so it was cross-checked two independent ways:</p>
+    <ul>
+      <li>A pure-bash sweep comparing every <code>*/Config</code> file name against the vanilla tree's names
+          case-insensitively: <strong>0 ordinal mismatches</strong>. A <code>find -iname localization.csv</code> over
+          all mods: all ten spell it exactly <code>Config/Localization.csv</code>. (Full commands in
+          <code>.scratch/caselint/</code>; the first localization check ran at the wrong find-depth and was redone.)</li>
+      <li>A <strong>seeded mutation</strong>: <code>StrongholdTweaks</code> copied to
+          <code>.scratch/caselint-mutation/</code> with <code>blocks.xml→Blocks.xml</code> and
+          <code>Localization.csv→localization.csv</code>, plus a synthetic mod with a lowercase <code>config/</code>
+          directory. The tool run from that root found <strong>all four expected errors and nothing else</strong>
+          (output: <code>.scratch/caselint/mutation-run.txt</code>).</li>
+    </ul>
+    <p>So the honest headline is: <strong>the repo's 28 mods carry no filename-casing hazards today</strong> — within
+       the six rule classes above, against the V3.1.0 b14 vanilla baseline. No <code>mod:&lt;Name&gt;</code> bug
+       tickets arise from this run.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Recommendation</p>
+    <h2>The #95 answer: lint is the guarantee, runtime is the opt-in residue</h2>
+    <h3>What a dev-time tool covers</h3>
+    <p>Everything the runtime feature checks, plus more, at zero server cost: all six rule classes above run against
+       every mod on every invocation — including files a given boot never touches (the runtime check only sees paths
+       the four patched methods happen to probe). It reports at the moment the author can act, names the correct
+       spelling, and never reads a directory outside the repo. #89, #90 and #91 are all structurally impossible for
+       it: there is no server, no gate, and no BCL substitution.</p>
+    <h3>What residue genuinely needs runtime support</h3>
+    <ul>
+      <li><strong>Outside modders.</strong> StrongMods is published for modders outside this repo
+          (<code>CONTEXT.md</code>); a lint living here never sees their mods. This is #95's stated constraint and the
+          main argument against full retirement.</li>
+      <li><strong>Other authors' mods co-installed on a live server</strong>, which no repo lint can enumerate.</li>
+      <li><strong>Paths composed at runtime</strong> from data the lint cannot see (the <code>code-literal</code> rule
+          catches only literal fragments).</li>
+    </ul>
+    <p>Worth restating from #95's established facts: the game itself compares its two mod roots
+       case-insensitively (<code>GameIO.PathsEquals(…, ignoreCase: true)</code>), so the runtime substitution enforces
+       a stricter rule than the host does.</p>
+    <h3>Recommendation (for the human to weigh on #95 — not enacted here)</h3>
+    <ol>
+      <li><strong>Adopt the lint as the guarantee for this repo</strong> — graduate <code>caselint.cs</code> from its
+          <code>.ai/tools</code> prototype home into repo tooling (ticket below; home is an open decision — a
+          <code>StrongDev</code> tool run in CI, or a <code>Tests</code> convention test in the shape of #94).</li>
+      <li><strong>Demote the runtime feature to opt-in, default off.</strong> <code>Config.cs</code> already has the
+          per-feature toggle shape. A Windows mod author testing locally opts in; a server operator gets nothing from
+          it and no longer pays for it. Keeping the current auto-gate instead (now that #90's fix landed) is
+          defensible but leaves production one probe-bug away from re-running the walk — #90 is the precedent.</li>
+      <li><strong>Fix the ungated fifth call site regardless</strong> — it bites today, with the feature nominally
+          off, on every production boot. This is independent of whatever #95 decides.</li>
+      <li><strong>Do not retire outright yet.</strong> The outside-modder audience is real and the opt-in shape keeps
+          the diagnostic reachable for them at near-zero cost to everyone else. Retirement becomes reasonable only if
+          the opt-in is judged not worth its maintenance against #91's still-open conflation.</li>
+    </ol>
+    <p class="note">Trade-off stated plainly: the lint covers this repo completely and outside modders not at all; the
+       runtime feature covers whoever runs it and costs whoever forgets it is running. Opt-in runtime + repo lint is
+       the only combination where each cost lands on the party who chose it.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Remains</p>
+    <h2>What remains</h2>
+    <ul>
+      <li><strong>Graduation decision</strong> — where caselint permanently lives (StrongDev tool + CI step vs a
+          <code>Tests</code> convention test; <code>Tests/</code> was off-limits to this effort by mandate), and
+          whether <code>xml-path-ref</code>/<code>code-literal</code> warnings should gate.</li>
+      <li><strong>Linux execution of the tool is unverified</strong> — the resolver is host-independent by design, but
+          no run happened on a case-sensitive filesystem.</li>
+      <li><strong>#91 is still unfixed</strong> — the file/directory conflation survives in current source and is
+          untouched by this effort.</li>
+      <li><strong>Not covered by the lint</strong>: asset names <em>inside</em> <code>.unity3d</code> bundles (a
+          different hazard class — bundle lookup, not filesystem), paths appearing in Localization.csv values, and
+          runtime-composed paths.</li>
+      <li><strong><code>ValidateModInfos</code> unload-on-false</strong> — whether unloading a mod over a casing probe
+          should survive in any runtime shape is part of the #95 weighing, not decided here.</li>
+      <li>Issue writes were out of scope (<code>gh</code> read-only): the tickets below are proposals, and the
+          recommendation has not been posted to #95.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Tickets</p>
+    <h2>Proposed tickets</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Title</th><th>Labels</th><th>Gist</th></tr>
+      <tr><td>BreadthFirstXmlPatcher probes patch files through CaseSensitiveFilesystem.Exists even when the feature
+          is off</td><td><code>mod:StrongMods</code> <code>type:bug</code></td>
+          <td>With the gate off, <code>Init()</code> never runs, <code>s_anchors</code> is empty, and every phase-2
+          probe walks from the filesystem root. Evidence chain and fix directions in the Finding section above.</td></tr>
+      <tr><td>Graduate caselint: dev-time case-sensitivity lint for every mod</td>
+          <td><code>scope:repo-wide</code> <code>type:tooling</code> <code>area:testing</code></td>
+          <td>Promote <code>StrongDev/.ai/tools/caselint.cs</code> to a maintained home + CI. Six rules, selftest,
+          exit-code contract already in place; open decisions listed under What remains.</td></tr>
+      <tr><td>Make CaseSensitiveFilesystem opt-in (default off) once a dev-time lint lands</td>
+          <td><code>mod:StrongMods</code> <code>type:tech-debt</code></td>
+          <td>The #95 recommendation, actionable: flip the default, keep the diagnostic reachable for outside modders
+          who opt in, and weigh #91's conflation as part of the same change.</td></tr>
+    </table></div>
+  </section>
+</div>

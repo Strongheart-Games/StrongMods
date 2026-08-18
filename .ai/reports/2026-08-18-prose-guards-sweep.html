@@ -1,0 +1,442 @@
+<title>Prose-Guards Sweep</title>
+<style>
+  :root {
+    --ground: #F0F1F3; --surface: #FFFFFF; --surface-2: #E4E6EA;
+    --ink: #14161A; --ink-2: #3A404A; --ink-3: #656D79;
+    --hair: #D0D4DA; --hair-strong: #A6ADB7;
+    --accent: #1F5FA8; --accent-tint: #E1EBF7;
+    --alarm: #9A2622; --alarm-tint: #F5E2E0;
+    --calm: #1B6048; --calm-tint: #DDEBE5;
+    --warn: #8a5a12; --warn-tint: #f5ecda;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --pad: clamp(20px, 4vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+      --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+      --hair: #242C35; --hair-strong: #38424E;
+      --accent: #6FA8E8; --accent-tint: #14202E;
+      --alarm: #E8837A; --alarm-tint: #2A1917;
+      --calm: #62C79A; --calm-tint: #142520;
+      --warn: #d9a95b; --warn-tint: #2a2214;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 17px; line-height: 1.6; }
+  .page { max-width: 1120px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); padding-top: 14px; margin-bottom: 40px; }
+  .kicker { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 10px; }
+  h1 { font-size: clamp(28px, 4.5vw, 44px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -0.015em; }
+  .standfirst { font-size: 19px; color: var(--ink-2); max-width: 74ch; margin: 0; }
+  section { border-bottom: 1px solid var(--hair); padding: 36px 0; }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 26px; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h3 { font-size: 18px; margin: 24px 0 8px; }
+  p, li { max-width: 78ch; color: var(--ink-2); }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); padding: 1px 5px;
+         border-radius: 4px; color: var(--ink); }
+  pre { background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; padding: 14px 16px;
+        overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--ink); }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .tablewrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+  .pass, .fail, .gap, .note { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+    padding: 2px 8px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+  .pass { background: var(--calm-tint); color: var(--calm); }
+  .fail { background: var(--alarm-tint); color: var(--alarm); }
+  .gap  { background: var(--warn-tint); color: var(--warn); }
+  .note { background: var(--accent-tint); color: var(--accent); }
+  .finding { background: var(--surface); border: 1px solid var(--hair); border-left: 4px solid var(--accent);
+             border-radius: 8px; padding: 16px 20px; margin: 18px 0; }
+  .finding.warn { border-left-color: var(--warn); }
+  .finding.alarm { border-left-color: var(--alarm); }
+  .finding .label { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3);
+                    margin-bottom: 6px; }
+  .small { font-size: 14px; color: var(--ink-3); }
+</style>
+<div class="page">
+  <div class="masthead">
+    <div class="kicker"><span>Issue #57 · prose-guards sweep</span><span>Build/test infrastructure</span><span>18 Aug 2026</span></div>
+    <h1>What still holds only because a comment says so</h1>
+    <p class="standfirst">A sweep of <code>build/</code>, the ADRs and AGENTS.md for infrastructure behavior
+    defended by prose alone — verified against the current code, checked against the current test suite, and
+    ranked by damage-if-silently-broken &times; likelihood-of-silent-break. The headline: the seed list in #57 is
+    half obsolete, because #53 and #54 landed real guards; what remains unguarded clusters around five things,
+    and the cheapest guard on the list is ten lines.</p>
+  </div>
+
+  <section id="attempted">
+    <h2>What was attempted</h2>
+    <p>Scope: every claim in the candidate seed list (#57's body plus the task's additions), verified against
+    the files as they read today, then checked against the three existing infra test classes. Read in full:
+    <code>build/GamePaths.props</code>, <code>build/GameVersions.props</code> (via tests referencing it),
+    <code>build/Mod.props</code>, <code>build/Mod.targets</code>, <code>build/Deploy.targets</code>,
+    <code>build/Modlet.targets</code>, <code>build/Overlay.props</code>, <code>build/Overlay.targets</code>,
+    <code>build/XmlLint.targets</code>, <code>build/XmlLint.cs</code>,
+    <code>docs/adr/0001-no-auto-imported-msbuild-files.md</code>, <code>Tests/ProjectConventionTests.cs</code>,
+    <code>Tests/BuildPathResolutionTests.cs</code>, <code>Tests/SettingsLintTests.cs</code>,
+    <code>Template7DtDMod/Template7DtDMod.csproj</code>, <code>StrongMods/StrongMods.csproj</code>. Issues read:
+    #57, #55, #56, #70, #54 (closed), #52 (closed), #53 (closed), plus
+    <code>.ai/overnight/issue-mapping-and-doc-rot.md</code> and <code>.ai/test-idea-tool-gap-seed.md</code>.</p>
+    <p>Measurements run (exact commands):</p>
+    <pre><code># Directory.Build.* absence — nothing found outside gitignored trees:
+find . -name "Directory.Build.*" -o -name "Directory.Packages.props" | grep -v -E "/(packages|vendor|\.scratch|bin|obj|\.git)/"
+
+# ModInfo.xml byte-order-mark state — all 30 files carry EF BB BF:
+for f in */ModInfo.xml; do head -c 3 "$f" | od -An -tx1; done
+
+# Drift state of the duplicated targets (whitespace-normalized diff):
+sed -n '/_VerifyInstallVersion/,/&lt;\/Target&gt;/p' build/Deploy.targets  &gt; .scratch/prose-guards-deploy-vv.txt
+sed -n '/_VerifyInstallVersion/,/&lt;\/Target&gt;/p' build/Overlay.targets &gt; .scratch/prose-guards-overlay-vv.txt
+diff ...  # result below; same for _ValidateGameTreeDeclaration (identical)
+
+# Test-side coverage check:
+grep -nE "MirrorOnDeploy|Overlay|IsDeployable|XmlLint|byte order|ModLoadTier|Directory\.Build|VSTest|_IsProjectRestoreSupported|Local\.props|SDTD_HOME|FrameworkPathOverride" Tests/*.cs</code></pre>
+    <p>No builds and no test runs were performed (per this effort's constraints); every "guarded" verdict below
+    is from reading the test source, not from watching it fail. The suite state is untouched.</p>
+  </section>
+
+  <section id="baseline">
+    <h2>Finding 0: the seed list is half obsolete — #53 and #54 moved the baseline</h2>
+    <p>#57 was filed 2026-08-02. Since then #53 and #54 closed, and the guards they landed cover most of the
+    original seed candidates. Verified claim by claim against the test source:</p>
+    <div class="tablewrap"><table>
+      <tr><th>Claim (where the prose lives)</th><th>Executable guard today</th><th>Verdict</th></tr>
+      <tr>
+        <td>Import-order sandwich: props first, targets last, <code>DeployRoot</code> between the overlay imports
+            (AGENTS.md; <code>build/Mod.targets:3-23</code>; <code>build/Overlay.props:3-16</code>)</td>
+        <td><code>Tests/ProjectConventionTests.cs</code> rules B (line 97), C (171), D (202) — bookend order,
+            asserted non-mod roster, declaration-block position and literalness</td>
+        <td><span class="pass">guarded</span></td>
+      </tr>
+      <tr>
+        <td>Two-root split: "redirecting the game tree can never move the deploy destination"
+            (<code>build/GamePaths.props:16-18</code>; AGENTS.md)</td>
+        <td><code>Tests/BuildPathResolutionTests.cs</code>
+            <code>The_game_tree_follows_the_declaration_and_the_install_side_does_not</code> (line 101) — pins both
+            directions of the split</td>
+        <td><span class="pass">guarded</span></td>
+      </tr>
+      <tr>
+        <td>Relative <code>-p:</code> overrides resolve against the invocation directory
+            (<code>build/Deploy.targets:22-28</code>; <code>build/GamePaths.props:35-38</code>)</td>
+        <td>Same file, first three tests (lines 37, 59, 73) — evaluation-time and target-execution-time both
+            pinned, including server-layout detection</td>
+        <td><span class="pass">guarded</span></td>
+      </tr>
+      <tr>
+        <td>#37 destination-version check: refuse undeclared, escape hatch, unverifiable-is-an-error
+            (<code>build/Deploy.targets:94-141</code>)</td>
+        <td>Same file, three tests (lines 161, 182, 205) — refusal before copy, hatch, and the no-tree error</td>
+        <td><span class="pass">guarded</span> <span class="small">for mods/modlets; the overlay copy is finding 2</span></td>
+      </tr>
+      <tr>
+        <td>Tree source is an input, never a discovery (<code>build/GamePaths.props:63-67</code>)</td>
+        <td><code>The_tree_source_is_an_input_never_a_discovery</code> (line 131)</td>
+        <td><span class="pass">guarded</span></td>
+      </tr>
+      <tr>
+        <td>Registry ↔ declaration closure, FourPart label mapping (<code>build/GameVersions.props</code>)</td>
+        <td><code>ProjectConventionTests</code> rule E (line 245)</td>
+        <td><span class="pass">guarded</span></td>
+      </tr>
+      <tr>
+        <td><code>FrameworkPathOverride</code> points into the game tree (<code>build/Mod.props:41-46</code>)</td>
+        <td>Queried and asserted rooted-under-fixture by
+            <code>Relative_SdtdDir_resolves_against_the_invocation_directory</code> (line 41); beyond that, any
+            break is loud — the whole repo stops compiling (~200 CS0246s, which <code>VerifyGameInstall</code>
+            at <code>build/Mod.targets:86</code> turns into one readable error)</td>
+        <td><span class="pass">guarded enough</span></td>
+      </tr>
+      <tr>
+        <td><code>ModLoadTier</code>+<code>ModLoadPrefix</code> both set is an error; unknown tier is an error
+            (<code>build/Deploy.targets:71-76</code>)</td>
+        <td><code>_ValidateModLoadTier</code> is itself an executable build-time guard (untested, but a break in
+            the guard fails loudly at the next misuse, not silently)</td>
+        <td><span class="pass">runtime-guarded</span></td>
+      </tr>
+    </table></div>
+    <p>Consequence: #57's remaining value is not the seed list — it is the residue below, which the seed list
+    mostly did not name.</p>
+  </section>
+
+  <section id="ranked">
+    <h2>The unguarded residue, ranked</h2>
+    <p>Ranking axis is #57's own: damage-if-silently-broken &times; likelihood-of-silent-break. "Silent" is
+    load-bearing — a break that fails CI or stops compilation ranks near zero regardless of damage, which is why
+    two seed candidates fall to the bottom (see the down-ranked section).</p>
+    <div class="tablewrap"><table>
+      <tr><th>#</th><th>Behavior, and the only thing defending it</th><th>Damage if silently broken</th><th>Likelihood</th><th>Guard cost</th></tr>
+      <tr>
+        <td>1</td>
+        <td><strong>No auto-imported MSBuild files exist</strong> — ADR-0001's core invariant ("Adding a
+            <code>Directory.Build.*</code> file to this repo is a defect", ADR line 50; echoed AGENTS.md,
+            <code>build/Mod.props:15</code>). Verified true today (the <code>find</code> above returns nothing),
+            and verified <em>untested</em>: <code>Directory.Build</code> appears in <code>Tests/</code> only
+            inside comments.</td>
+        <td>High. An added file reaches every SDK project positionally, and the canonical failure is the OutDir
+            latch: assembly written to the wrong place while <code>$(OutputPath)</code> reads back correct
+            (ADR-0001 lines 15-21). Invisible to the import-order tests — every csproj still looks perfect.</td>
+        <td>Medium — dropping a <code>Directory.Build.props</code> at the root is the standard .NET reflex, the
+            first thing generic tooling and agents suggest.</td>
+        <td>~10 lines</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>The duplicated targets in <code>Deploy.targets</code> and <code>Overlay.targets</code> stay
+            in sync</strong> — defended by "Keep in sync with Deploy.targets"
+            (<code>build/Overlay.targets:88</code>, and 70-71) and its twin
+            (<code>build/Deploy.targets:100-101</code>). Measured today:
+            <code>_ValidateGameTreeDeclaration</code> is textually identical in both;
+            <code>_VerifyInstallVersion</code> differs only in the one documented adaptation
+            (<code>_DeployInstallRoot</code> from <code>$(ModsDir),'..'</code> vs
+            <code>$(DeployRoot),'..','..'</code>) plus comments. In sync <em>now</em> — nothing keeps it so.</td>
+        <td>Medium-high. A #37 fix applied to <code>Deploy.targets</code> alone leaves overlays unprotected — and
+            the overlay that matters is Hades, the live public server. Nothing fails; the check just quietly
+            stops matching on one side.</td>
+        <td>Medium — every future edit of either file is a drift opportunity, and the two live 200 lines apart
+            in different files.</td>
+        <td>Low — normalize, strip comments, diff modulo an explicit allowlist of the adapted lines</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>The culture-aware load-order sort facts</strong> —
+            <code>build/Deploy.targets:33-51</code>: the chain
+            <code>_disabled &lt; 0_TFP_Harmony &lt; 000000-StrongMods &lt; plain &lt; Z_* &lt; ZZ_* &lt; ZZZZZZZZZZ_*</code>,
+            and "ordinal ASCII would sort ZZ_ BEFORE Z_ ('Z' 0x5A &lt; '_' 0x5F)". Verified from one client log,
+            2026-07-30, never since. The subject is the <em>game's</em> comparer, so a game update can break it
+            with no repo diff at all.</td>
+        <td>High on Hades: silent mis-ordering — <code>AfterDependencies</code> mods loading before their
+            dependencies, or StrongMods losing its loads-first slot, which breaks the breadth-first patcher's
+            visibility contract for every mod behind it.</td>
+        <td>Low-medium — a game update changing the sort, or a prefix edit made under an ordinal assumption.</td>
+        <td>Two layers: a cheap chain pin now; a game-comparer tripwire needing one-time IL investigation</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>XmlLint actually gates the build</strong> — AGENTS.md: "a malformed patch file fails the
+            build instead of failing at game load". The lint exists and is wired
+            (<code>build/XmlLint.targets:32</code>, imported by all three entry points), but nothing ever tests
+            that it <em>fires</em>. A dropped import, a renamed hook (<code>PrepareForBuild</code> is a string),
+            or a condition typo switches it off — and every well-formed build still passes identically.</td>
+        <td>Medium. Malformed Config XML then fails at game load on someone else's machine — the exact delayed,
+            displaced failure the lint was built to eliminate (#16).</td>
+        <td>Low-medium — three importers to keep wired, stringly hook names.</td>
+        <td>Low — one negative-path Workspace test (the <code>BuildPathResolutionTests</code> pattern already
+            shells builds)</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>The tier→prefix values, and StrongMods declaring <code>First</code></strong> — the map at
+            <code>build/Deploy.targets:56-61</code> is executable, but no test pins that
+            <code>First</code> yields <code>000000-</code> in the deploy name; and AGENTS.md's "StrongMods loads
+            first" rests on one line, <code>StrongMods/StrongMods.csproj:6</code>, that nothing asserts.</td>
+        <td>Medium-high. A tier value edit, or StrongMods losing <code>First</code>, silently reorders the mod
+            that replaces the XML patcher — deploys keep succeeding, the game keeps loading, the
+            <code>&lt;foreach&gt;</code> visibility contract quietly changes.</td>
+        <td>Low — the lines are stable; the exposure is refactors of Deploy.targets.</td>
+        <td>Very low — four evaluation assertions plus one csproj scan line</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>ModInfo.xml carries a byte order mark</strong> — AGENTS.md Conventions. Measured today: all
+            30 <code>ModInfo.xml</code> carry <code>EF BB BF</code>. XmlLint cannot catch a stripped mark
+            (XmlReader accepts both forms), so the convention is enforced by nothing.</td>
+        <td><em>Unverified.</em> Whether the game's ModInfo parser needs the mark is established nowhere I read.
+            If it does: a stripped mark silently disables a mod. If not: the convention is cosmetic and the
+            guard is unnecessary.</td>
+        <td>Medium — editors and tools strip byte order marks casually, and a diff shows nothing.</td>
+        <td>~5 lines (the <code>SettingsLintTests</code> byte-scan pattern, expectation inverted) — but verify
+            the requirement against the game's loader first</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong><code>IsDeployable=false</code> means never deploys</strong> — one condition attribute
+            (<code>build/Deploy.targets:143</code>, <code>Overlay.targets:127</code>) plus prose. The roster
+            (both templates — live in the checked-in csproj, <code>Template7DtDMod.csproj:3-9</code> — Tests,
+            FunctionMod) is asserted nowhere.</td>
+        <td>Medium — templates/Tests deploying junk into a live game on a solution-wide <code>-t:Deploy</code>.</td>
+        <td>Low.</td>
+        <td>Low — roster scan; the behavioral half belongs to #42's harness</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>"Building never touches a live install"</strong> — <code>build/Mod.props:29-32</code>. The
+            body-wins-over-props design means a project could set an absolute <code>OutputPath</code> or
+            <code>ModStagingDir</code> pointing anywhere, and nothing would object.</td>
+        <td>High if it happened — a plain build writing into the game.</td>
+        <td>Very low — no project does, and an absolute path in a csproj is hard to miss in review.</td>
+        <td>Low — scan project bodies for staging-path overrides that escape the project directory</td>
+      </tr>
+    </table></div>
+  </section>
+
+  <section id="sketches">
+    <h2>Guard sketches for the top five</h2>
+
+    <div class="finding alarm">
+      <div class="label">Guard 1 · ADR-0001 absence test · ~10 lines in ProjectConventionTests</div>
+      <p>A fourth rule alongside B/C/D — the one placement fault the import-order rules cannot see, because
+      every csproj still reads perfectly:</p>
+      <pre><code>[Fact]
+public void F_No_auto_imported_MSBuild_files_exist() {
+  // ADR-0001: auto-import fixes the position and this repo needs both positions. An added
+  // Directory.Build.props reaches every SDK project invisibly; the canonical fault is the OutDir
+  // latch, where OutputPath reads back correct while the assembly lands somewhere else.
+  var offenders = Directory.EnumerateFiles(repoRoot, "Directory.Build.*", SearchOption.AllDirectories)
+    .Concat(Directory.EnumerateFiles(repoRoot, "Directory.Packages.props", SearchOption.AllDirectories))
+    .Where(IsSourceProject)  // the existing filter: skips bin/obj/.scratch/vendor/.git/.ai
+    .ToList();
+  Assert.True(offenders.Count == 0, /* teach ADR-0001 in the message */);
+}</code></pre>
+      <p class="small">One decision: <code>packages/</code> must also be excluded — restored NuGet packages can
+      legitimately contain such files, and <code>IsSourceProject</code> today does not filter
+      <code>packages</code> (it never needed to for csproj scans). One added token in that filter, scoped to
+      this rule or shared, implementer's choice.</p>
+    </div>
+
+    <div class="finding alarm">
+      <div class="label">Guard 2 · target-sync test · normalize-and-diff, no build</div>
+      <p>Read both files as text, extract each duplicated target (<code>_ValidateGameTreeDeclaration</code>,
+      <code>_VerifyInstallVersion</code>), strip XML comments, collapse whitespace, and assert equality modulo an
+      explicit allowlist of adapted lines — today exactly one, the <code>_DeployInstallRoot</code> assignment.
+      The allowlist is asserted too: an <em>unexpected</em> new difference fails with a message quoting both
+      sides, and a difference that disappears (someone unified the files properly) fails the allowlist check,
+      prompting the test's own retirement. Fragile to reformatting by design — reformatting a safety target is
+      exactly when a human should re-diff the pair. Measured baseline for the allowlist:</p>
+      <pre><code>&lt; &lt;_DeployInstallRoot&gt;$([MSBuild]::NormalizeDirectory('$(MSBuildStartupDirectory)', '$(ModsDir)', '..'))&lt;/_DeployInstallRoot&gt;
+---
+&gt; &lt;_DeployInstallRoot&gt;$([MSBuild]::NormalizeDirectory('$(MSBuildStartupDirectory)', '$(DeployRoot)', '..', '..'))&lt;/_DeployInstallRoot&gt;</code></pre>
+      <p class="small">Alternative considered: deduplicate the targets into a shared file both import. Rejected
+      here — Overlay.targets is self-contained <em>by design</em> ("never combine with the other entry points",
+      its header), and a shared import would re-couple what #25 deliberately separated. The diff test buys the
+      sync without the coupling.</p>
+    </div>
+
+    <div class="finding warn">
+      <div class="label">Guard 3 · load-order sort facts · two layers, split by cost</div>
+      <p><strong>Layer (a), cheap, now:</strong> a unit test asserting the documented chain under the
+      culture-aware comparison the header claims —
+      <code>string.Compare(x, y, StringComparison.InvariantCulture)</code> over
+      <code>["_disabled", "0_TFP_Harmony", "000000-StrongMods", "MyPlainMod", "Z_Foo", "Z-IM-PZ-Compat", "ZZ_Bar", "ZZZZZZZZZZ_Baz"]</code>,
+      plus the negative fact (ordinal sorts <code>ZZ_</code> before <code>Z_</code>). This pins the header's
+      arithmetic and catches any prefix edit that breaks the banding — but it re-encodes the assumption about
+      <em>which</em> comparer the game uses.</p>
+      <p><strong>Layer (b), the real guard:</strong> resolve the game's own mod-folder sort and run it. The suite
+      already loads game assemblies for both units (TargetResolver, the transpiler runner), and #57 itself
+      suggests exactly this. Unverified as of this sweep: <em>which method in the game performs the sort</em>
+      (likely in <code>ModManager</code>; the repo's own memory notes say to read <code>ModManager</code>/<code>GameIO</code>
+      rather than assume). The ticket should start with that one-time IL investigation; if the sort site is
+      reachable, invoke it against a fixture folder list per unit and assert the chain; if not, assert the
+      comparer kind from its IL as a drift tripwire.</p>
+    </div>
+
+    <div class="finding warn">
+      <div class="label">Guard 4 · XmlLint fires · one negative-path Workspace test</div>
+      <p>The <code>BuildPathResolutionTests.Workspace</code> pattern already builds synthetic modlets in a temp
+      tree. Add one test: write a modlet whose <code>Config/broken.xml</code> is malformed, build (not deploy),
+      assert exit ≠ 0 and the log carries <code>broken.xml(</code> — the file(line,col) shape the task emits
+      (<code>build/XmlLint.cs:32</code>). A second build with <code>-p:XmlLintEnabled=false</code> must pass,
+      pinning the escape hatch. Because the synthetic project imports the real
+      <code>build/Modlet.targets</code>, the test covers the wiring (import present, hook name valid, condition
+      spelled right) — the parts a unit test of <code>XmlLint.cs</code> alone could not see. Cost: one shelled
+      build, ~2s, alongside the four tests in that class that already shell <code>-t:Deploy</code> builds.</p>
+    </div>
+
+    <div class="finding warn">
+      <div class="label">Guard 5 · tier map + StrongMods First · four evaluation pins and a scan</div>
+      <p>Evaluation-only, using the existing Workspace: for each tier,
+      <code>dotnet msbuild &lt;probe&gt; -getProperty:ModDeployName -p:ModLoadTier=First</code> must yield
+      <code>000000-PathProbe</code> (and <code>ZZ_</code>, <code>ZZZZZZZZZZ_</code> for the others; Last and
+      LocalConfig deliberately collide — assert that too, it is documented intent at
+      <code>build/Deploy.targets:49-51</code>). Plus one XDocument line in ProjectConventionTests: StrongMods
+      declares <code>ModLoadTier=First</code> — the executable form of AGENTS.md's "StrongMods loads first",
+      which the breadth-first patcher's whole visibility contract hangs on.</p>
+    </div>
+  </section>
+
+  <section id="downranked">
+    <h2>Deliberately down-ranked, with reasons</h2>
+    <ul>
+      <li><strong>The no-op <code>VSTest</code> / <code>_IsProjectRestoreSupported</code> targets</strong>
+        (#57 seed; <code>build/Modlet.targets:51-63</code>, <code>Overlay.targets:55-68</code>). The #51 failure
+        mode is <em>loud</em>: a bare entry point missing <code>VSTest</code> fails
+        <code>dotnet test StrongMods.sln</code> with MSB4057, and CI runs that on every push — the suite run is
+        already the executable guard. The genuinely silent residue is only NU1503 warnings returning if the
+        restore probe broke. Damage-if-<em>silently</em>-broken ≈ nil; no guard proposed.</li>
+      <li><strong><code>FrameworkPathOverride</code> / compile-against-the-game (ADR-0002)</strong> — every build
+        of every mod is the test, and the failure is a wall of compile errors funneled into
+        <code>VerifyGameInstall</code>'s one readable message. Not silent.</li>
+      <li><strong>Evaluation-survives-errors</strong> ("all errors fire at target time",
+        <code>build/GamePaths.props:66-67</code>) — a regression fails the very next
+        <code>-getProperty</code> run and every IDE load. Loud.</li>
+      <li><strong>BloodRain's <code>CopyDocumentationFilesFromPackages</code></strong> (Cronos.xml deploys beside
+        Cronos.dll) — real prose-only behavior, but single-mod, low blast radius. Fold into any future
+        deploy-shape assertions rather than guarding alone.</li>
+    </ul>
+  </section>
+
+  <section id="boundaries">
+    <h2>Boundaries — what this sweep deliberately did not claim</h2>
+    <ul>
+      <li><strong>Mirror semantics, overlay protective/MirrorOnDeploy scoping, the empty-vector guards</strong>
+        (<code>build/Deploy.targets:150-162</code>, <code>build/Overlay.targets:143-186</code>) — unguarded
+        prose-and-comment territory, including the 2026-07-30 data-loss near-miss guards ("do not 'simplify'
+        them away", <code>Overlay.targets:148-151</code>). Owned by #42, whose harness a parallel effort is
+        building <em>today</em> (<code>.ai/reports/2026-08-18-deploy-shape-harness.html</code> exists as its
+        skeleton). Listed for completeness, not ranked, not ticketed here.</li>
+      <li><strong>Local.props override surface and the four-rung precedence chain</strong>
+        (<code>build/GamePaths.props:24-33</code>, plus the subtle <code>_SdtdDirPreLocal</code> legacy capture
+        at lines 44-57 and the NormalizePath-not-NormalizeDirectory trailing-slash trap at 58-60) — unguarded,
+        already tracked as open #56, which names the design constraint (don't disturb a real developer's
+        Local.props). The two extra wrinkles found in this read (legacy capture, trailing-slash trap) are worth
+        adding to #56 as test cases rather than a new issue.</li>
+      <li><strong>AGENTS.md structural claims</strong> — swept 2026-08-17
+        (<code>.ai/overnight/issue-mapping-and-doc-rot.md</code> part 2); not repeated. That pass is doc-rot
+        (#55/#70's territory); this one is executable-guard gaps (#57's).</li>
+    </ul>
+  </section>
+
+  <section id="remains">
+    <h2>What remains</h2>
+    <ul>
+      <li><strong>Verify the byte-order-mark requirement at its source</strong> before guarding it: read the
+        game's ModInfo loader (in the restored game assemblies) and establish whether a mark-less ModInfo.xml
+        loads. The guard is five lines; the open question is whether it should exist at all.</li>
+      <li><strong>The one-time IL investigation for guard 3(b)</strong>: locate the game's mod-folder sort site
+        (start at <code>ModManager</code>) in both units, decide whether it is invocable from the suite.</li>
+      <li><strong>Implementation of guards 1-5</strong> — each is a small, single-focus change per #57's own
+        contract ("each guard lands as its own small change"). None were implemented here: this effort's write
+        scope was <code>.scratch/</code> and <code>.ai/reports/</code> only, and Tests/ was owned by a parallel
+        effort today.</li>
+      <li><strong>#57 upkeep</strong>: its seed list should note that #53/#54 closed and strike the covered
+        rows, so the next reader starts from this residue instead of re-verifying the seeds.</li>
+      <li><strong>Not swept</strong> (evidence-scoping): <code>build/tools/*.cs</code> headers and user-facing
+        strings (that is #55's doc-rot pass, and partially done there), CI workflow claims
+        (<code>.ai/ci-feed-and-workflow.md</code>), and anything requiring a build, a deploy, or a network round
+        trip.</li>
+    </ul>
+  </section>
+
+  <section id="tickets">
+    <h2>Proposed tickets</h2>
+    <p>Five, matching guards 1-5 — none duplicate #42/#55/#56/#70, and each is the "own small change" shape #57
+    asks for. The byte-order-mark item is deliberately a research-first ticket, not a lint ticket: enforcing an
+    unverified requirement would bake folklore into the suite.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Title</th><th>Labels</th></tr>
+      <tr><td>Convention test: no auto-imported MSBuild files exist (ADR-0001)</td><td>type:build, scope:repo-wide, area:testing</td></tr>
+      <tr><td>Sync test: the duplicated validation targets in Deploy.targets and Overlay.targets cannot drift</td><td>type:build, scope:repo-wide, area:testing</td></tr>
+      <tr><td>Pin the mod load-order sort facts against the game's own comparer</td><td>type:build, scope:repo-wide, area:testing</td></tr>
+      <tr><td>Negative-path test: XmlLint fails a malformed file and honors its bypass</td><td>type:build, scope:repo-wide, area:testing</td></tr>
+      <tr><td>Evaluation pins: ModLoadTier prefix map, and StrongMods declares First</td><td>type:build, scope:repo-wide, area:testing</td></tr>
+      <tr><td>Verify whether the game requires the ModInfo.xml byte order mark; lint it if so</td><td>type:research, scope:repo-wide, area:testing</td></tr>
+    </table></div>
+  </section>
+</div>

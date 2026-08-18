@@ -1,0 +1,421 @@
+<title>Patcher Conformance</title>
+<style>
+  :root {
+    --ground: #F0F1F3; --surface: #FFFFFF; --surface-2: #E4E6EA;
+    --ink: #14161A; --ink-2: #3A404A; --ink-3: #656D79;
+    --hair: #D0D4DA; --hair-strong: #A6ADB7;
+    --accent: #1F5FA8; --accent-tint: #E1EBF7;
+    --alarm: #9A2622; --alarm-tint: #F5E2E0;
+    --calm: #1B6048; --calm-tint: #DDEBE5;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --measure: 72ch; --pad: clamp(20px, 4vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+      --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+      --hair: #242C35; --hair-strong: #38424E;
+      --accent: #6FA8E8; --accent-tint: #14202E;
+      --alarm: #E8837A; --alarm-tint: #2A1917;
+      --calm: #62C79A; --calm-tint: #142520;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 16px; line-height: 1.6; }
+  .page { max-width: 1080px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong);
+              padding: 22px 0 26px; display: flex; flex-direction: column; gap: 14px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--accent); display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  h1 { margin: 0; font-size: clamp(30px, 5.5vw, 52px); line-height: 1.05; letter-spacing: -0.03em;
+       font-weight: 800; }
+  .standfirst { margin: 0; max-width: var(--measure); font-size: 18px; color: var(--ink-2); }
+  .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .chip { font-family: var(--mono); font-size: 12px; padding: 5px 10px; border: 1px solid var(--hair-strong);
+          color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+  .chip.ok { color: var(--calm); background: var(--calm-tint); border-color: var(--calm); }
+  .chip.warn { color: var(--alarm); background: var(--alarm-tint); border-color: var(--alarm); }
+  h2 { margin: 56px 0 12px; font-size: 26px; letter-spacing: -0.02em; border-bottom: 1px solid var(--hair-strong);
+       padding-bottom: 8px; }
+  h3 { margin: 28px 0 8px; font-size: 19px; }
+  p, ul, ol { max-width: var(--measure); }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 1px 5px;
+         border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: 13px; line-height: 1.5; background: var(--surface);
+        border: 1px solid var(--hair); padding: 14px 16px; overflow-x: auto; max-width: 100%; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 14px 0; }
+  th, td { text-align: left; padding: 8px 12px; border: 1px solid var(--hair); vertical-align: top; }
+  th { background: var(--surface-2); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .finding { border-left: 4px solid var(--accent); background: var(--surface); padding: 14px 18px;
+             margin: 18px 0; }
+  .finding.negative { border-left-color: var(--alarm); }
+  .finding h3 { margin-top: 0; }
+  .small { font-size: 13.5px; color: var(--ink-3); }
+  .tablewrap { overflow-x: auto; }
+  /* hand-built pipeline diagram */
+  .diagram { margin: 22px 0; }
+  .phases { display: flex; gap: 10px; flex-wrap: wrap; }
+  .phase { flex: 1 1 220px; border: 2px solid var(--hair-strong); background: var(--surface);
+           padding: 12px 14px; font-size: 14px; }
+  .phase h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--mono); }
+  .phase.unreachable { border-color: var(--alarm); background: var(--alarm-tint); }
+  .phase.reachable { border-color: var(--calm); background: var(--calm-tint); }
+  .cachebar { margin-top: 10px; border: 2px dashed var(--calm); background: var(--calm-tint);
+              padding: 10px 14px; font-size: 14px; text-align: center; }
+  .legend { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--ink-3); flex-wrap: wrap; }
+  .legend .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px;
+                    border: 2px solid; }
+  .sw-un { border-color: var(--alarm); background: var(--alarm-tint); }
+  .sw-re { border-color: var(--calm); background: var(--calm-tint); }
+</style>
+<div class="page">
+  <header class="masthead">
+    <div class="kicker"><span>StrongMods · Tests</span><span>2026-08-18</span><span>effort: patcher-conformance (tool gaps F1 + S5)</span></div>
+    <h1>Patcher Conformance</h1>
+    <p class="standfirst">
+      The breadth-first patcher's headline guarantee — a mod sees every earlier mod's XML edits and never a later
+      mod's — is now asserted above the cache, with synthetic multi-mod fixtures driving the real
+      <code>XmlPatcher.PatchXml</code> and the real cache. The config replay also gained post-patch <em>value</em>
+      assertions: six real StrongholdTweaks balance edits are now checked for the value they were written to set,
+      via a reusable row table any mod can join. The part that stays out of headless reach — the coroutine that
+      runs the loop in-game — is mapped line-by-line below, with the seam that would close it.
+    </p>
+    <div class="statusbar">
+      <span class="chip ok">suite: 423 green (baseline 415, +8 new)</span>
+      <span class="chip ok">both declared versions: V3.1.0-b14, V3.0.1-b4</span>
+      <span class="chip">3 files added, 1 edited — all in Tests\</span>
+      <span class="chip">no mod code changed</span>
+    </div>
+  </header>
+
+  <h2>What was attempted</h2>
+  <p>Two related test-harness extensions from the #50 tool-gap seed (<code>.ai/test-idea-tool-gap-seed.md</code>):</p>
+  <ul>
+    <li><strong>F1 — the ordering seam.</strong> Build synthetic multi-mod fixtures that drive the real patcher and
+      prove: (1) a later mod's <code>&lt;foreach&gt;</code> sees an earlier mod's patched XML; (2) an earlier mod
+      does <em>not</em> see a later mod's patches; (3) one mod's malformed patch file does not abort other mods'
+      patches; (4) eligibility filters. Where the path is unreachable headlessly, document precisely where it stops
+      and specify the missing seam.</li>
+    <li><strong>S5 — value assertions.</strong> Today <code>Tests\Patcher\PatchApplicationTests.cs</code> replays
+      every mod's Config and asserts only <em>clean application</em>. Add post-patch <em>value</em> assertions for
+      real StrongholdTweaks balance edits, as a reusable (xpath → expected) table.</li>
+  </ul>
+
+  <h2>The shape of the problem</h2>
+  <p>
+    <code>StrongMods\BreadthFirstXmlPatcher.cs</code> replaces the game's file-major patching with a three-phase,
+    mod-major pass. The tests can reach the primitives phase 2 is built from — but not the coroutine that runs them.
+  </p>
+  <div class="diagram">
+    <div class="phases">
+      <div class="phase unreachable">
+        <h4>eligibility prologue</h4>
+        lines 47–70: filters <code>WorldStaticData.xmlsToLoad</code> by <code>onlyXmls</code>,
+        <code>XmlFileExists()</code>, <code>LoadAtStartup</code>
+      </div>
+      <div class="phase unreachable">
+        <h4>phase 1 — load base XML</h4>
+        lines 75–85 + <code>LoadBaseXmlCo</code> 152–173: reads vanilla via
+        <code>GameIO.GetGameDir("Data/Config")</code>, fills the cache
+      </div>
+      <div class="phase unreachable">
+        <h4>phase 2 — mod-major patching</h4>
+        lines 87–125: per mod (load order), per file (xmlsToLoad order) —
+        <code>GameConfigMod</code> filter (93), path probe (105–106), read (111),
+        <code>PatchXml</code> (113), try/catch (110–118)
+      </div>
+      <div class="phase unreachable">
+        <h4>phase 3 — vanilla pipeline</h4>
+        lines 127–138: <code>loadSingleXml</code> per file; the
+        <code>LoadAndPatchConfig</code> prefix serves it from the cache
+      </div>
+    </div>
+    <div class="cachebar">
+      <strong>the cache seam — reachable headlessly</strong> · <code>s_patchedFiles</code> +
+      <code>XmlPatcher.PatchXml</code> + the <code>LoadAndPatchConfig</code> prefix + <code>foreach source=</code>
+      resolution · exposed to tests by <code>Tests\Fixtures\PatcherHost.cs</code> / <code>PatcherCache.cs</code> —
+      the new ordering tests enact phase 2's exact sequence on these primitives
+    </div>
+    <div class="legend">
+      <span><span class="swatch sw-un"></span>coroutine-only — not executable headlessly</span>
+      <span><span class="swatch sw-re"></span>reachable headlessly — where the new tests attach</span>
+    </div>
+    <script type="text/plain" class="mermaid-source">
+flowchart LR
+  A[eligibility prologue 47-70] --> B[phase 1: load base XML 75-85, 152-173]
+  B --> C[phase 2: mod-major patching 87-125]
+  C --> D[phase 3: vanilla per-file pipeline 127-138]
+  C -. mutates .-> K[(s_patchedFiles cache)]
+  D -. served by prefix .-> K
+  K === T[tests attach here: PatcherHost / PatcherCache]
+  style A fill:#F5E2E0
+  style B fill:#F5E2E0
+  style C fill:#F5E2E0
+  style D fill:#F5E2E0
+  style K fill:#DDEBE5
+    </script>
+  </div>
+
+  <h2>Findings</h2>
+
+  <div class="finding">
+    <h3>1 — The ordering guarantee holds, proven with the real patcher primitives</h3>
+    <p>
+      <code>Tests\Patcher\BreadthFirstOrderingTests.cs</code> (new) enacts phase 2's per-(mod, file) sequence with
+      two synthetic mods: <code>ItemAppender</code> appends an item to <code>items.xml</code>;
+      <code>BlockGenerator</code> generates one block per item by reading <code>items.xml</code> cross-file
+      (<code>&lt;foreach source="items" …&gt;</code>). The same pair runs twice, in opposite load orders:
+    </p>
+    <ul>
+      <li><code>A_later_mods_foreach_sees_an_earlier_mods_patch_to_another_file</code> — with ItemAppender first,
+        BlockGenerator's foreach produces a block for the appended item. <strong>Earlier mods' work is visible,
+        regardless of which file it landed in.</strong></li>
+      <li><code>An_earlier_mods_foreach_does_not_see_a_later_mods_patch</code> — order swapped: the foreach produces
+        a block only for vanilla's item, none for the item appended after it, and the later patch itself still
+        landed in <code>items.xml</code>. <strong>Later mods are invisible to earlier ones.</strong></li>
+    </ul>
+    <p>
+      What is <em>real</em> in these runs: the game's <code>XmlPatcher.PatchXml</code> (the same method phase 2
+      invokes, per patch file), the actual <code>s_patchedFiles</code> dictionary inside the loaded StrongMods
+      assembly, in-place mutation of cached documents, and <code>foreach</code>'s <code>source=</code> resolution
+      through <code>BreadthFirstXmlPatcher.TryGetPatchedFile</code>. What is <em>enacted by the test</em> rather
+      than executed from shipped code: the loop nesting itself (mod-major order, file order) and the per-application
+      try/catch — mirrored from lines 89–125, following the precedent of
+      <code>Tests\Fixtures\PatchPipeline.cs</code>, which already mirrors phases 1–2 the same way for the replay
+      suite. The distinction is spelled out in the test class doc-comment.
+    </p>
+  </div>
+
+  <div class="finding">
+    <h3>2 — Failure isolation: verified first, then pinned</h3>
+    <p>The task required verifying what actually happens before asserting. Observed on V3.1.0-b14 (the default
+      tree host, where all engine-conformance tests run):</p>
+    <ul>
+      <li><strong>Command-level failures do not abort the file or later mods.</strong>
+        <code>A_mods_failing_commands_do_not_abort_its_later_commands_or_later_mods</code>: a patch file carrying a
+        no-match <code>&lt;set&gt;</code>, an unknown <code>&lt;frobnicate&gt;</code> command, and a valid
+        <code>&lt;append&gt;</code> still lands the append; the next mod's patch applies cleanly; the failures are
+        logged as warnings/errors, not swallowed.</li>
+      <li><strong>A malformed patch file throws at read time, before touching the target.</strong>
+        <code>A_malformed_patch_file_throws_at_read_time_and_leaves_the_target_untouched</code>: probed 2026-08-18 —
+        the game's <code>XmlFile</code> constructor throws <code>System.Xml.XmlException</code> at parse time
+        (surfaced through the reflection harness as <code>TargetInvocationException</code>). The target document is
+        left untouched, so a malformed file can never half-patch anything. This is the contract phase 2's shipped
+        try/catch (lines 110–118) relies on to log-and-continue per (mod, file) — the catch itself lives in the
+        unreachable coroutine, so cross-mod resilience is asserted under the test's mirror of that catch, not the
+        shipped one. Making the shipped catch directly testable is the seam below.</li>
+    </ul>
+  </div>
+
+  <div class="finding negative">
+    <h3>3 — Where the headless path stops (F1's real deliverable: the seam spec)</h3>
+    <p>
+      The coroutine <code>LoadAllXmlsBreadthFirstCo</code> (private static,
+      <code>StrongMods\BreadthFirstXmlPatcher.cs:41</code>) is not executable headlessly. Precisely where it stops,
+      read from source (not executed) unless noted:
+    </p>
+    <div class="tablewrap">
+    <table>
+      <tr><th>Dependency</th><th>Where</th><th>Why it blocks headless execution</th></tr>
+      <tr><td><code>WorldStaticData.xmlsToLoad</code></td><td>line 52</td>
+        <td>Touching the field runs <code>WorldStaticData</code>'s initializer, which pulls Unity engine types
+          (<code>ProfilerMarker</code> and friends) the stub does not satisfy — established previously by
+          <code>Tests\Fixtures\EntryPoints.cs</code>, which reads the list from IL for exactly this reason
+          (its doc-comment, lines 17–21).</td></tr>
+      <tr><td><code>loadInfo.XmlFileExists()</code></td><td>line 57</td>
+        <td>Probes the game install's data directory; no install in CI.</td></tr>
+      <tr><td><code>GameIO.GetGameDir("Data/Config")</code></td><td>line 155 (<code>LoadBaseXmlCo</code>)</td>
+        <td>Resolves the running game's install root — phase 1's base-XML load has no headless answer for it.</td></tr>
+      <tr><td><code>WorldStaticData.loadSingleXml</code></td><td>line 137 (phase 3)</td>
+        <td>The vanilla per-file pipeline: conditionals, ConfigsDump, client cache compression, each file's
+          <code>LoadMethod</code> into game systems (class doc, lines 18–19, 127–129).</td></tr>
+      <tr><td>Frame yielding / <code>MicroStopwatch</code></td><td>lines 81–84, 120–123</td>
+        <td>Not a hard blocker (a test can drive <code>MoveNext()</code>, as <code>PatcherCache.InvokePrefix</code>
+          already does) — listed because the yields are interleaved with the loop being specified below.</td></tr>
+    </table>
+    </div>
+    <p>
+      Because of the first row, phase 2's loop <em>shape</em> — the <code>GameConfigMod</code> filter (line 93), the
+      disk probe for <code>{mod.Path}/Config/{name}.xml</code> (105–106), the shipped try/catch (110–118), and the
+      mods×files nesting order — is currently provable only by emulation. The seam that would make it directly
+      testable:
+    </p>
+    <h3>Proposed seam (no behavior change)</h3>
+    <pre><code>// StrongMods\BreadthFirstXmlPatcher.cs — phase 2's loop, extracted verbatim; the outer
+// coroutine yield-returns it (Unity's runner drives nested IEnumerators natively).
+internal static IEnumerator ApplyPatchesModMajorCo(
+    List&lt;Mod&gt; mods, IReadOnlyList&lt;string&gt; xmlNames)   // names of already-cached files</code></pre>
+    <ul>
+      <li><strong>Contents:</strong> current lines 89–125 unchanged — mods loop, <code>GameConfigMod</code> filter,
+        cache lookup, path probe, <code>ReadPatchXmlWithFixedModFolders</code> + <code>PatchXml</code> inside the
+        try/catch, frame-budget yields (the method constructs its own <code>MicroStopwatch</code>).</li>
+      <li><strong>Callers:</strong> the coroutine replaces lines 89–125 with
+        <code>yield return ApplyPatchesModMajorCo(ModManager.GetLoadedMods(), eligibleNames);</code>. Parameters
+        replace the two reads that need the game (<code>GetLoadedMods</code>, the eligible list), which is what
+        makes the extraction a seam and not just a method.</li>
+      <li><strong>The test drives it</strong> exactly as <code>PatcherCache.InvokePrefix</code> drives the prefix's
+        coroutine: seed the cache, build fixture mod directories under the test's temp area with real
+        <code>Config\*.xml</code> files (including one malformed), construct host <code>Mod</code> objects with
+        <code>Name</code>/<code>Path</code> set — <code>PatcherHost.RegisterFixtureMod</code> already proves
+        <code>Mod</code> is constructible and its members settable this way — and loop <code>MoveNext()</code>.
+        That converts findings (3) and (4) from emulated to executed: the shipped try/catch, the shipped filters,
+        the shipped nesting.</li>
+      <li><strong>Known risks, labeled unverified:</strong> whether
+        <code>XmlPatcher.ReadPatchXmlWithFixedModFolders</code> completes headlessly (it reads the patch file from
+        disk; if its <code>XmlFile</code> load path needs the game's thread manager, the seam gains an optional
+        <code>Func&lt;Mod, string, XmlFile&gt;</code> reader parameter defaulting to the game call); whether
+        <code>mod.GameConfigMod</code> is computable on a hand-built <code>Mod</code> (if it is set only by the real
+        mod loader, the fixture sets it the way <code>RegisterFixtureMod</code> sets <code>Name</code>).
+        <code>CaseSensitiveFilesystem</code> (line 106) is StrongMods' own
+        (<code>StrongMods\CaseSensitiveFilesystem.cs:10</code>) and already has headless tests
+        (<code>Tests\ModLogic\CaseSensitiveFilesystemTests.cs</code>), so it is not a risk.</li>
+      <li><strong>Out of scope of the seam:</strong> the eligibility prologue (47–70) and phases 1/3 stay in-game
+        territory (#49) — the prologue could get the same treatment later
+        (<code>internal static List&lt;XmlLoadInfo&gt; SelectEligible(all, isStartup, onlyXmls,
+        Func&lt;XmlLoadInfo, bool&gt; exists)</code>), but constructing <code>XmlLoadInfo</code> headlessly is
+        unverified and phase 2's loop is where the mod's own logic concentrates.</li>
+    </ul>
+    <p class="small">
+      This effort changed no mod code (Tests\ only, per its isolation constraint) — the seam is specified here and
+      proposed as a ticket, not implemented.
+    </p>
+  </div>
+
+  <div class="finding">
+    <h3>4 — Post-patch value assertions exist now, as a reusable table (S5)</h3>
+    <p>
+      <code>Tests\Patcher\PatchValueAssertionTests.cs</code> (new): each row states that after the whole replay
+      pipeline runs, an xpath in the merged entry-point document selects at least one node and every selected node
+      carries the expected value. Rows run per declared version label; a row whose mod is pinned away from a label
+      is skipped there, mirroring the pipeline's own project filter. A companion test guards the class against
+      going vacuously green if every row were orphaned. The six seed rows are real StrongholdTweaks balance edits,
+      each cited to the patch line that writes it:
+    </p>
+    <div class="tablewrap">
+    <table>
+      <tr><th>Patch source</th><th>Merged document assertion</th><th>Expected</th></tr>
+      <tr><td><code>StrongholdTweaks\Config\entityclasses.xml:3</code></td>
+        <td><code>playerMale … passive_effect[@name='HealthMax']/@value</code></td><td><code>200</code></td></tr>
+      <tr><td><code>StrongholdTweaks\Config\entityclasses.xml:4</code></td>
+        <td><code>playerMale … passive_effect[@name='StaminaMax']/@value</code></td><td><code>200</code></td></tr>
+      <tr><td><code>StrongholdTweaks\Config\progression.xml:4</code></td>
+        <td><code>perkLockPicking … LockPickTime/@value</code></td><td><code>.25,.75</code></td></tr>
+      <tr><td><code>StrongholdTweaks\Config\progression.xml:5</code></td>
+        <td><code>perkLockPicking … LockPickBreakChance/@value</code></td><td><code>.267,.8</code></td></tr>
+      <tr><td><code>StrongholdTweaks\Config\events.xml:8</code></td>
+        <td><code>event[@name='thanksgiving']/@start_date</code></td><td><code>11/01</code></td></tr>
+      <tr><td><code>StrongholdTweaks\Config\events.xml:9</code></td>
+        <td><code>event[@name='thanksgiving']/@duration</code></td><td><code>30</code></td></tr>
+    </table>
+    </div>
+    <p>
+      All six hold against both declared versions (V3.1.0-b14 and V3.0.1-b4) — run as
+      <code>Every_expected_value_is_present_in_the_merged_documents</code>, one theory case per label, green in the
+      full-suite run below. Supporting refactor: the expensive per-label pipeline replay, previously memoized
+      privately inside <code>PatchApplicationTests</code>, moved to <code>Tests\Fixtures\PipelineRuns.cs</code> so
+      both classes share one run per label per session instead of replaying twice.
+    </p>
+  </div>
+
+  <h2>Evidence — exact commands and results</h2>
+  <pre><code># build (clean, 0 warnings)
+dotnet build Tests/Tests.csproj -c Debug
+
+# the two new classes alone
+dotnet test Tests/Tests.csproj -c Debug --no-build \
+  --filter "FullyQualifiedName~BreadthFirstOrderingTests|FullyQualifiedName~PatchValueAssertionTests"
+#   Passed! - Failed: 0, Passed: 8, Skipped: 0, Total: 8
+
+# the gate: full suite — run twice, the second time on the final source after the
+# exception-type probe was replaced with its pin
+dotnet test StrongMods.sln -c Debug
+#   Passed! - Failed: 0, Passed: 423, Skipped: 0, Total: 423, Duration: 4 s
+#   (baseline this morning: 415 — the 8 new tests account for the entire delta)</code></pre>
+  <p>The exception-type claim in finding 2 was probed by temporarily asserting the type into a failure message
+    (observed: <code>TargetInvocationException -&gt; System.Xml.XmlException</code>), then pinned with
+    <code>Assert.IsAssignableFrom&lt;XmlException&gt;</code> on the unwrapped exception.</p>
+  <p>Files created or modified (all inside this effort's assigned <code>Tests\</code> area):</p>
+  <ul>
+    <li><code>Tests\Patcher\BreadthFirstOrderingTests.cs</code> — new; 4 tests (F1).</li>
+    <li><code>Tests\Patcher\PatchValueAssertionTests.cs</code> — new; 2 theories × 2 labels (S5).</li>
+    <li><code>Tests\Fixtures\PipelineRuns.cs</code> — new; shared per-label pipeline memoization.</li>
+    <li><code>Tests\Patcher\PatchApplicationTests.cs</code> — edited to delegate to <code>PipelineRuns</code>
+      (3 insertions, 9 deletions per <code>git diff --stat</code>; behavior identical).</li>
+    <li><code>.ai\reports\2026-08-18-patcher-conformance.html</code> — this report.</li>
+  </ul>
+
+  <h2>Decisions and trade-offs</h2>
+  <ul>
+    <li><strong>Enact phase 2 rather than force the coroutine.</strong> Driving
+      <code>LoadAllXmlsBreadthFirstCo</code> by reflection dies at <code>WorldStaticData.xmlsToLoad</code>
+      (finding 3, first row) — and the repo had already established that fact when building
+      <code>EntryPoints.cs</code>, so no time was spent re-proving it by execution. The trade-off is honest and
+      recorded in every affected test: ordering and resilience are proven over the real primitives, while the loop
+      shape is mirrored. The seam spec is the path to closing that residue.</li>
+    <li><strong>The test helper mirrors phase 2's try/catch.</strong> Precedent:
+      <code>Tests\Fixtures\PatchPipeline.cs</code> already wraps each application the same way (lines 113–117) for
+      the replay suite. Without the mirror, assertion (3) could not be expressed at all; with it, the assertion
+      verifies the design holds <em>given</em> the catch — the catch's existence in shipped code remains
+      source-verified only (lines 110–118).</li>
+    <li><strong>Value rows assert "every match equals", not "exactly one match".</strong>
+      <code>setattribute</code>-style edits can legitimately hit several nodes; requiring all matches to carry the
+      expected value catches both a missed set and a partial one. Trade-off: a second same-named node that
+      coincidentally carries the right value would hide — acceptable for balance edits whose xpaths are already
+      entity-scoped.</li>
+    <li><strong>Ordering tests run on the default tree only.</strong> They exercise StrongMods' engine semantics
+      against synthetic XML, not per-mod compatibility, so one tree suffices — the same standing decision the
+      Foreach and PatcherCache suites follow (<code>PatcherHost.Instance</code> doc,
+      <code>.ai/testing-declared-versions.md</code> §3c). Value assertions, being per-mod content claims, run per
+      declared label.</li>
+    <li><strong>Refactor instead of a second replay.</strong> Sharing the memoized pipeline
+      (<code>PipelineRuns</code>) touches an existing test file, but the alternative — each class replaying every
+      mod's Config against full vanilla per label — doubles the suite's most expensive fixture for no assertion
+      gained.</li>
+    <li><strong>items.xml's Stacknumber edit was deliberately not made a row.</strong>
+      <code>StrongholdTweaks\Config\items.xml:85</code> sets every <code>Stacknumber &gt; 1</code> to 65000 across
+      the whole document — hundreds of matches whose expected set depends on which items other patches append. A
+      row for it needs either a per-item scope or a count-shaped assertion; left for the table's next joiner.</li>
+  </ul>
+
+  <h2>What remains</h2>
+  <ul>
+    <li><strong>The coroutine loop itself is still untested</strong> — eligibility filters (prologue lines 47–70),
+      the <code>GameConfigMod</code> skip, the shipped try/catch, and the mods×files nesting execute only in-game
+      until the seam lands. The seam spec in finding 3 is the concrete next step; the tests to write against it are
+      already sketched there.</li>
+    <li><strong>The value table has one tenant.</strong> StrongholdTweaks' six rows seed it; the pattern is built
+      for other mods to join (any <code>(Mod, EntryPoint, XPath, Expected)</code> row works, version-pinning
+      respected automatically). Candidates from the seed doc: StrongholdTweaks' remaining balance domains,
+      ProgressiveBiomes' spawning edits.</li>
+    <li><strong>Cross-file ordering under <code>&lt;include&gt;</code></strong> was not exercised — the fixtures
+      patch entry-point files directly. Follow-on once the seam exists, since include resolution happens inside the
+      game's patch-file read.</li>
+  </ul>
+
+  <h2>Proposed tickets</h2>
+  <div class="tablewrap">
+  <table>
+    <tr><th>Title</th><th>Labels</th><th>Gist</th></tr>
+    <tr>
+      <td>Extract a headless seam for BreadthFirstXmlPatcher's phase-2 loop (F1)</td>
+      <td><code>type:tooling</code> <code>mod:StrongMods</code> <code>area:testing</code></td>
+      <td>The <code>ApplyPatchesModMajorCo</code> extraction specified in finding 3, plus the tests that graduate
+        the emulated loop-shape assertions to executed ones.</td>
+    </tr>
+    <tr>
+      <td>Grow the post-patch value-assertion table beyond StrongholdTweaks (S5)</td>
+      <td><code>type:tooling</code> <code>scope:repo-wide</code> <code>area:testing</code></td>
+      <td>Add rows for other mods' behavior-bearing edits; add a count-shaped row form for document-wide edits like
+        the Stacknumber sweep.</td>
+    </tr>
+  </table>
+  </div>
+
+  <p class="small">
+    Effort: patcher-conformance, unattended session of 2026-08-18. Suite state at handoff: 423 green, 0 failed,
+    0 skipped (<code>dotnet test StrongMods.sln -c Debug</code>). Changes are uncommitted, awaiting human review.
+  </p>
+</div>

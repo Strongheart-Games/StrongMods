@@ -1,0 +1,1377 @@
+<title>Server-Side Sort Boxes</title>
+<style>
+  :root {
+    --ground: #F0F1F3; --surface: #FFFFFF; --surface-2: #E4E6EA;
+    --ink: #14161A; --ink-2: #3A404A; --ink-3: #656D79;
+    --hair: #D0D4DA; --hair-strong: #A6ADB7;
+    --accent: #1F5FA8; --accent-tint: #E1EBF7;
+    --alarm: #9A2622; --alarm-tint: #F5E2E0;
+    --calm: #1B6048; --calm-tint: #DDEBE5;
+    --warn: #8A5A00; --warn-tint: #F7EEDC;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --measure: 74ch; --pad: clamp(20px, 4vw, 56px);
+  }
+  /* The dark palette, defined once and applied in both the un-stamped (system) state and the
+     explicitly-toggled one. The media query is guarded so an explicit light choice beats a dark OS. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+      --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+      --hair: #242C35; --hair-strong: #38424E;
+      --accent: #6FA8E8; --accent-tint: #14202E;
+      --alarm: #E8837A; --alarm-tint: #2A1917;
+      --calm: #62C79A; --calm-tint: #142520;
+      --warn: #D9A441; --warn-tint: #251C0C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+    --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+    --hair: #242C35; --hair-strong: #38424E;
+    --accent: #6FA8E8; --accent-tint: #14202E;
+    --alarm: #E8837A; --alarm-tint: #2A1917;
+    --calm: #62C79A; --calm-tint: #142520;
+    --warn: #D9A441; --warn-tint: #251C0C;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 16px; line-height: 1.6; }
+  .page { max-width: 1140px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong);
+              padding: 22px 0 26px; display: flex; flex-direction: column; gap: 14px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--accent); display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  h1 { margin: 0; font-size: clamp(30px, 5.5vw, 52px); line-height: 1.05; letter-spacing: -0.03em;
+       font-weight: 800; }
+  .standfirst { margin: 0; max-width: var(--measure); font-size: 18px; color: var(--ink-2); }
+  .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .chip { font-family: var(--mono); font-size: 12px; padding: 5px 10px; border: 1px solid var(--hair-strong);
+          color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+  .chip.ok { color: var(--calm); background: var(--calm-tint); border-color: var(--calm); }
+  .chip.warn { color: var(--alarm); background: var(--alarm-tint); border-color: var(--alarm); }
+  h2 { margin: 60px 0 12px; font-size: 27px; letter-spacing: -0.02em;
+       border-bottom: 1px solid var(--hair-strong); padding-bottom: 8px; }
+  h3 { margin: 30px 0 8px; font-size: 19px; }
+  h4 { margin: 22px 0 6px; font-size: 16px; }
+  p, ul, ol { max-width: var(--measure); }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 1px 5px;
+         border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: 13px; line-height: 1.5; background: var(--surface);
+        border: 1px solid var(--hair); padding: 14px 16px; overflow-x: auto; max-width: 100%; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 14px 0; }
+  th, td { text-align: left; padding: 8px 12px; border: 1px solid var(--hair); vertical-align: top; }
+  th { background: var(--surface-2); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tablewrap { overflow-x: auto; }
+  .finding { border-left: 4px solid var(--accent); background: var(--surface); padding: 14px 18px;
+             margin: 18px 0; }
+  .finding.negative { border-left-color: var(--alarm); }
+  .finding.positive { border-left-color: var(--calm); }
+  .finding.caution { border-left-color: var(--warn); }
+  .finding h3, .finding h4 { margin-top: 0; }
+  .small { font-size: 13.5px; color: var(--ink-3); }
+  .lede { font-size: 17px; color: var(--ink-2); max-width: var(--measure); }
+  .allow { color: var(--alarm); font-weight: 700; }
+  .block { color: var(--calm); font-weight: 700; }
+  .tag { font-family: var(--mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--hair-strong);
+         color: var(--ink-3); white-space: nowrap; }
+  .tag.hi { color: var(--alarm); border-color: var(--alarm); background: var(--alarm-tint); }
+  .tag.med { color: var(--warn); border-color: var(--warn); background: var(--warn-tint); }
+  ol.big { counter-reset: n; list-style: none; padding-left: 0; max-width: var(--measure); }
+  ol.big > li { counter-increment: n; position: relative; padding-left: 46px; margin: 16px 0; }
+  ol.big > li::before { content: counter(n); position: absolute; left: 0; top: 0;
+      font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--accent);
+      border: 2px solid var(--accent); width: 32px; height: 32px; display: grid; place-items: center; }
+  /* hand-built flow diagram */
+  .flow { margin: 22px 0; display: flex; flex-direction: column; gap: 0; max-width: 860px; }
+  .flowrow { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+  .node { border: 2px solid var(--hair-strong); background: var(--surface); padding: 10px 13px;
+          font-size: 13.5px; flex: 1 1 200px; }
+  .node h5 { margin: 0 0 4px; font-size: 12px; font-family: var(--mono); letter-spacing: .04em;
+             text-transform: uppercase; color: var(--ink-3); }
+  .node.client { border-color: var(--accent); background: var(--accent-tint); }
+  .node.server { border-color: var(--calm); background: var(--calm-tint); }
+  .node.danger { border-color: var(--alarm); background: var(--alarm-tint); }
+  .arrow { font-family: var(--mono); font-size: 12px; color: var(--ink-3); padding: 6px 0 6px 12px;
+           border-left: 2px dashed var(--hair-strong); margin-left: 14px; }
+  /* hand-built cost chart */
+  .bars { margin: 18px 0; max-width: 820px; }
+  .bar { display: grid; grid-template-columns: 220px 1fr auto; gap: 12px; align-items: center;
+         margin: 7px 0; font-size: 13.5px; }
+  .bar .label { font-family: var(--mono); font-size: 12px; color: var(--ink-2); text-align: right; }
+  .bar .track { display: block; background: var(--surface-2); height: 22px; position: relative;
+                border: 1px solid var(--hair); }
+  .bar .fill { display: block; height: 100%; min-width: 3px; background: var(--alarm); }
+  .bar .fill.mid { background: var(--warn); }
+  .bar .fill.low { background: var(--calm); }
+  .bar .num { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+  .toc { background: var(--surface); border: 1px solid var(--hair); padding: 16px 20px; margin: 26px 0;
+         max-width: var(--measure); }
+  .toc ol { margin: 6px 0 0; padding-left: 22px; }
+  .toc li { margin: 3px 0; }
+  a { color: var(--accent); }
+</style>
+<div class="page">
+  <header class="masthead">
+    <div class="kicker">
+      <span>StrongMods &middot; StrongBoxes</span><span>2026-08-18</span>
+      <span>research for #31</span>
+    </div>
+    <h1>Server-Side Sort Boxes</h1>
+    <p class="standfirst">
+      Three shipping 7 Days to Die sort tools, read end to end against the game's own decompiled source, and
+      measured against what StrongBoxes is trying to become. The headline results: the argument against custom
+      blocks is wrong but the preference for sign names is still right; container contents are
+      <em>client-authoritative</em>, which decides both the locking discipline and the fate of the
+      <code>mailbox</code> idea; party membership does not affect permissions but allies do, and that is a
+      problem; and the production mod on Hades reaches outside the land claim it promises to respect.
+    </p>
+    <div class="statusbar">
+      <span class="chip ok">suite: 484 green (baseline 423, +61 new)</span>
+      <span class="chip ok">game tree V3.1.0-b14</span>
+      <span class="chip">8 files added, all in <code>Tests\SortBoxes\</code></span>
+      <span class="chip">no mod code changed</span>
+      <span class="chip">57 claims adversarially verified</span>
+    </div>
+  </header>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#tldr">Ten things that matter</a></li>
+      <li><a href="#glance">The four implementations at a glance</a></li>
+      <li><a href="#detection">Detecting the sort box</a></li>
+      <li><a href="#state">Distributed state, locking and interleaving</a></li>
+      <li><a href="#algorithms">Algorithms and what they cost</a></li>
+      <li><a href="#matching">Matching and tie-breaking</a></li>
+      <li><a href="#security">Preventing transfers to the wrong box</a></li>
+      <li><a href="#framework">The sign-name-as-command framework</a></li>
+      <li><a href="#bugs">Defects found in the reference mods</a></li>
+      <li><a href="#recommend">What this means for StrongBoxes</a></li>
+      <li><a href="#prototype">The prototype</a></li>
+      <li><a href="#method">Method, confidence and what was not checked</a></li>
+    </ol>
+  </div>
+
+  <h2 id="tldr">Ten things that matter</h2>
+
+  <ol class="big">
+    <li><strong>Container contents are client-authoritative.</strong> The client mutates its local copy and
+      pushes the <em>whole</em> item array; <code>NetPackageTileEntity.ProcessPackage</code> applies it with no
+      sender validation and no merge. Everything else in this report follows from that one fact.</li>
+    <li><strong>"Custom blocks force a client download" is false.</strong> The server ships its patched
+      <code>blocks.xml</code> and localization to every client. Both block-based mods here are server-side-only
+      and EAC-friendly. Your preference for names is still right — for different reasons.</li>
+    <li><strong>Only 6 of 1,563 storage blocks can carry a sign at all</strong>, and only 3 of those also have a
+      lock. That is the hard price of a name-driven design, and it is the single biggest constraint on
+      StrongBoxes.</li>
+    <li><strong>Party membership does not affect permissions. Allies do — and that is an escalation.</strong>
+      Vanilla does not let an ally open your locked box, but ServerTools' sorter will write into it.</li>
+    <li><strong>RoboticInbox reaches outside the land claim it promises to respect.</strong> Measured: an inbox
+      two blocks from its claim edge probes <strong>10,146 positions outside the claim</strong>, up to 18 blocks
+      past it. This mod runs on Hades.</li>
+    <li><strong>ServerTools' only in-use guard is dead code.</strong> It passes the composite where the lock was
+      registered on the feature, and <code>LockEntry.Equals</code> is reference equality, so it never matches.</li>
+    <li><strong>RoboticSorter's trigger probably does not fire the way it intends on a dedicated server.</strong>
+      It hooks <code>TileEntity.SetModified</code>, which the client-push path never calls.</li>
+    <li><strong>Top-up-only is not the conservative choice — it is a silent exclusion.</strong> Every quality
+      item has a stack limit of 1, so no tool, weapon or armour piece can ever be topped up. #31's open question
+      has a clear answer.</li>
+    <li><strong>There is no concurrency to get wrong.</strong> Everything is main-thread. Deadlock is
+      structurally impossible. The real hazards are interleaving across frames and last-writer-wins replication.</li>
+    <li><strong><code>mailbox</code> as "anyone deposits, only the owner withdraws" is not implementable</strong>
+      as prevention in 3.1.0-b14. It has to become an open-time permission instead.</li>
+  </ol>
+
+  <h2 id="glance">The four implementations at a glance</h2>
+
+  <div class="tablewrap">
+  <table>
+    <tr>
+      <th>&nbsp;</th><th>RoboticInbox</th><th>RoboticSorter</th><th>ServerTools</th><th>StrongBoxes today</th>
+    </tr>
+    <tr>
+      <th>Marked by</th>
+      <td>Block tag <code>roboticinbox</code></td>
+      <td>Block tag <code>roboticsorter</code></td>
+      <td>Sign text <code>sort</code>/<code>auto sort</code>/<code>dump</code></td>
+      <td>Sign text <code>sort</code></td>
+    </tr>
+    <tr>
+      <th>Hook</th>
+      <td><code>OnUnlockedServer</code> postfix</td>
+      <td><code>TileEntity.SetModified</code> postfix</td>
+      <td><code>OnUnlockedServer</code> postfix</td>
+      <td><code>OnUnlockedServer</code> <em>prefix</em></td>
+    </tr>
+    <tr>
+      <th>Direction</th>
+      <td>Push out</td><td>Pull in (plus a push path)</td><td>Push out</td><td>Push out (stubbed)</td>
+    </tr>
+    <tr>
+      <th>Discovery</th>
+      <td>Chebyshev shell walk over coordinates</td>
+      <td>Dense cube over coordinates</td>
+      <td>3&times;3 chunk tile-entity lists</td>
+      <td>3&times;3 chunk tile-entity lists</td>
+    </tr>
+    <tr>
+      <th>Probes per run</th>
+      <td>74,620</td><td>226,980</td><td>~360</td><td>~360</td>
+    </tr>
+    <tr>
+      <th>Match on</th>
+      <td><code>itemValue.ItemClass</code></td>
+      <td><code>itemValue.type</code> (filter-by-example)</td>
+      <td><code>HasItem(itemValue)</code></td>
+      <td>&mdash; (stub)</td>
+    </tr>
+    <tr>
+      <th>Permission model</th>
+      <td>Lock/password match + claim clamp</td>
+      <td>Lock/password match (bypassed on push)</td>
+      <td>Land claim <code>Self</code> or <code>Ally</code></td>
+      <td>None (all <code>TODO</code>)</td>
+    </tr>
+    <tr>
+      <th>Knows who acted</th>
+      <td class="block">No</td><td class="block">No</td><td class="allow">Yes</td>
+      <td>Available, discarded</td>
+    </tr>
+    <tr>
+      <th>In-use guard</th>
+      <td>Yes, works</td><td>None</td><td>Yes, dead code</td><td>None</td>
+    </tr>
+  </table>
+  </div>
+
+  <p class="small">
+    Probe counts are measured, not estimated — see <a href="#algorithms">Algorithms</a>. RoboticInbox's figure is
+    at its real deployed settings from <code>robotic-inbox.json</code> on this machine (range 20/20); RoboticSorter's
+    is at the <code>SorterSearchRadius</code> of 30 declared in its <code>blocks.xml</code>.
+  </p>
+
+  <h2 id="detection">Detecting the sort box</h2>
+
+  <p class="lede">
+    Two independent axes get conflated in every discussion of this: <em>what marks the box</em> (block identity
+    versus player-written name) and <em>when you find out</em> (which hook you patch). They trade off differently
+    and should be decided separately.
+  </p>
+
+  <h3>The client-download argument does not hold</h3>
+
+  <div class="finding negative">
+    <h4>Correction to a premise</h4>
+    <p>
+      The common objection to custom blocks — that a new block forces every player to download the mod — is
+      false in 3.x. <code>WorldStaticData.SendXmlsToClient</code> ships the server's fully-patched
+      <code>blocks.xml</code> to every connecting client, localization streams alongside it, and
+      <code>assignIdsFromMapping</code> reconciles block ids by name. A block built only from vanilla classes and
+      vanilla art works on a stock client.
+    </p>
+    <p>
+      Both block-based mods here prove it in production. Each defines its blocks by
+      <code>&lt;property name="Extends" value="cntSteelWritableCrate" /&gt;</code> and only retints them —
+      no new mesh, no new texture. RoboticInbox's README states plainly: "Works on Dedicated Servers (EAC can
+      stay enabled)."
+    </p>
+  </div>
+
+  <p>
+    So the case for sign names has to be re-based. The durable advantages are real and they are the ones you
+    named: a name <strong>retrofits onto a box the player already owns</strong>, it is <strong>revoked by
+    retyping</strong>, it is <strong>self-documenting in a shared base</strong>, and — the one that matters most
+    architecturally — a vocabulary <strong>scales as N strings rather than N&times;M block definitions</strong>.
+    That last point is decisive for what you want to build: a box may need to be both <code>sort</code> and
+    <code>nosort</code>-adjacent, or both a mailbox and a labelled ammo box, and it can only ever be one block.
+    RoboticInbox needs 24 block definitions plus five supporting XML files to express one behaviour in eleven
+    colours.
+  </p>
+
+  <div class="finding caution">
+    <h4>The price, and it is steep</h4>
+    <p>
+      A census of the 3.1.0-b14 <code>blocks.xml</code> with <code>Extends</code> resolved: <strong>exactly 6 of
+      1,563 storage-bearing block definitions carry a <code>TEFeatureSignable</code></strong> — the wood, iron and
+      steel writable crates, secure and insecure. <strong>Only 3 of those also carry a
+      <code>TEFeatureLockable</code></strong> (the non-Insecure variants).
+    </p>
+    <p>
+      Two consequences. Your keyword vocabulary can only ever be written on writable crates, where RoboticInbox's
+      block tag reaches all 1,563. And a <code>mailbox</code> keyword on an Insecure crate has no ACL to lean on
+      and must fall back to <code>TileEntityComposite.Owner</code>. If 6 blocks proves too narrow, the cheap fix
+      is to patch <code>TEFeatureSignable</code> onto more existing containers via XML — it needs all four of
+      <code>FontSize</code>/<code>LineCount</code>/<code>LineWidth</code>/<code>LineSpacing</code> or
+      <code>TEFeatureSignable.Init</code> logs an error — rather than defining new blocks.
+    </p>
+  </div>
+
+  <h3>The hook axis, which is where the real difference is</h3>
+
+  <p>
+    <code>TEFeatureStorage.OnUnlockedServer</code> has one caller, <code>LockManager.UnlockRequestServer</code>.
+    It fires exactly once per lock release and it carries <code>_unlockingPlayerId</code>. Despite the name it is
+    a <em>close</em> event: the "lock" is the exclusive-access lock a client takes when it opens a container, not
+    a padlock. StrongBoxes' README is right about this.
+  </p>
+
+  <p>
+    The ordering is better than it looks. On close, <code>XUiC_LootWindowGroup</code> calls
+    <code>te.SetModified()</code> first, then <code>SetUserAccessing(false)</code>, then
+    <code>UnlockRequestLocal()</code>. The player's final contents are therefore already on the wire before the
+    unlock, which is exactly why sorting on unlock is the right choice.
+  </p>
+
+  <div class="finding negative">
+    <h4>RoboticSorter's hook does not do what it looks like it does</h4>
+    <p>
+      It patches <code>TileEntity.SetModified</code>. But the server's client-push handler,
+      <code>NetPackageTileEntity.ProcessPackage</code>, reimplements the server half inline — it calls
+      <code>read</code>, <code>NotifyListeners</code>, <code>SetChunkModified</code> and <code>SendPackage</code>,
+      and <strong>never calls <code>SetModified()</code></strong>. I verified this directly against the
+      decompiled package.
+    </p>
+    <p>
+      What <em>does</em> call it server-side is <code>PopulateTE</code>, reached from
+      <code>OnLockedServer</code> — that is, when a player <em>opens</em> a container. So on a dedicated server
+      RoboticSorter appears to trigger on open, against the pre-edit contents, rather than on the content change
+      it is written to respond to. If you were considering the <code>SetModified</code> hook, this is the reason
+      not to.
+    </p>
+  </div>
+
+  <div class="finding caution">
+    <h4>StrongBoxes should switch from Prefix to Postfix, and wrap the body</h4>
+    <p>
+      <code>UnlockRequestServer</code> removes each <code>LockEntry</code> before calling
+      <code>OnUnlockedServer</code>, but clears <code>singleLocks</code> and <code>keepOpenTimes</code> only after
+      the loop. A prefix that throws therefore leaves the player in <code>playersWithLocks</code>, and their next
+      attempt to open anything is refused with <em>"Invalid lock state for player N"</em>. It also suppresses
+      vanilla's <code>CheckDestroyTileEntity</code>. RoboticInbox uses a Postfix wrapped in try/catch and has
+      neither failure mode; StrongBoxes uses an unwrapped Prefix
+      (<code>StrongBoxes/StrongBoxes.cs:41-46</code>).
+    </p>
+  </div>
+
+  <h3>Name matching is where a name-driven design actually breaks</h3>
+
+  <p>
+    ServerTools and StrongBoxes both match the <em>whole sign</em> for exact equality. I checked what a player can
+    actually type: a storage box opens the <code>signMultiline</code> editor, a single 50-character field with
+    <code>on_return="NewLine"</code>. So <code>"sort "</code>, <code>"sort\nkitchen"</code> and
+    <code>"[FF0000]sort[-]"</code> are all reachable input that silently disables the box, with no message and no
+    visible difference on the sign face. The writable crate declares <code>LineCount=3</code> — a keyword line
+    plus a label line is the block's <em>designed</em> use, and whole-string matching forbids exactly that.
+  </p>
+
+  <p>
+    The prototype's <code>BoxKeywordVocabularyTests</code> runs all of these as executable cases. Whole-sign
+    matching sees a bare keyword and misses every one of the five variants above; line matching with markup
+    stripping catches all of them and still ignores <code>"sort this out later"</code>,
+    <code>"assorted junk"</code> and <code>"needs sorting"</code>.
+  </p>
+
+  <h2 id="state">Distributed state, locking and interleaving</h2>
+
+  <div class="finding positive">
+    <h4>Settle the framing first: there is no concurrency here</h4>
+    <p>
+      Network packet processing, <code>LockManager.Update</code>, and every <code>ThreadManager</code> coroutine
+      all run on the Unity main thread. Mutexes, volatiles and lock-ordering protocols would be pure ceremony,
+      and <strong>deadlock is structurally impossible</strong> — <code>LockManager</code> has no blocking
+      acquire, and mods hold nothing. Do not build a lock-ordering protocol for this. The one place a real data
+      race can be manufactured is holding a stale <code>TileEntity</code> whose pooled <code>Chunk</code> the
+      background chunk-save thread is serializing.
+    </p>
+    <p>
+      What <em>is</em> real is single-threaded interleaving across frames, plus a last-writer-wins replication
+      channel with no merge.
+    </p>
+  </div>
+
+  <h3>The write path, and why it decides everything</h3>
+
+  <div class="flow">
+    <div class="flowrow">
+      <div class="node client">
+        <h5>client</h5>
+        Player drags an item. <code>XUiC_LootContainer</code> calls <code>UpdateSlot</code> then
+        <code>SetModified()</code> on its <em>local</em> copy.
+      </div>
+    </div>
+    <div class="arrow">&darr; <code>NetPackageTileEntity</code>, <code>StreamModeWrite.ToServer</code> &mdash; the whole array, not a delta</div>
+    <div class="flowrow">
+      <div class="node danger">
+        <h5>server &mdash; no authorization</h5>
+        <code>ProcessPackage</code> calls <code>tileEntity.read(..., FromClient)</code>. No sender check, no
+        distance check, no per-slot validation, no merge. The server's array is <em>replaced</em>.
+      </div>
+    </div>
+    <div class="arrow">&darr; rebroadcast to clients within 192 m</div>
+    <div class="flowrow">
+      <div class="node server">
+        <h5>other clients</h5>
+        Receive the new array &mdash; unless they have the box open, in which case
+        <code>TEFeatureStorage.read</code> discards the item payload while
+        <code>IsUserAccessing()</code> is true.
+      </div>
+    </div>
+  </div>
+
+  <p>
+    That last guard is client-side only. <code>SetUserAccessing</code> has exactly one writer in the whole
+    assembly — <code>XUiC_LootWindowGroup</code>, the client loot window — so on a dedicated server
+    <code>bUserAccessing</code> is <em>always false</em> and the guard never protects the server's copy.
+  </p>
+
+  <div class="finding negative">
+    <h4>Sorting into a box a player has open destroys items, silently</h4>
+    <p>
+      The sequence is: the sort removes items from the source and writes them into the target; the player who has
+      the target open closes it; their client pushes the array it snapshotted when it opened, which does not
+      contain the new items; the server accepts it. The items are gone from both ends. Nothing logs an error —
+      the sort recorded success.
+    </p>
+    <p>
+      <code>Tests/SortBoxes/ContainerInterleavingTests.cs</code> runs this as seven executable cases, including
+      the one that matters most for implementation: <strong>a check taken before a yield is already stale by the
+      write</strong>. The window is not "at close" either — any client-side modification pushes the whole array,
+      so it is "at any time while open".
+    </p>
+  </div>
+
+  <h3>The in-use guard, and the trap in it</h3>
+
+  <div class="finding negative">
+    <h4>ServerTools' guard never fires</h4>
+    <p>
+      <code>LockEntry.Equals</code> is reference equality on <code>Target</code>, and
+      <code>TEFeatureStorage.OnBlockActivated</code> registers <code>this</code> — the <em>feature</em>.
+      ServerTools passes the <code>TileEntityComposite</code> (<code>Sorter.cs:60</code>), which compiles
+      cleanly and silently never matches. Its only concurrency protection is dead code.
+    </p>
+    <p>
+      RoboticInbox passes the <code>ITileEntityLootable</code> from its cast helper and works
+      (<code>StorageManager.cs:357-372</code>). RoboticSorter has no check at all. If StrongBoxes takes one
+      mechanical lesson from this report, it is: <strong>pass the feature, never the composite</strong>.
+    </p>
+  </div>
+
+  <p>
+    A related nuance worth writing down rather than cargo-culting: a <em>source</em>-side in-use check at
+    <code>OnUnlockedServer</code> time is unreachable. <code>UnlockRequestServer</code> removes the lock entry
+    <em>before</em> invoking the callback, and single locks are exclusive, so no player can be holding the source
+    at that instant. RoboticInbox's source branch is dead in the normal flow. The check only becomes meaningful
+    if work is ever deferred past that frame.
+  </p>
+
+  <h3>RoboticInbox's best idea, and its sharp edge</h3>
+
+  <p>
+    RoboticInbox patches <code>TEFeatureAbs.CanLockOnServer</code> to <strong>refuse the lock</strong> while an
+    inbox is distributing, so a player simply cannot open it mid-sort. That is genuine mutual exclusion on the
+    source, it is the best single idea in the three mods, and it is the same seam that makes
+    <code>mailbox</code> implementable at all (below).
+  </p>
+
+  <p>
+    The sharp edge: the <code>ActiveCoroutines</code> entry is removed by the coroutine's <em>last statement</em>,
+    while two of its checks sit outside the <code>try</code>. Any escaping exception leaves the key in the
+    dictionary forever, and the <code>CanLockOnServer</code> prefix then makes that inbox <strong>permanently
+    unopenable for the rest of the session</strong>. If StrongBoxes ever defers work, model the run as an
+    explicit token cleared in a <code>finally</code>, keyed by entity identity rather than position — position
+    keys collide when a box is destroyed and rebuilt at the same coordinates.
+  </p>
+
+  <h2 id="algorithms">Algorithms and what they cost</h2>
+
+  <p class="lede">
+    Container discovery is the whole cost story, and two of the four tools get it wrong by roughly three orders of
+    magnitude. The question you ask the world decides everything: <em>"is there a container at this
+    coordinate?"</em> costs one probe per coordinate, while <em>"what tile entities does this chunk have?"</em>
+    costs one visit per entity that actually exists. Both bottom out in the same
+    <code>Chunk.tileEntities</code> dictionary — but containers are sparse by construction.
+  </p>
+
+  <div class="bars">
+    <div class="bar">
+      <span class="label">RoboticSorter cube, r=30</span>
+      <span class="track"><span class="fill" style="width:100%"></span></span>
+      <span class="num">226,980</span>
+    </div>
+    <div class="bar">
+      <span class="label">RoboticInbox shell, range 20</span>
+      <span class="track"><span class="fill mid" style="width:32.9%"></span></span>
+      <span class="num">74,620</span>
+    </div>
+    <div class="bar">
+      <span class="label">Chunk walk (9 chunks &times; 40)</span>
+      <span class="track"><span class="fill low" style="width:0.16%"></span></span>
+      <span class="num">360</span>
+    </div>
+  </div>
+
+  <p class="small">
+    <code>World.GetTileEntity</code> calls per run, measured by
+    <code>Tests/SortBoxes/SortScanStrategyTests.cs</code>. The chunk walk covers a block volume of 589,824 while
+    visiting 360 entries — <strong>630&times; cheaper than the radius-30 cube</strong>. RoboticSorter's figure is
+    also per <em>trigger</em>, and its trigger is a hot path: 100 fires is 22,698,000 lookups.
+  </p>
+
+  <div class="finding positive">
+    <h4>StrongBoxes already has the right discovery geometry</h4>
+    <p>
+      Its 3&times;3 chunk window over <code>Chunk.GetTileEntities().list</code> is the correct shape, and it is
+      provably minimal for its radius. Chunks are 16 wide in X and Z (<code>toChunkXZ</code> is
+      <code>v &gt;&gt; 4</code>) and 256 tall (<code>toChunkY</code> is <code>v &gt;&gt; 8</code>), so a 3&times;3
+      window's <em>guaranteed</em> horizontal reach is exactly <strong>16 blocks</strong>, against a
+      <code>MaxDistance</code> of 15.
+    </p>
+    <p>
+      That one-block margin is a coincidence. <code>MaxDistance</code> lives in
+      <code>SortBoxes.cs:7</code> and the &plusmn;1 chunk loops live in <code>StrongBoxes.cs:18-19</code>, in a
+      different class in a different file, and <code>CalculateAdjacentChunkKeys</code> takes no radius parameter.
+      At 17 a box flush against a chunk edge silently stops seeing containers on the far side while still seeing
+      them on the near side — direction-dependent, position-dependent, invisible in logs. The prototype's
+      <code>ChunkWindowGuaranteedReach</code> computes the 16 and a theory asserts the invariant.
+    </p>
+  </div>
+
+  <h3>The matching inner loop is where the remaining work is</h3>
+
+  <p>
+    All three references walk targets-major and re-scan every target's slots for every source item, costing
+    |targets| &times; |source slots| &times; |target slots|. Indexing the targets once by item type turns the
+    product into a sum. Measured on a base of 60 specialised containers of 45 slots with a 45-slot sort box:
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>Source slots</th><th>Rescan (as the references do it)</th><th>Indexed once</th><th>Ratio</th></tr>
+    <tr><td>15</td><td>40,500</td><td>2,715</td><td>15&times;</td></tr>
+    <tr><td>30</td><td>81,000</td><td>2,730</td><td>30&times;</td></tr>
+    <tr><td>45</td><td>121,500</td><td>2,745</td><td>44&times;</td></tr>
+    <tr><td>90</td><td>243,000</td><td>2,790</td><td>87&times;</td></tr>
+  </table>
+  </div>
+
+  <p class="small">
+    Both plans place identical items (4,500 units at 45 slots) — the index is behaviour-preserving. Growth with
+    base size is the same story: at 240 containers, 486,000 comparisons against 10,845. Building the index
+    <em>after</em> a global distance sort also makes every candidate list arrive nearest-first for free, which is
+    the fix for the ordering defect below.
+  </p>
+
+  <p>
+    Two cheap wins the references mostly miss. <strong>Break out the moment the source empties</strong> —
+    ServerTools is the only one that checks at all, and its check sits one level too coarse (top of the chunk
+    loop), while RoboticInbox walks every remaining shell of its 74,620-probe box after the inbox is already
+    empty. And <strong>call <code>SetModified()</code> once per touched container, not per item</strong>: it
+    serializes the entire tile entity — every feature, every slot, the sign text — and broadcasts it to clients
+    within 192 m, and <code>AddItem</code> calls it internally on every successful placement.
+  </p>
+
+  <h2 id="matching">Matching and tie-breaking</h2>
+
+  <p class="lede">
+    All three tools answer "which box <em>may</em> receive this?" with the same coarse predicate, and none of them
+    answers "which box <em>wins</em>?" at all — because none ever scores candidates against each other. Each
+    greedily drains the source into whatever its scan reaches first.
+  </p>
+
+  <h3>The grain of the match</h3>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>Tool</th><th>Comparison</th><th>Player-visible effect</th></tr>
+    <tr>
+      <td>RoboticInbox</td><td><code>itemValue.ItemClass</code> reference equality</td>
+      <td>All pickaxes pool regardless of quality. Two <em>unresolvable</em> types both return null and compare
+        equal — a false match.</td>
+    </tr>
+    <tr>
+      <td>RoboticSorter</td><td><code>itemValue.type</code></td>
+      <td>Same grain. Omits <code>CanStackWith</code>'s texture test, so differently painted block stacks merge
+        and the player's blocks get silently repainted.</td>
+    </tr>
+    <tr>
+      <td>ServerTools</td><td><code>HasItem(itemValue)</code></td>
+      <td>Same grain, via the game's own helper.</td>
+    </tr>
+  </table>
+  </div>
+
+  <p>
+    <code>ItemClass</code> equality and <code>.type</code> equality are identical for every non-quest item, because
+    <code>ItemValue.ItemClass</code> returns the shared <code>ItemClass.list[type]</code> instance. Prefer
+    <code>.type</code> — it is what the game's own <code>HasItem</code> and <code>TryStackItem</code> use, and it
+    avoids both of <code>ItemClass</code>'s failure modes. For the <em>merge</em> decision use
+    <code>ItemStack.CanStackWith</code> rather than raw <code>.type</code>, which adds the texture test.
+  </p>
+
+  <div class="finding positive">
+    <h4>#31's open question answered: top up <em>and</em> place new stacks</h4>
+    <p>
+      <code>ItemClass.LateInit()</code> forces <code>Stacknumber.Value = 1</code> for every item where
+      <code>HasQuality</code> is true. So <code>MaxCount</code> is 1, <code>CanStackPartly</code> returns false,
+      and <code>TryStackItem</code> can <strong>never move any tool, weapon or armour piece</strong>.
+    </p>
+    <p>
+      A top-up-only sorter is therefore not the conservative reading — it silently excludes the entire item
+      category players most want sorted. All three references place new stacks. The prototype demonstrates it:
+      <code>Top_up_only_can_never_move_a_quality_item_because_its_stack_limit_is_one</code>.
+    </p>
+  </div>
+
+  <h3>Tie-breaking: the scatter problem</h3>
+
+  <p>
+    When two boxes both already hold nails, every reference tool picks whichever its scan reached first —
+    RoboticInbox by shell order (correct in principle, broken by the typo below), RoboticSorter by raw x/y/z loop
+    order, ServerTools by <code>Dictionary</code> enumeration order inside each chunk. The prototype shows the
+    consequence directly: feed the same two candidates in the opposite order and the nails land in the other box.
+    That is a property of the scan, not of anything the player chose, so rebuilding the same base rotated changes
+    where things go.
+  </p>
+
+  <p>
+    The recommended ranking is a documented <em>total</em> order, so it is testable and has no ties:
+  </p>
+
+  <ol>
+    <li>Sign-declared priority, if present.</li>
+    <li>Count of that item already held, descending.</li>
+    <li>Euclidean distance, ascending.</li>
+    <li>World position, lexicographic — the final discriminator.</li>
+  </ol>
+
+  <p>
+    Existing-quantity earns its place above distance because it is the only heuristic in the space that is
+    <strong>self-correcting</strong>: a stray round in the wrong chest loses to the canonical stack, so misroutes
+    heal instead of compounding. Most-free-space actively diverges and should be rejected. The prototype shows
+    nearest and most-existing genuinely disagreeing, which is why this is a design decision rather than a detail.
+  </p>
+
+  <div class="finding caution">
+    <h4>Honour <code>SlotLocks</code> on the destination, not just the source</h4>
+    <p>
+      Neither <code>AddItem</code> nor <code>TryStackItem</code> consults <code>SlotLocks</code> — vanilla only
+      ever uses locks as a source-side filter, so the destination case is latent until a mod writes from the
+      server side. RoboticInbox writes into locked slots and then calls
+      <code>StackSortUtil.CombineAndSortStacks</code> with default arguments, where the game's own sort button
+      passes the player's lock mask — destroying exactly the layout the lock exists to preserve. RoboticSorter
+      ignores <code>SlotLocks</code> entirely.
+    </p>
+  </div>
+
+  <h2 id="security">Preventing transfers to the wrong box</h2>
+
+  <p class="lede">
+    Two mutually exclusive models are in play, and neither is correct. Rows below are your questions, read against
+    the <em>target</em> — the box we might wrongly transfer into.
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr>
+      <th>Situation</th><th>RoboticInbox</th><th>RoboticSorter</th><th>ServerTools</th>
+      <th>Recommended</th>
+    </tr>
+    <tr>
+      <th>Target unlocked</th>
+      <td class="allow">ALLOWED unconditionally. Owner never read.</td>
+      <td class="allow">ALLOWED both directions.</td>
+      <td class="allow">ALLOWED if the claim gate passes. Lock state never consulted.</td>
+      <td class="block">BLOCKED unless the actor owns it or is in its ACL. Unlocked &ne; unowned.</td>
+    </tr>
+    <tr>
+      <th>Target locked, no password</th>
+      <td class="block">BLOCKED, with a sign message.</td>
+      <td>Pull <span class="block">BLOCKED</span>; push <span class="allow">ALLOWED</span> via the hole below.</td>
+      <td class="allow">ALLOWED. Lock state never consulted.</td>
+      <td>Owner/ACL decides — in practice owner-only.</td>
+    </tr>
+    <tr>
+      <th>Target locked with password</th>
+      <td>ALLOWED iff the source is also locked and the hashes are equal.</td>
+      <td>Pull: same rule. Push: <span class="allow">ALLOWED regardless</span>.</td>
+      <td class="allow">ALLOWED. Never consulted.</td>
+      <td>Owner/ACL decides. Password becomes an optional secondary grant, deferred.</td>
+    </tr>
+    <tr>
+      <th>Target inside a land claim</th>
+      <td>Scan box <em>clamped</em> to the claim containing the source. X/Z only, never Y. Not an ownership test.</td>
+      <td>No land-claim logic exists.</td>
+      <td class="block">REQUIRED: <code>Self</code> or <code>Ally</code>.</td>
+      <td>Optional <em>additional</em> grant (<code>Self</code> only), never a requirement.</td>
+    </tr>
+    <tr>
+      <th>Target outside any claim</th>
+      <td>No clamp at all — protection is <em>weaker</em> outside a claim.</td>
+      <td>No concept.</td>
+      <td class="block">BLOCKED. <code>None</code> is rejected alongside <code>Other</code> — silently.</td>
+      <td>Works normally. Owner/ACL is claim-independent.</td>
+    </tr>
+    <tr>
+      <th>Allies / party</th>
+      <td>No concept.</td><td>No concept.</td>
+      <td><strong>Ally is a full grant. Party: no effect.</strong></td>
+      <td>Ally alone must not grant.</td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="finding negative">
+    <h4>Your flagged question: what an "ally" is, and whether party matters</h4>
+    <p>
+      <strong>Party membership does not affect anything.</strong> <code>World.GetLandClaimOwner</code> — the
+      method ServerTools calls — never touches <code>EntityPlayer.Party</code>. A party-aware variant exists,
+      <code>World.GetLandClaimOwnerInParty</code>, and there party is an <em>additional restriction</em>, not a
+      grant: it requires <strong>both</strong> <code>IsAlly</code> <strong>and</strong>
+      <code>player.Party.ContainsMember(...)</code>. Its only two callers in the entire assembly are Discord rich
+      presence and a Twitch UI flag. Neither is a permission decision.
+    </p>
+    <p>
+      An <strong>ally</strong> is <code>AllyStore.GetStatus(a, b) == AllyStatus.Allies</code> — a mutual,
+      explicit, persistent invite/accept relationship (<code>NotAllied &rarr; OutgoingInvite / IncomingInvite
+      &rarr; Allies</code>) stored in <code>players.xml</code>. It is not the party, not Steam friends, and not
+      the container ACL.
+    </p>
+    <p>
+      <strong>And here is the escalation.</strong> Vanilla does <em>not</em> let allies open your locked
+      containers: <code>TEFeatureLockable.IsUserAllowed</code> is <code>IsOwner(id) ||
+      allowedUserIds.Contains(id)</code>, and allies are never consulted. So ServerTools' <code>Ally</code> grant
+      lets the sorter write into a box the acting player is forbidden to open by hand. <strong>Never accept
+      <code>Ally</code> alone as a grant.</strong>
+    </p>
+  </div>
+
+  <h3>The two models, contrasted</h3>
+
+  <h4>(a) Lock/password matching — the password is the capability</h4>
+
+  <p>
+    The elegance is real: no identity infrastructure, no configuration, no group data structure. A player who
+    knows a password can already open that box by hand, so moving items between two boxes sharing a hash grants
+    no authority they lacked. A clan sets one password and the whole base interoperates.
+  </p>
+
+  <p>
+    The failures are equally real. <strong>An unlocked box is fair game to anyone's inbox</strong> — and most
+    players do not lock storage inside their own base, because it is tedious. <strong>A shared-password base
+    leaks between players</strong>: the hash is a 32-bit <code>GetStableHashCode().ToString("X8")</code>, so two
+    unrelated players who both pick <code>1234</code> get interoperating containers with no owner cross-check.
+    And nothing stops you placing an inbox near a stranger's chests and letting your overflow flow into their
+    base.
+  </p>
+
+  <div class="finding positive">
+    <h4>The sharpest irony, and the primitive nobody uses</h4>
+    <p>
+      The game already maintains the list this model wants. <code>TEFeatureLockable.allowedUserIds</code> is
+      populated <em>precisely when a non-owner types the correct password</em>. That is "everyone who has proved
+      they know the secret" — the password model's semantics with an identity attached — and none of the three
+      mods ever reads it. One caveat to record: the ACL is wiped whenever the owner changes the password, so it
+      is not a stable allow-list.
+    </p>
+  </div>
+
+  <h4>(b) Land-claim ownership — territory as authorization</h4>
+
+  <p>
+    The elegance is that it maps to the game's own model, it makes lock state correctly irrelevant, and above all
+    <strong>it knows who opened the box</strong>. That is structural, not incidental: RoboticInbox's postfix takes
+    only <code>__instance</code>, and RoboticSorter's trigger has no actor in scope even in principle. Password
+    matching is what you build when you have no actor.
+  </p>
+
+  <p>
+    The failures: outside a claim the answer is <code>None</code>, which is blocked — so unclaimed bases get
+    nothing, silently, with not even a chat message. The useful inverse is that ServerTools <em>cannot</em> dump
+    into a stranger's unclaimed box, which is the safer failure direction. Two further hazards if you adopt it:
+    claim ownership is 2D with no vertical bound, and on any non-survival game mode
+    <code>GetLandClaimOwner</code> returns <code>Self</code> for <em>every position on the map</em>, turning the
+    gate into a no-op.
+  </p>
+
+  <div class="finding">
+    <h4>The invariant to design to</h4>
+    <p style="font-size:17px">
+      <strong>A sort may only do what the acting player could have done by hand.</strong>
+    </p>
+    <p>
+      All three tools violate it, in different directions. RoboticInbox and RoboticSorter reach into a stranger's
+      unlocked box the player never opened. ServerTools reaches into an ally's password-locked box the player
+      cannot open. Stated as an invariant it also resolves future vocabulary questions automatically —
+      <code>mailbox</code> is precisely a deliberate, explicit <em>exception</em> to it, which is exactly the kind
+      of thing that should require a keyword rather than fall out of a permissive default.
+    </p>
+  </div>
+
+  <h2 id="framework">The sign-name-as-command framework</h2>
+
+  <p class="lede">
+    ServerTools is the only prior art that treats a sign as a command vocabulary. It is not a framework — it is
+    five independent copies of the same three lines, and every defect in it traces to that absence.
+  </p>
+
+  <h3>What ServerTools actually has</h3>
+
+  <p>
+    Five keywords on five unrelated classes: <code>sort</code>/<code>auto sort</code>/<code>dump</code> (Sorter),
+    <code>vault</code>, <code>bank</code>, <code>wall</code>, plus <code>auction</code>. No interface, no
+    dictionary, nothing that can enumerate the vocabulary. Precedence is emergent from statement order in one
+    Harmony postfix — Vault's handler runs before Sorter's, so two features on the same word resolve by which
+    <code>if</code> was typed first, and Vault wins silently because it empties the container first. The three
+    sorter names are pure aliases; nothing distinguishes <code>dump</code> from <code>sort</code>.
+  </p>
+
+  <div class="finding negative">
+    <h4>The exclusion list teaches the real lesson</h4>
+    <p>
+      ServerTools' entire "nosort" mechanism is one line:
+    </p>
+    <pre><code>if (text == Vault.Box_Name || text == Box_Name1 || text == Box_Name2 || text == Box_Name3)
+    continue;</code></pre>
+    <p>
+      It reaches into <code>Vault.Box_Name</code> and is <strong>blind to Bank, Wall and Auction</strong> — all
+      three of which are physical storage containers identified by sign text. I verified this directly: a box
+      named <code>bank</code> or <code>wall</code> is a valid sort target and will receive items. Auction reads
+      <code>items[0]</code> positionally, so a stray dump corrupts a listing. The line also reserves
+      <code>vault</code> even on servers that never enable Vault.
+    </p>
+    <p>
+      This is the coupling that breaks as keywords multiply: <strong>every feature must know every other
+      feature's keyword, so adding the Nth keyword needs N&minus;1 edits in files you are not touching</strong>,
+      and forgetting one is silent. Worse, because exclusion is expressed by naming the box something else, there
+      is no way to make a container ineligible without also changing <em>what it is</em> — naming it
+      <code>vault</code> makes it a vault. Your proposed <code>nosort</code> is exactly the missing primitive: an
+      exclusion marker that is not also a behaviour marker.
+    </p>
+  </div>
+
+  <p>
+    Normalization drift is the other symptom. Config lowercases Sorter's and Vault's names at load but stores
+    Bank's and Wall's raw, and comparisons apply <code>.ToLower()</code> inconsistently. The live defect: with
+    <code>Box_Name="Bank"</code> configured and <code>bank</code> on the sign, <code>/deposit</code> finds the box
+    and <code>/withdraw</code> does not. Same box, same keyword, opposite answers. Vault reads its own keyword two
+    different ways in the same file.
+  </p>
+
+  <h3>Grammar: use a sigil</h3>
+
+  <p>
+    The hard constraint the prior art never states is that the sign holds <strong>50 characters total</strong> and
+    is the same surface players use for real labels. Weighed against that:
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>Form</th><th>Verdict</th></tr>
+    <tr><td><code>sort</code> (bare)</td>
+      <td>Best discoverability, but collides with innocent labels and cannot coexist with one. Fatal.</td></tr>
+    <tr><td><code>sort:ammo</code></td>
+      <td>Expressive, but presupposes parameters nothing needs yet, and <code>:</code> is plausible in a real
+        label (<code>Ammo: 9mm</code>).</td></tr>
+    <tr><td>Multi-line directive block</td>
+      <td>50 characters across all lines makes it absurd, and it steals the whole sign.</td></tr>
+    <tr><td><strong><code>#sort</code></strong></td>
+      <td><strong>Recommended.</strong> One character, never typed accidentally, reads as machine-directed,
+        greppable in logs and support threads.</td></tr>
+  </table>
+  </div>
+
+  <div class="finding positive">
+    <h4>The sigil solves ServerTools interop for free</h4>
+    <p>
+      Both mods hook <code>OnUnlockedServer</code> and both would fire on a box named <code>sort</code>, sorting
+      it twice under different semantics and different access models. But <code>#sort</code> fails ServerTools'
+      whole-string <code>text != Box_Name1</code> comparison, so the two vocabularies become <strong>disjoint by
+      construction</strong> with no interop work at all. This is the strongest practical argument for the sigil.
+      Document the migration as "add a <code>#</code>, keep your label."
+    </p>
+  </div>
+
+  <p>
+    Scan every line for <code>#</code>-prefixed tokens and leave all other text alone as the player's label. A box
+    reading <code>Ammo</code> / <code>#sort #nosort</code> is a labelled ammo box that sorts and refuses to be a
+    target. Normalize at exactly one boundary — trim, split on newline and whitespace,
+    <code>ToLowerInvariant()</code>, keep <code>#</code> tokens — and never compare raw text anywhere else.
+    Use <code>ToLowerInvariant</code>, not <code>ToLower</code>: StrongBoxes currently uses the culture-sensitive
+    form, and on a tr-TR server <code>I</code> lowercases to U+0131, which is ordinally different from
+    <code>i</code>. Harmless for <code>sort</code>; fatal for a future <code>#inbox</code>.
+  </p>
+
+  <h3>The architectural split that decides the registry's shape</h3>
+
+  <div class="finding">
+    <h4>A keyword is either a trigger or a property, and the current bus can only hold triggers</h4>
+    <p>
+      <code>#sort</code> is a <strong>trigger</strong>: it has a firing event (this box closed), it acts, it is
+      done. <code>#nosort</code> and <code>#mailbox</code> are <strong>predicates on a container</strong> —
+      nothing happens when a <code>#nosort</code> box closes; the keyword exists to be <em>asked about</em> by a
+      different feature, at a time that feature chooses.
+    </p>
+    <p>
+      StrongBoxes' <code>ConcurrentBag&lt;Listener&gt;</code> fires only on the box the player closed, so
+      <code>nosort</code> has literally nowhere to hook. <strong>Model the vocabulary as a queryable property
+      store first, with trigger dispatch layered on top</strong> — not as an event bus.
+    </p>
+  </div>
+
+  <p>
+    The current bag has four more problems worth naming: every listener re-parses the text and invents its own
+    matching rule (the exact divergence that produced ServerTools' Bank asymmetry);
+    <code>ConcurrentBag</code> enumeration order is explicitly unspecified, so two matching keywords fire
+    nondeterministically — ServerTools at least had <em>deterministic</em> ordering; nothing detects two listeners
+    claiming one word; and the vocabulary cannot be enumerated, so there is no help text, no console command and
+    no misspelling detection.
+  </p>
+
+  <pre><code>public interface IBoxKeyword {
+  string Token { get; }          // "#sort" — the vocabulary, enumerable
+  string HelpText { get; }       // for a console command and chat errors
+  KeywordKind Kind { get; }      // Trigger | Property
+}
+public interface ITriggerKeyword : IBoxKeyword {
+  int Priority { get; }                                  // deterministic order
+  void OnClose(TileEntityComposite box, int playerId);   // player id retained
+}
+
+static void Register(IBoxKeyword k);                     // throws on duplicate Token
+static IReadOnlyCollection&lt;IBoxKeyword&gt; Vocabulary { get; }
+static bool Has(TileEntityComposite box, string token);  // the property query</code></pre>
+
+  <p>
+    <code>Register</code> throwing on a duplicate turns ServerTools' silent statement-order collision into a
+    startup error. The prototype implements this shape and tests the refusal.
+  </p>
+
+  <p>
+    On caching the sign reads: <strong>do not, initially</strong>. A close costs on the order of 10²–10³
+    candidates, each one array index plus a string read plus a tokenize. RoboticInbox already tolerates 74,620
+    <code>GetTileEntity</code> calls per close. A position-keyed cache is also a correctness hazard, because the
+    signable and the storage are separate lock targets on the same composite — a second player can rewrite the
+    sign while a first has the box open. Re-evaluate keywords at the moment of action regardless.
+  </p>
+
+  <h3>Mailbox: a real feasibility verdict, and it is negative</h3>
+
+  <div class="finding negative">
+    <h4>Directional access control on a container is not implementable in 3.1.0-b14</h4>
+    <p>
+      <strong>There is no server-side hook on taking an item out.</strong> There is no request/response for
+      storage item moves at all. <code>TEFeatureStorage</code> has no mutation callback, and
+      <code>NotifyListeners</code> is a client-UI mechanism with no server listeners. The only seam is patching
+      the packet handler and diffing against a snapshot — <em>a revert, not a prevention</em>.
+    </p>
+    <p><strong>And the revert does not work, for two independent reasons.</strong></p>
+    <p>
+      <em>The offending client ignores it.</em> <code>TEFeatureStorage.read</code> discards the inbound item
+      payload entirely while that client has the box open, so a mid-session restore broadcast is read and thrown
+      away by the very client you are trying to stop. Their UI still shows the item gone, and on close they push
+      their stale array back and re-remove it.
+    </p>
+    <p>
+      <em>Reverting duplicates the item.</em> The player's backpack is equally client-authoritative —
+      <code>NetPackagePlayerInventory</code> and <code>NetPackageBag</code> are both <code>ToServer</code> and
+      carry a whole cloned bag. <strong>There is no server-to-client inventory push package in the
+      assembly.</strong> So a server can restore the chest but cannot take the item back out of the player.
+    </p>
+    <p class="small">
+      The game ships a hash-validated, server-authoritative <code>TransactionalInventory</code> subsystem that
+      would make this possible — <code>InventoryManager.TransactionRequestServer</code> applies a transaction then
+      calls <code>ValidateFinalHashes</code>. It has <strong>zero consumers</strong> in the whole assembly. It is
+      shipped, unwired infrastructure, and worth watching.
+    </p>
+  </div>
+
+  <p>
+    What <em>is</em> implementable is access control at <strong>open</strong>.
+    <code>TEFeatureAbs.CanLockOnServer</code> returns <code>true</code> unconditionally and
+    <code>TEFeatureStorage</code> does not override it; <code>LockManager.LockRequestServer</code> consults it per
+    target and aborts the whole lock with <em>"Target refused to be locked on server"</em>, so the loot window
+    never opens. RoboticInbox already ships this technique. That gives a <em>binary</em> permission, not a
+    directional one, so <code>mailbox</code> has to be redesigned:
+  </p>
+
+  <ul>
+    <li><strong>Drop-only by proxy (recommended).</strong> Non-owners are refused the lock and get a deposit path
+      the mod controls entirely — a chat command, or an interaction the mod fulfils server-side by moving items
+      out of their bag. Server-authoritative, because the mod performs both halves.</li>
+    <li><strong>Snapshot-and-restore at close.</strong> Snapshot on <code>OnLockedServer</code>, diff at
+      <code>OnUnlockedServer</code>, restore if a non-owner removed anything. This broadcast <em>does</em> land,
+      because the client clears <code>SetUserAccessing(false)</code> before requesting the unlock. But the
+      duplication remains — the item is in their bag and unrecoverable. Ship only with an audit log, and
+      <strong>never as a security boundary</strong>.</li>
+  </ul>
+
+  <h3>Feedback: use chat, never the sign</h3>
+
+  <p>
+    Both sign-as-output precedents destroy player text. RoboticInbox stashes the original in memory, overwrites
+    the sign with a status message, and restores it 2–3 seconds later — but its restore removes the stash
+    <em>before</em> validating anything and returns false on three paths without putting it back, and it writes
+    the transient message with <code>_syncData: true</code>, so the status text is durable while the original
+    lives only in process memory. A chunk unload or a crash inside that window destroys the player's sign
+    permanently. RoboticSorter simply owns the sign and wipes it whenever slot 0 empties.
+  </p>
+
+  <p>
+    <strong>The sign cannot be both the input channel and the output channel.</strong> If the keyword lives on the
+    sign, writing to that sign disables the box — briefly in the good case, permanently if the process dies
+    mid-window. Use chat whispers (ServerTools already does, and it is the only per-player feedback in the
+    corpus), plus a console command that lists the vocabulary, which falls out free from an enumerable registry.
+  </p>
+
+  <p>
+    Silent no-ops are the dominant usability trap and all three tools have them. An enumerable vocabulary lets you
+    fix it cheaply: recognized-and-acted gets a whisper with counts; recognized-but-denied names the reason;
+    an unknown <code>#</code>-token gets the nearest match by edit distance; and <em>no</em> <code>#</code> token
+    stays silent, which is the overwhelmingly common case.
+  </p>
+
+  <h2 id="bugs">Defects found in the reference mods</h2>
+
+  <p class="small">
+    Every row was checked by an adversarial verifier instructed to refute it. 57 claims were tested; 22 came back
+    fully confirmed and 35 partly true with the effect corrected downward. The rows below are the ones that bear
+    on StrongBoxes' design.
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>Mod</th><th>Defect</th><th>Consequence</th><th>Sev</th></tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td><code>FastMax</code> where <code>FastMin</code> belongs, in both Y-plane sweeps of the shell walk
+        (<code>StorageManager.cs:238</code>, <code>:255</code>)</td>
+      <td><strong>Reaches outside the land claim.</strong> Measured: source 2 blocks from the +Z claim edge
+        probes 10,146 positions beyond it, up to 18 blocks out — breaking the exact boundary
+        <code>BaseSiphoningProtection</code> exists to enforce. Invisible when the box is centred in its claim,
+        which is why it survives casual testing.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td>Same typo, cost and ordering effects</td>
+      <td>5,700 positions probed twice; 5,700 reached before their true distance shell, so the nearest-first
+        property the six-face decomposition exists to provide is lost on those faces.</td>
+      <td><span class="tag med">med</span></td>
+    </tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td><code>FindMaxDistance</code> folds <code>v1.z</code> twice and never <code>v1.x</code></td>
+      <td>The run back to the &minus;X edge cannot raise the shell count. Measured with offsets (40,3,3)/(1,1,1):
+        the walk stops at shell 3 instead of 40 — 37 shells never run, and containers there are never offered
+        anything.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td><code>ActiveCoroutines</code> entry removed by the coroutine's last statement, with checks outside the
+        <code>try</code></td>
+      <td>Any escaping exception leaves the key forever, and the <code>CanLockOnServer</code> prefix then makes
+        that inbox <strong>permanently unopenable</strong> for the session.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td><code>TryRestoreOriginalMessage</code> removes the stashed sign text before validating, and returns
+        false on three paths without restoring it</td>
+      <td>A chunk unload or crash inside the 2-second status window destroys the player's sign text permanently.
+        The transient message is written with <code>_syncData: true</code>; the original is not persisted.</td>
+      <td><span class="tag med">med</span></td>
+    </tr>
+    <tr>
+      <td>RoboticInbox</td>
+      <td>Writes into <code>SlotLocks</code>-locked slots, then re-sorts with default arguments</td>
+      <td>Destroys the slot layout the lock exists to preserve.</td>
+      <td><span class="tag med">med</span></td>
+    </tr>
+    <tr>
+      <td>RoboticSorter</td>
+      <td><code>CanAccess(tileEntity, sourceContainer as TileEntity)</code> on the push path</td>
+      <td><strong>Access check bypassed.</strong> <code>TEFeatureStorage : TEFeatureAbs</code>, which is not a
+        <code>TileEntity</code>, so the cast is always null and <code>CanAccess</code> returns true at its first
+        line. Every composite container — i.e. all of them — takes that branch.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>RoboticSorter</td>
+      <td>Hooks <code>TileEntity.SetModified</code></td>
+      <td>The server's client-push handler never calls it, so on a dedicated server the trigger fires on
+        <em>open</em> (via <code>PopulateTE</code>) rather than on the content change it targets.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>RoboticSorter</td>
+      <td><code>UpdateSignText</code> initializes <code>text = ""</code> and writes it when slot 0 is empty</td>
+      <td>Wipes whatever the player wrote, routinely. Also clears the authorship record. This is exactly what
+        would silently delete a StrongBoxes keyword on a shared block.</td>
+      <td><span class="tag med">med</span></td>
+    </tr>
+    <tr>
+      <td>ServerTools</td>
+      <td><code>IsLockedServer</code> passed the composite, not the feature</td>
+      <td>Its only in-use guard is dead code — <code>LockEntry.Equals</code> is reference equality.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>ServerTools</td>
+      <td>Exclusion list blind to Bank, Wall and Auction</td>
+      <td>A box named <code>bank</code> or <code>wall</code> is a valid sort target. Auction reads
+        <code>items[0]</code> positionally, so a dump corrupts a listing.</td>
+      <td><span class="tag hi">high</span></td>
+    </tr>
+    <tr>
+      <td>ServerTools</td>
+      <td>Normalization applied in four different places</td>
+      <td>Bank deposit is case-insensitive while Bank withdraw is case-sensitive — same box, same keyword,
+        opposite answers.</td>
+      <td><span class="tag med">med</span></td>
+    </tr>
+  </table>
+  </div>
+
+  <h3>Defects in StrongBoxes as it stands</h3>
+
+  <p>
+    The mod is a stub, so these are not live bugs — but they are the specific things to fix, and several are the
+    kind that would survive into a working implementation.
+  </p>
+
+  <ul>
+    <li><strong>Null-chunk crash.</strong> <code>World.GetChunkSync</code> returns null for an unloaded neighbour
+      — the normal answer, not an error — and <code>SortBoxes.cs:50</code> short-circuits the LINQ chain with
+      <code>?.</code>, so <code>GetQualifiedSortTargets</code> returns null and <code>OnClose</code> hands it to
+      <code>List.AddRange</code>. The resulting exception inside a Harmony <em>prefix</em> leaves the player's
+      lock state stale. <code>ForceUnlockByChunk</code> fires during POI reset — precisely when neighbours are
+      absent.</li>
+    <li><strong>No self-exclusion.</strong> <code>IsQualifiedSortTarget</code> tests distance only, so the sort
+      box is its own candidate at distance 0. Under "already holds one" semantics it is its own perfect nearest
+      match. It is the only one of the four tools with no self-exclusion.</li>
+    <li><strong>No lootable filter.</strong> <code>GetTileEntities().list</code> returns every tile entity in the
+      256-tall column — doors, workstations, land claims, powered blocks. The README's claim that the scan "ranks
+      the lootable ones by distance" is false on both counts.</li>
+    <li><strong>Ordering.</strong> Each chunk's list is sorted in isolation and the nine runs are concatenated in
+      <code>HashSet</code> order, so a container 12 blocks away can be processed before one 2 blocks away. The
+      <code>// TODO: Sort by distance</code> marks the spot; the per-chunk sort is waste until it moves.</li>
+    <li><strong>Unguarded <code>GetAuthoredText().Text.ToLower()</code></strong> with no null check on either hop.
+      ServerTools guards exactly this.</li>
+    <li><strong><code>_unlockingPlayerId</code> is discarded.</strong> Harmony would bind it for free. It is the
+      only handle on the acting player, and every identity-based check depends on it.</li>
+    <li><strong><code>Listener.Filter</code> invoked without a null check</strong> while <code>Callback</code> is
+      null-guarded — an asymmetry with no justification.</li>
+  </ul>
+
+  <h2 id="recommend">What this means for StrongBoxes</h2>
+
+  <p class="lede">
+    A layered permission model, ordered cheap-to-expensive, with the layers that must ship first marked. The
+    ordering matters: each layer is only sound on top of the one before it.
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>Layer</th><th>What it does</th><th>MVP?</th></tr>
+    <tr>
+      <td><strong>L0 — Capture the actor</strong></td>
+      <td>Bind <code>int _unlockingPlayerId</code> in the patch; widen the listener contract to carry it. Resolve
+        to <code>PersistentPlayerData</code> and <code>PlatformUserIdentifierAbs</code>; abort if either resolves
+        null.</td>
+      <td><strong>Yes</strong> — everything else depends on it, and
+        <code>RegisterOnCloseListener</code> is public, so widening it later breaks every registration site.</td>
+    </tr>
+    <tr>
+      <td><strong>L1 — Qualify targets properly</strong></td>
+      <td>Self-exclusion, <code>TEFeatureStorage</code> + <code>bPlayerStorage</code> filter, then keyword
+        exclusion, then in-use, then owner/ACL. Fix the null-chunk crash and the global sort first.</td>
+      <td><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td><strong>L2 — Owner and ACL as the primary gate</strong></td>
+      <td>A target qualifies only if the actor is <code>TileEntityComposite.Owner</code> or
+        <code>IsUserAllowed(primaryId)</code> returns true.</td>
+      <td><strong>Yes</strong> — this single layer answers all three lock-state questions correctly and
+        uniformly. No reference tool implements it.</td>
+    </tr>
+    <tr>
+      <td><strong>L3 — In-use guard</strong></td>
+      <td><code>IsLockedServer(feature, 0)</code> on every target, re-checked immediately before each write.
+        Skip busy targets; do not defer them.</td>
+      <td><strong>Yes</strong> — a data-integrity layer, not a courtesy.</td>
+    </tr>
+    <tr>
+      <td><strong>L4 — Land claim</strong></td>
+      <td><code>Self</code> as an <em>alternative</em> to owner/ACL, never a requirement, never <code>Ally</code>
+        alone.</td>
+      <td>Defer. Requiring it reproduces ServerTools' silent unclaimed-base failure.</td>
+    </tr>
+    <tr>
+      <td><strong>L5 — Lock/password matching</strong></td>
+      <td>An extra grant path for a clan base whose members are in no ACL.</td>
+      <td>Defer, probably never. Strictly weaker than L2 and imports the shared-password cross-talk.</td>
+    </tr>
+    <tr>
+      <td><strong>L6 — <code>#nosort</code> opt-out</strong></td>
+      <td>A target-side property consulted during another box's scan.</td>
+      <td><strong>Yes</strong> — it is the only escape hatch when the other layers get something wrong, and
+        retrofitting it means re-shaping the registry.</td>
+    </tr>
+  </table>
+  </div>
+
+  <h3>The shape of the implementation</h3>
+
+  <ol class="big">
+    <li><strong>Keep the sort synchronous.</strong> Do not adopt RoboticInbox's coroutine. Synchronous work has no
+      check-to-mutate window at all, so the entire class of torn reads and mid-scan destruction disappears by
+      construction. The cost that forced RoboticInbox to yield does not exist here — a few dozen probes against
+      74,620. This is StrongBoxes' single largest correctness advantage and it should be defended, not traded for
+      a bigger radius.</li>
+    <li><strong>Invert the loop from target-major to item-major</strong> before adding any ranking. The current
+      shape can express distance ranking and nothing else; any predicate that depends on the item being placed is
+      unreachable. All three references share this shape and none can choose a best target as a result. This is
+      the one restructuring that cannot be retrofitted cheaply once the transfer body exists.</li>
+    <li><strong>Index targets by <code>itemValue.type</code> once per sort</strong>, after a global distance sort,
+      so every candidate list arrives nearest-first for free. 44&times; fewer comparisons at realistic slot
+      counts, behaviour-preserving.</li>
+    <li><strong>Top up existing stacks and place new ones.</strong> Top-up-only silently excludes every tool,
+      weapon and armour piece.</li>
+    <li><strong>Never cache a <code>TileEntity</code> beyond the statement that uses it.</strong> Cache
+      <code>Vector3i</code>; re-resolve at the point of use and compare identity before writing — which is
+      vanilla's own discipline in <code>XUiC_LootWindowGroup.OnClose</code>.</li>
+    <li><strong>Couple <code>MaxDistance</code> to the chunk window in code</strong>, with a test asserting the
+      &le;16 invariant. Today they are two unrelated constants in two files that happen to be compatible.</li>
+    <li><strong>Adopt the <code>#</code> sigil and a line-based matcher</strong> with one normalization boundary.
+      It fixes the silent-disable class and makes StrongBoxes disjoint from ServerTools for free.</li>
+    <li><strong>Build the registry as a property store with triggers layered on</strong>, enumerable, refusing
+      duplicate tokens.</li>
+  </ol>
+
+  <h2 id="prototype">The prototype</h2>
+
+  <p>
+    Eight files in <code>Tests\SortBoxes\</code>, staged and tracked, adding 61 tests (suite 423 &rarr; 484, all
+    green). No mod code was touched. These exist so the claims above are re-runnable measurements rather than a
+    reading of decompiled loops — and they earned their place: three of my own hypotheses were <em>refuted</em> by
+    running them.
+  </p>
+
+  <div class="tablewrap">
+  <table>
+    <tr><th>File</th><th>What it establishes</th></tr>
+    <tr>
+      <td><code>SortScanStrategies.cs</code><br><code>SortScanStrategyTests.cs</code></td>
+      <td>Faithful ports of all four discovery geometries, including RoboticInbox's typos, with probe counting.
+        Produces the cost figures, the land-claim overrun, the shell-ordering loss, the truncated-shell coverage
+        gap, and the chunk-window reach invariant.</td>
+    </tr>
+    <tr>
+      <td><code>SortTargetPlanner.cs</code><br><code>SortTargetPlannerTests.cs</code></td>
+      <td>A planner that decides moves without touching container state. Produces the rescan-versus-index cost
+        table, the scatter demonstration, the nearest-versus-most-existing disagreement, the class-versus-value
+        matching grain, and the quality-item stack-limit result.</td>
+    </tr>
+    <tr>
+      <td><code>ContainerInterleavingModel.cs</code><br><code>ContainerInterleavingTests.cs</code></td>
+      <td>A model of one container under the real replication rules. Demonstrates the silent item destruction,
+        that a check taken before a yield is already stale, and that the safe-to-write predicate avoids it.</td>
+    </tr>
+    <tr>
+      <td><code>BoxKeywordVocabulary.cs</code><br><code>BoxKeywordVocabularyTests.cs</code></td>
+      <td>The proposed grammar and registry. Covers null and multi-line sign text, markup, every line ending,
+        innocent sentences containing a keyword, the trigger/property split, and duplicate-token refusal.</td>
+    </tr>
+  </table>
+  </div>
+
+  <pre><code>dotnet test Tests/Tests.csproj -c Debug --filter "FullyQualifiedName~SortBoxes" \
+  --logger "console;verbosity=detailed"</code></pre>
+
+  <p class="small">
+    Detailed verbosity is worth it here — several tests print their measurements to the test output rather than
+    only asserting on them.
+  </p>
+
+  <div class="finding caution">
+    <h4>One process note</h4>
+    <p>
+      This is well past AGENTS.md's ~100-line-per-iteration target: eight new files, 1,795 lines. That was
+      a deliberate trade for a research task you asked to be run unattended, and it is confined to
+      <code>Tests\</code> with no mod code touched — but it is a real deviation and worth knowing before review.
+      The files are staged, not committed.
+    </p>
+  </div>
+
+  <h2 id="method">Method, confidence and what was not checked</h2>
+
+  <p>
+    Two of the three references ship as DLLs only and were decompiled with <code>ilspycmd</code> against the
+    game's own assemblies; ServerTools ships full source. All game-API claims were established by decompiling
+    <code>Assembly-CSharp.dll</code> from <code>packages/7dtd.assemblies.game/3.1.0.14</code> — the repo's
+    declared dev version — rather than from memory or documentation. Decompiled third-party code stayed in
+    <code>.scratch/</code> and is not committed; it is licensed material.
+  </p>
+
+  <p>
+    Five deep readers covered the four codebases plus the game API, six topic writers synthesised the sections,
+    and every candidate defect was handed to an adversarial verifier instructed to refute it and told the common
+    ways such claims go wrong. 57 claims were tested: <strong>22 fully confirmed, 35 partly true with the effect
+    corrected downward, none refuted outright</strong>. The verifiers materially changed several conclusions —
+    the <code>Restack</code> recursion is safe today rather than a stack-overflow risk, and the Turkish-I hazard
+    applies to a future keyword rather than to <code>sort</code>.
+  </p>
+
+  <h3>What I checked and cleared</h3>
+
+  <ul>
+    <li><strong>Shared-static corruption via <code>ItemStack.Empty</code>.</strong> Two mods pass it straight into
+      <code>UpdateSlot</code>. Not a bug: <code>Empty</code> is a property returning a fresh instance, and
+      <code>UpdateSlot</code> clones anyway. Two independent protections. (It does allocate on every call inside
+      hot comparison loops — a minor garbage note, not a correctness one.)</li>
+    <li><strong>A case-sensitivity asymmetry in ServerTools' sorter exclusion list.</strong> The comparison does
+      mix a lowered left operand with a bare right one, but config lowercases both names at load, so the sorter
+      itself is safe. The live instance of the bug is in Bank, not Sorter.</li>
+    <li><strong>StrongBoxes' 3&times;3 window being too small for 15 m.</strong> It is not — guaranteed reach is
+      16 blocks. The finding is the uncoupled constants, not a present defect.</li>
+  </ul>
+
+  <h3>Limits</h3>
+
+  <ul>
+    <li>Nothing here was run in a live game. Every claim is static analysis plus the pure-logic harness; the
+      measurements are of faithful <em>ports</em> of the scan geometries, not of the mods executing.</li>
+    <li>Claims are scoped to game tree <strong>V3.1.0-b14</strong>. Where a claim is version-sensitive I have said
+      so — notably <code>ItemClass.MaxCount</code>, which exists on 3.1 and throws on 3.0.1.4, so prefer
+      <code>TryStackItem</code>/<code>CanStackPartly</code> to encapsulate the stack cap.</li>
+    <li>The block census (6 signable of 1,563 storage blocks) came from a verifier resolving
+      <code>Extends</code> inheritance; I did not independently re-run it.</li>
+    <li>The 50-character sign limit is declared on the shared editor textfield. Whether per-block
+      <code>LineCount</code>/<code>LineWidth</code> clip a keyword-plus-label combination in practice was not
+      verified in game.</li>
+    <li>The vocabulary work described here is <strong>not what #31 asks for</strong>. #31 is scoped to making the
+      <code>sort</code> keyword functional and explicitly parks dump-to-nearest and overflow fallback. The
+      registry, the sigil, <code>#nosort</code> and <code>mailbox</code> appear to be unticketed.</li>
+  </ul>
+
+  <h3>Questions this leaves you</h3>
+
+  <ul>
+    <li>Does <code>#mailbox</code> survive becoming an open-time permission? "Non-owners cannot open it at all,
+      and deposit through a mod-controlled path" is a different product from "anyone can drop something in." If
+      the deposit path must be a chat command, is that still the feature you want?</li>
+    <li>Should the source box also be owner-checked? ServerTools omits it, which lets a stranger's unlocked
+      <code>sort</code> box be siphoned. Requiring it would break the plausible "shared community sort box" use
+      case on Hades.</li>
+    <li>Where does keyword configuration live? StrongBoxes has no <code>Config/</code> folder and no legal path to
+      StrongUtils' <code>ConfigManager</code> — the repo has exactly one cross-project reference, and StrongCore
+      does not exist yet.</li>
+    <li>Should <code>#sort</code> stay a trigger, or become a property consulted by a periodic sweep? A sweep
+      would let sort boxes drain on a timer rather than only when a player touches them, and it shifts the
+      registry's centre of gravity.</li>
+  </ul>
+</div>

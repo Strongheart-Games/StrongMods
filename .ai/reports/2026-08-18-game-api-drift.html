@@ -1,0 +1,389 @@
+<title>Game API Drift</title>
+<style>
+  :root {
+    --ground: #F0F1F3;
+    --surface: #FFFFFF;
+    --surface-2: #E4E6EA;
+    --ink: #14161A;
+    --ink-2: #3A404A;
+    --ink-3: #656D79;
+    --hair: #D0D4DA;
+    --hair-strong: #A6ADB7;
+    --accent: #1F5FA8;
+    --accent-bright: #2C7CD4;
+    --accent-tint: #E1EBF7;
+    --alarm: #9A2622;
+    --alarm-tint: #F5E2E0;
+    --calm: #1B6048;
+    --calm-tint: #DDEBE5;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Consolas, monospace;
+    --measure: 68ch;
+    --pad: clamp(20px, 4vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B; --ink: #E5E9EE; --ink-2: #BFC7D1;
+      --ink-3: #88919D; --hair: #242C35; --hair-strong: #38424E; --accent: #6FA8E8; --accent-bright: #96C4F5;
+      --accent-tint: #14202E; --alarm: #E8837A; --alarm-tint: #2A1917; --calm: #62C79A; --calm-tint: #142520;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong); padding: 24px 0 28px; display: flex; flex-direction: column; gap: 16px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  h1 { margin: 0; font-size: clamp(34px, 6vw, 58px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; text-wrap: balance; max-width: 22ch; }
+  .standfirst { margin: 0; max-width: var(--measure); font-size: clamp(17px, 2.1vw, 20px); line-height: 1.5; color: var(--ink-2); }
+  .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .chip { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; padding: 5px 10px; border: 1px solid var(--hair-strong); color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+  .chip.ok { color: var(--calm); background: var(--calm-tint); border-color: var(--calm); }
+  .chip.warn { color: var(--alarm); background: var(--alarm-tint); border-color: var(--alarm); }
+  h2 { font-size: 26px; letter-spacing: -0.02em; margin: 56px 0 12px; padding-top: 20px; border-top: 1px solid var(--hair-strong); }
+  h3 { font-size: 19px; margin: 32px 0 8px; }
+  p, ul, ol { max-width: var(--measure); }
+  li { margin: 4px 0; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--surface); border: 1px solid var(--hair); padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.55; max-width: 100%; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14.5px; }
+  .tablewrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--hair-strong); }
+  td.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+  th.num { text-align: right; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-tint); padding: 14px 18px; margin: 20px 0; max-width: calc(var(--measure) + 40px); }
+  .callout.alarm { border-left-color: var(--alarm); background: var(--alarm-tint); }
+  .callout.calm { border-left-color: var(--calm); background: var(--calm-tint); }
+  .small { font-size: 14px; color: var(--ink-3); }
+  .ok-text { color: var(--calm); font-weight: 600; }
+  .warn-text { color: var(--alarm); font-weight: 600; }
+  /* Hand-built coverage diagram */
+  .strata { max-width: 860px; margin: 24px 0; }
+  .stratum { display: flex; align-items: stretch; border: 1px solid var(--hair-strong); margin-bottom: -1px; }
+  .stratum .band { flex: 0 0 190px; padding: 12px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; }
+  .stratum .desc { flex: 1; padding: 12px 16px; font-size: 14.5px; background: var(--surface); }
+  .stratum.covered .band { background: var(--calm-tint); color: var(--calm); border-right: 3px solid var(--calm); }
+  .stratum.soft .band { background: var(--accent-tint); color: var(--accent); border-right: 3px solid var(--accent); }
+  .stratum.uncovered .band { background: var(--alarm-tint); color: var(--alarm); border-right: 3px solid var(--alarm); }
+  @media (max-width: 640px) { .stratum { flex-direction: column; } .stratum .band { flex-basis: auto; } }
+</style>
+<div class="page">
+  <header class="masthead">
+    <div class="kicker"><span>StrongMods · unattended effort</span><span>2026-08-18</span><span>tool gap S2 · game-api-drift</span></div>
+    <h1>The Drift CI Already Catches, and the Sliver It Doesn't</h1>
+    <p class="standfirst">
+      Gap S2 in the seed inventory claims "direct method/field refs + ModEvents handlers TargetResolver can't see"
+      are uncovered drift surface. This effort measured that claim against every compiled mod DLL: 1,319 game
+      memberrefs are already guarded by CI compilation, all nine runtime string-lookup sites resolve in all four
+      restored trees today, and the genuinely uncovered residue reduces to one partial-drift hole in AuthZ and one
+      dormant data-driven dispatcher.
+    </p>
+    <div class="statusbar">
+      <span class="chip ok">NO BROKEN REFERENCE EXISTS TODAY</span>
+      <span class="chip ok">apidrift.cs selftest: 8/8</span>
+      <span class="chip">18 mod DLLs scanned</span>
+      <span class="chip">4 trees: game+server × V3.1.0-b14, V3.0.1-b4</span>
+      <span class="chip warn">S2's claimed breadth is unsupported</span>
+    </div>
+  </header>
+
+  <h2>What was attempted</h2>
+  <p>
+    The task, from <code>.ai/test-idea-tool-gap-seed.md</code> (gap S2): quantify how much of the mods'
+    game-API surface is already guarded by CI compilation, build a detector for the rest — members resolved
+    <em>by name at runtime</em> — and say honestly whether promoting any of it into <code>Tests/</code> is worth it.
+  </p>
+  <ol>
+    <li><strong>Census</strong> — enumerate every MemberRef/TypeRef each mod DLL carries into a game assembly,
+      using pure BCL <code>System.Reflection.Metadata</code> (the <code>Tests/Fixtures/IlReader.cs</code> precedent:
+      read metadata directly, load nothing).</li>
+    <li><strong>String-lookup scan</strong> — decode every method body's IL and record each call to a known lookup
+      API (<code>AccessTools.Method/Field/Property/TypeByName/Declared*</code>, <code>Type.GetMethod/GetField/
+      GetProperty/GetType</code>, <code>Traverse.*</code>, <code>Assembly.GetType</code>) with the nearest preceding
+      <code>ldstr</code> (the name) and unconsumed <code>ldtoken</code> (the subject type), then resolve each site
+      against all four restored trees under <code>packages/</code>.</li>
+    <li><strong>Cross-check the S2 claim</strong> about ModEvents handlers against the actual usage in source.</li>
+  </ol>
+  <p>Everything ran from the repo root; the tool is <code>StrongDev/.ai/tools/apidrift.cs</code>:</p>
+  <pre><code>dotnet run StrongDev/.ai/tools/apidrift.cs -- --selftest   # 8/8 pass
+dotnet run StrongDev/.ai/tools/apidrift.cs                 # full scan; exit 0, output captured
+                                                           # in .scratch/apidrift-run.txt</code></pre>
+
+  <h2>Finding 1 — compilation already guards the overwhelming bulk</h2>
+  <p>
+    Every mod compiles against the game's own assemblies (ADR-0002), and CI recompiles every mod against
+    <strong>both units on every push</strong> (#21). So every statically-compiled reference into a game assembly
+    — every MemberRef and TypeRef row in the DLL — is already drift-guarded: a removed or renamed member fails the
+    build before any test runs. The census sizes that covered surface across the 18 code-mod DLLs in
+    <code>*/bin/Debug/</code>:
+  </p>
+  <div class="tablewrap"><table>
+    <tr><th>Mod</th><th class="num">game methods</th><th class="num">game fields</th><th class="num">game typerefs</th><th class="num">Harmony</th><th class="num">BCL</th><th class="num">other</th></tr>
+    <tr><td>AuthZ</td><td class="num">23</td><td class="num">32</td><td class="num">51</td><td class="num">4</td><td class="num">119</td><td class="num">19</td></tr>
+    <tr><td>AutoCloseDoors</td><td class="num">13</td><td class="num">3</td><td class="num">15</td><td class="num">3</td><td class="num">18</td><td class="num">0</td></tr>
+    <tr><td>AutoCollectLoot</td><td class="num">43</td><td class="num">32</td><td class="num">44</td><td class="num">3</td><td class="num">47</td><td class="num">0</td></tr>
+    <tr><td>BloodRain</td><td class="num">38</td><td class="num">22</td><td class="num">48</td><td class="num">15</td><td class="num">95</td><td class="num">2</td></tr>
+    <tr><td>BountifulQuests</td><td class="num">49</td><td class="num">32</td><td class="num">44</td><td class="num">3</td><td class="num">97</td><td class="num">0</td></tr>
+    <tr><td>ChatCommandHelper</td><td class="num">12</td><td class="num">6</td><td class="num">25</td><td class="num">3</td><td class="num">38</td><td class="num">0</td></tr>
+    <tr><td>CustomChatCommands</td><td class="num">20</td><td class="num">15</td><td class="num">30</td><td class="num">0</td><td class="num">82</td><td class="num">0</td></tr>
+    <tr><td>DisableLAN</td><td class="num">2</td><td class="num">0</td><td class="num">4</td><td class="num">3</td><td class="num">17</td><td class="num">0</td></tr>
+    <tr><td>DynamicFeralSense</td><td class="num">3</td><td class="num">2</td><td class="num">9</td><td class="num">13</td><td class="num">32</td><td class="num">0</td></tr>
+    <tr><td>DynamicLandClaimCount</td><td class="num">17</td><td class="num">9</td><td class="num">31</td><td class="num">14</td><td class="num">34</td><td class="num">0</td></tr>
+    <tr><td>LootDiagnostics</td><td class="num">3</td><td class="num">1</td><td class="num">4</td><td class="num">3</td><td class="num">17</td><td class="num">0</td></tr>
+    <tr><td>QuestUnlockFixes</td><td class="num">4</td><td class="num">3</td><td class="num">8</td><td class="num">16</td><td class="num">20</td><td class="num">0</td></tr>
+    <tr><td>StrongBoxes</td><td class="num">20</td><td class="num">5</td><td class="num">27</td><td class="num">3</td><td class="num">46</td><td class="num">0</td></tr>
+    <tr><td>StrongFill</td><td class="num">23</td><td class="num">10</td><td class="num">17</td><td class="num">0</td><td class="num">19</td><td class="num">0</td></tr>
+    <tr><td>StrongHorns</td><td class="num">31</td><td class="num">12</td><td class="num">35</td><td class="num">4</td><td class="num">57</td><td class="num">0</td></tr>
+    <tr><td>StrongLocks</td><td class="num">13</td><td class="num">3</td><td class="num">18</td><td class="num">3</td><td class="num">25</td><td class="num">0</td></tr>
+    <tr><td>StrongMods</td><td class="num">37</td><td class="num">19</td><td class="num">27</td><td class="num">11</td><td class="num">340</td><td class="num">0</td></tr>
+    <tr><td>StrongUtils</td><td class="num">121</td><td class="num">76</td><td class="num">128</td><td class="num">26</td><td class="num">289</td><td class="num">0</td></tr>
+    <tr><td><strong>TOTAL</strong></td><td class="num"><strong>472</strong></td><td class="num"><strong>282</strong></td><td class="num"><strong>565</strong></td><td class="num"><strong>127</strong></td><td class="num"><strong>1392</strong></td><td class="num"><strong>21</strong></td></tr>
+  </table></div>
+  <p class="small">
+    "game" = the assembly physically lives in a restored tree's Managed dir and is not BCL; UnityEngine.* counts as
+    game deliberately (a game update can bump Unity). "other" merges NuGet refs (BloodRain's Cronos: 2) with
+    MemberRefs whose parent TypeSpec the tool's minimal decoder cannot name (arrays/nested generics — AuthZ's 19);
+    neither is game surface. A first census run misclassified all BCL refs as game refs because
+    mscorlib/System.* physically live in the game's Managed dir (FrameworkPathOverride) — fixed by classifying BCL
+    before the game set; the table above is the corrected run.
+  </p>
+  <div class="callout calm">
+    <strong>754 memberrefs + 565 typerefs into game assemblies are compile-guarded today.</strong> This is the slice
+    the S2 seed described as "direct method/field refs TargetResolver can't see" — TargetResolver indeed can't see
+    them, but it doesn't need to: CI compilation against both units re-verifies every one of them on every push.
+    A drift test for this slice would re-test the compiler.
+  </div>
+
+  <h2>Finding 2 — nine runtime string-lookup sites exist, and all resolve today</h2>
+  <p>
+    The genuinely compilation-invisible surface is name-based runtime lookup. The IL scan across all 18 DLLs found
+    exactly <strong>nine sites</strong>. Every statically-resolvable one resolves in all four trees
+    (game/3.0.1.4, game/3.1.0.14, server/3.0.1.4, server/3.1.0.14 — the two declared versions of both units).
+    Full output: <code>.scratch/apidrift-run.txt</code>.
+  </p>
+  <div class="tablewrap"><table>
+    <tr><th>Site (mod · caller)</th><th>Lookup</th><th>Resolution (all 4 trees)</th><th>Source form</th></tr>
+    <tr>
+      <td>AuthZ · <code>InvariantEngine.FindProcessPackage</code></td>
+      <td><code>AccessTools.DeclaredMethod(&lt;dynamic&gt;, "ProcessPackage")</code></td>
+      <td>declared by 190 types in Assembly-CSharp in every tree</td>
+      <td><span class="warn-text">string literal</span> — <code>AuthZ/InvariantEngine.cs:116</code></td>
+    </tr>
+    <tr>
+      <td>BloodRain · <code>AIDirectorBloodMoonParty_InitParty_Patch.Transpiler</code></td>
+      <td><code>Type.GetField(AIDirectorBloodMoonParty, "enemyActiveMax")</code></td>
+      <td class="ok-text">resolves (declared) ×4</td>
+      <td><code>nameof</code> — <code>BloodRain/HarmonyPatches.cs:66</code></td>
+    </tr>
+    <tr>
+      <td>QuestUnlockFixes · <code>QuestEventManager_QuestUnlockPOI_Patch.Transpiler</code></td>
+      <td><code>Type.GetField(PrefabInstance, "lockInstance")</code></td>
+      <td class="ok-text">resolves (declared) ×4</td>
+      <td><code>nameof</code> — <code>QuestUnlockFixes/QuestUnlockFixes.cs:20</code></td>
+    </tr>
+    <tr>
+      <td>StrongUtils · <code>LootCommandPatch.Transpiler</code></td>
+      <td><code>AccessTools.Method(LootContainer, "SpawnLootItemsFromList")</code></td>
+      <td class="ok-text">resolves (declared) ×4</td>
+      <td><code>nameof</code> — <code>StrongUtils/Commands/LootCommandPatch.cs:15</code></td>
+    </tr>
+    <tr>
+      <td>StrongMods · <code>ModApi.InitXmlPatchMethodForeach</code> / <code>…Ensure</code> (2 sites)</td>
+      <td><code>AccessTools.Method(own type, "Foreach"/"Ensure")</code></td>
+      <td>mod-internal subject — not game surface</td>
+      <td><code>nameof</code> — <code>StrongMods/ModApi.cs:40,51</code></td>
+    </tr>
+    <tr>
+      <td>StrongMods · <code>XmlPatchMethodForeach.TryResolveMethod</code> (2 sites)</td>
+      <td><code>Assembly.GetType(…)</code> + <code>Type.GetMethod(…)</code></td>
+      <td>names are runtime data — statically unresolvable</td>
+      <td>data-driven — <code>StrongMods/XmlPatchMethodForeach.cs:952,965</code></td>
+    </tr>
+  </table></div>
+  <p class="small">
+    IL cannot distinguish <code>nameof(X.Y)</code> from a literal <code>"Y"</code> — both compile to
+    <code>ldstr</code>. The "source form" column comes from reading the cited source lines: four of the seven
+    named-string sites are <code>nameof</code> against a type the compiler checks, which makes them
+    <em>additionally</em> compile-guarded — a rename fails the CI build, not just this scan.
+  </p>
+
+  <h3>The ModEvents half of S2 is unsupported</h3>
+  <p>
+    Every <code>ModEvents</code> usage in mod source is the game's typed API —
+    <code>ModEvents.X.RegisterHandler(method)</code> with typed delegate structs
+    (<code>ref ModEvents.SChatMessageData</code>, …), verified by
+    <code>grep -rn "ModEvents\." --include="*.cs"</code> across the repo (hits in AuthZ, BountifulQuests,
+    CustomChatCommands, BloodRain, DynamicLandClaimCount, ChatCommandHelper — all typed registrations). A removed
+    event or changed payload struct fails compilation. There is no name-based ModEvents surface to guard.
+  </p>
+
+  <h2>Finding 3 — the honest residue is two items, one of them dormant</h2>
+  <div class="strata">
+    <div class="stratum covered">
+      <div class="band">compile-guarded</div>
+      <div class="desc">754 memberrefs + 565 typerefs into game assemblies, plus every typed ModEvents registration
+        and every <code>nameof</code>-derived lookup string. Re-verified against both units on every push (#21).</div>
+    </div>
+    <div class="stratum covered">
+      <div class="band">suite-guarded</div>
+      <div class="desc">Every <code>[HarmonyPatch]</code> attribute target and <code>TargetMethods()</code> provider —
+        <code>Tests/TargetResolver.cs</code> resolves attributes and invokes providers against both units; an empty or
+        throwing enumeration fails (<code>CheckTargetMethodProvider</code>, TargetResolver.cs:123-141).</div>
+    </div>
+    <div class="stratum soft">
+      <div class="band">soft-covered</div>
+      <div class="desc"><strong>AuthZ ProcessPackage, total loss:</strong> if a game update renamed
+        <code>ProcessPackage</code> everywhere, <code>InvariantEngine.PatchTargets()</code> would skip every package
+        and yield zero targets — which the suite fails on. Caught, but only at the all-or-nothing granularity.</div>
+    </div>
+    <div class="stratum uncovered">
+      <div class="band">uncovered</div>
+      <div class="desc"><strong>AuthZ ProcessPackage, partial loss:</strong> one guarded package type losing its
+        declared <code>ProcessPackage(World, GameManager)</code> — rename <em>or signature change</em> — while others
+        keep theirs. <code>FindProcessPackage</code> returns null for it, <code>PatchTargets()</code> logs a warning
+        and skips it (<code>InvariantEngine.cs:102-106</code>), the enumeration stays non-empty, the suite stays
+        green, and that packet type silently goes unenforced.</div>
+    </div>
+    <div class="stratum uncovered">
+      <div class="band">uncovered · dormant</div>
+      <div class="desc"><strong>StrongMods <code>&lt;function&gt;</code> dispatch:</strong> type/method names arrive
+        from patch XML at load time (<code>foreach.md</code> §Custom functions). Statically unresolvable by design.
+        Currently dormant: <code>grep -rlE "function=|&lt;function" --include="*.xml" */Config/</code> matches no
+        shipped file.</div>
+    </div>
+  </div>
+  <div class="callout">
+    <strong>Headline:</strong> after accounting for CI compilation and the existing suite, gap S2's real uncovered
+    surface across all 18 code mods is <strong>one partial-drift hole in one mod</strong> (AuthZ's per-package
+    ProcessPackage resolution) <strong>plus one dormant data-driven dispatcher</strong> (StrongMods
+    <code>&lt;function&gt;</code>, unused by any shipped Config today). No currently-broken reference exists: the
+    scan exits 0 with every site resolving in every tree. The seed's S2 row — "unblocks most StrongUtils commands,
+    CustomChatCommands, StrongFill" — is unsupported: those mods contain zero string-based game lookups; their whole
+    game surface is compile-guarded.
+  </div>
+
+  <h2>The tool: apidrift.cs</h2>
+  <p>
+    <code>StrongDev/.ai/tools/apidrift.cs</code>, a file-based C# app on the <code>loclint.cs</code> precedent.
+    Pure BCL — <code>System.Reflection.Metadata</code> for metadata, operand sizes from
+    <code>System.Reflection.Emit.OpCodes</code> (the <code>IlReader.cs</code> trick), no assembly loading, no game
+    dependencies. It discovers every tree under <code>packages/</code> (both units × both restored versions),
+    censuses each mod DLL's memberrefs, IL-scans for lookup calls, and resolves each site per tree with lazy
+    per-assembly member indexes that walk base chains (<code>Declared*</code> APIs checked declared-only, matching
+    Harmony's semantics). Exit 1 on any resolution failure, so it can gate if ever wanted.
+  </p>
+  <p><code>--selftest</code> runs 8 embedded cases: colon-form <code>"Type:Member"</code> splitting, ldtoken/ldstr
+    window pairing across <code>GetTypeFromHandle</code>, window-breaking on unrelated calls, dynamic-subject
+    detection, argument-array <code>stelem</code> popping (both directions), BCL classification, and one end-to-end
+    case that decodes the tool's <em>own compiled IL</em> and finds a planted <code>Type.GetMethod</code> site.</p>
+  <h3>Two bugs the run itself caught (and their fixes)</h3>
+  <ul>
+    <li><strong>Argument-array mis-attribution.</strong> The first scan reported AuthZ's site as
+      <code>DeclaredMethod(GameManager, "ProcessPackage")</code> → MISSING ×4. False positive: the last
+      <code>ldtoken</code> before the call was <code>typeof(GameManager)</code> from the
+      <code>new[]{typeof(World), typeof(GameManager)}</code> argument array, not the subject (which is a loop
+      variable). Fix: types live on a small stack and <code>stelem</code> pops them — a typeof stored into an array
+      can never be the subject. Selftest cases 5b/5c pin both directions.</li>
+    <li><strong>BCL-as-game census inflation.</strong> mscorlib/System.* physically live in the game's Managed dir,
+      so "is it in the tree?" classified every <code>string.Format</code> as game API (first run: 1,848 "game"
+      method refs, BCL column zero). Fix: BCL classifies first. Corrected totals are in Finding 1.</li>
+  </ul>
+  <h3>Known limitations (deliberate for a prototype)</h3>
+  <ul>
+    <li><strong>Name-only resolution.</strong> A signature change that keeps the name passes — exactly the AuthZ
+      signature risk noted above. Signature-aware checking needs blob decoding of the found member and the call
+      site's argument array; not built.</li>
+    <li><strong>Linear window heuristic, not dataflow.</strong> Names built at runtime surface as
+      <code>&lt;dynamic-name&gt;</code>; a subject loaded from a local surfaces as
+      <code>&lt;dynamic-subject&gt;</code> and downgrades to a "declared by N types in Assembly-CSharp" check.</li>
+    <li><strong>nameof-blindness.</strong> IL shows a string either way; the source-form column in Finding 2 was
+      established by reading the cited lines, not by the tool.</li>
+  </ul>
+
+  <h2>Decisions and trade-offs</h2>
+  <ul>
+    <li><strong>IL scan over source grep as the primary detector.</strong> Source grep misses nothing today (it found
+      the same sites first), but IL is the ground truth for what actually ships, catches lookup calls hidden behind
+      helpers, and gave the census for free from the same reader. Trade-off: the nameof distinction is lost and had
+      to be recovered by reading source.</li>
+    <li><strong>Resolved against all four restored trees</strong> rather than only the two dev-version units — cheap
+      once the lazy index existed, and it makes the "no broken reference exists today" claim exactly as wide as what
+      CI tests (#37 made per-pin coverage meaningful).</li>
+    <li><strong>Name-only member matching.</strong> Signature-aware matching would roughly double the tool for one
+      known beneficiary (AuthZ). The partial-drift hole is better closed at the enumeration level (see the ticket)
+      than by deepening this scanner.</li>
+    <li><strong>Kept as a StrongDev ad-hoc tool, not promoted.</strong> See the recommendation.</li>
+  </ul>
+
+  <h2>Recommendation: do not promote the scanner into Tests/</h2>
+  <p>
+    A standing S2 test would re-verify, on every run: four nameof sites the compiler already guards, two
+    mod-internal sites, two data-driven sites it cannot resolve anyway, and one dynamic-subject site it can only
+    check as "the name exists somewhere". That is not worth a permanent fixture. The measured facts point at two
+    narrow, cheaper actions instead:
+  </p>
+  <ol>
+    <li><strong>Close the real hole where it lives</strong> — partial enumeration drift in
+      <code>TargetMethods()</code>/manifest providers. The suite already invokes them per tree; it only checks
+      non-empty. Asserting enumeration <em>parity</em> (same target identities across the trees a mod declares, or
+      against a declared expected set) converts AuthZ's silent per-package skip into a visible diff. Small,
+      reusable across any future multi-target mod, and it also catches the signature-change case because
+      <code>FindProcessPackage</code> matches on signature. Proposed as a ticket below.</li>
+    <li><strong>Keep apidrift.cs as an ad-hoc advisory</strong> to re-run at game-version adoption time (the moment
+      drift actually happens), alongside the census as documentation of why S2-style gaps should be measured against
+      CI compilation before being scheduled.</li>
+  </ol>
+
+  <h3>Proposed ticket</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Title</th><th>Labels</th><th>Substance</th></tr>
+    <tr>
+      <td>Assert cross-tree enumeration parity for TargetMethods()/manifest providers</td>
+      <td><code>type:tooling</code> <code>scope:repo-wide</code> <code>area:testing</code></td>
+      <td>TargetResolver invokes providers but only fails on empty/throw; a provider that silently skips targets
+        (AuthZ <code>InvariantEngine.PatchTargets()</code> skips any package whose
+        <code>ProcessPackage(World, GameManager)</code> no longer resolves) drifts partially with no test signal.
+        Assert the yielded target set is identical across every tree the mod declares, and non-shrinking against a
+        declared floor.</td>
+    </tr>
+  </table></div>
+
+  <h2>What remains</h2>
+  <ul>
+    <li><strong>The parity guard itself</strong> — the ticket above; deliberately not built here because
+      <code>Tests/</code> is owned by a parallel agent this session.</li>
+    <li><strong>Signature-awareness</strong> in apidrift, if it ever graduates — name-only is the biggest honesty gap
+      in its verdicts (it would have called a ProcessPackage signature change "resolves").</li>
+    <li><strong>The <code>&lt;function&gt;</code> dispatcher when it wakes up</strong> — the first shipped Config
+      using it creates real statically-unresolvable surface. Unverified: whether
+      <code>Tests/Patcher/PatchApplicationTests.cs</code>'s replay would fail on an unresolvable function (the engine
+      logs <code>Log.Error</code>, and the replay fails on undeclared warnings — plausible, but not tested in this
+      effort).</li>
+    <li><strong>Traverse and delegate-based lookups</strong> — the scanner knows the APIs but found zero uses; if a
+      mod adopts <code>Traverse</code> chains, the subject-tracking heuristic will need work (it does not follow
+      instance dataflow).</li>
+    <li><strong>AuthZ's 19 "other" census refs</strong> — TypeSpec parents the minimal decoder does not name;
+      believed to be generic instantiations, unverified.</li>
+  </ul>
+
+  <h2>Appendix — exact commands run</h2>
+  <pre><code># context
+grep -rn 'ModEvents\.' --include='*.cs' .
+grep -rlE 'function=|&lt;function' --include='*.xml' */Config/        # no matches
+grep -rn 'PatchTargetManifest' --include='*.cs' .                  # AuthZ publishes none; uses TargetMethods()
+
+# the tool
+dotnet run StrongDev/.ai/tools/apidrift.cs -- --selftest           # selftest: all 8 cases pass
+dotnet run StrongDev/.ai/tools/apidrift.cs                         # exit 0; full output in .scratch/apidrift-run.txt
+
+# key sources read (not modified): Tests/Fixtures/IlReader.cs, Tests/TargetResolver.cs:100-160,
+# Tests/SmokeTests.cs:60-199, AuthZ/InvariantEngine.cs:95-140, AuthZ/NetPackageGuard.cs,
+# StrongMods/XmlPatchMethodForeach.cs:940-984, StrongMods/Docs/foreach.md (Custom functions)</code></pre>
+  <p class="small">
+    Scope of every claim: the 18 code-mod DLLs present in <code>*/bin/Debug/</code> at scan time (built minutes
+    before this session by the orchestrator), resolved against the four restored trees under <code>packages/</code>.
+    XML-only modlets carry no IL and are out of S2's scope. The test suite was not run by this effort (Tests/ is
+    another agent's area); the 415-green baseline is the orchestrator's statement, not a measurement of mine.
+  </p>
+</div>

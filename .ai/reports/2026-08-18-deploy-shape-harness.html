@@ -1,0 +1,304 @@
+<title>Deploy-Shape Harness</title>
+<style>
+  :root {
+    --ground: #F0F1F3; --surface: #FFFFFF; --surface-2: #E4E6EA;
+    --ink: #14161A; --ink-2: #3A404A; --ink-3: #656D79;
+    --hair: #D0D4DA; --hair-strong: #A6ADB7;
+    --accent: #1F5FA8; --accent-tint: #E1EBF7;
+    --alarm: #9A2622; --alarm-tint: #F5E2E0;
+    --calm: #1B6048; --calm-tint: #DDEBE5;
+    --warn: #8a5a12; --warn-tint: #f5ecda;
+    --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --pad: clamp(20px, 4vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1014; --surface: #15191F; --surface-2: #1D232B;
+      --ink: #E5E9EE; --ink-2: #BFC7D1; --ink-3: #88919D;
+      --hair: #242C35; --hair-strong: #38424E;
+      --accent: #6FA8E8; --accent-tint: #14202E;
+      --alarm: #E8837A; --alarm-tint: #2A1917;
+      --calm: #62C79A; --calm-tint: #142520;
+      --warn: #d9a95b; --warn-tint: #2a2214;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 17px; line-height: 1.6; }
+  .page { max-width: 1120px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+  .masthead { border-top: 3px solid var(--ink); padding-top: 14px; margin-bottom: 40px; }
+  .kicker { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 10px; }
+  h1 { font-size: clamp(28px, 4.5vw, 44px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -0.015em; }
+  .standfirst { font-size: 19px; color: var(--ink-2); max-width: 74ch; margin: 0; }
+  section { border-bottom: 1px solid var(--hair); padding: 36px 0; }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 26px; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h3 { font-size: 18px; margin: 24px 0 8px; }
+  p, li { max-width: 78ch; color: var(--ink-2); }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); padding: 1px 5px;
+         border-radius: 4px; color: var(--ink); }
+  pre { background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; padding: 14px 16px;
+        overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--ink); }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .tablewrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+  .pass, .fail, .gap, .note { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+    padding: 2px 8px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+  .pass { background: var(--calm-tint); color: var(--calm); }
+  .fail { background: var(--alarm-tint); color: var(--alarm); }
+  .gap  { background: var(--warn-tint); color: var(--warn); }
+  .note { background: var(--accent-tint); color: var(--accent); }
+  .finding { background: var(--surface); border: 1px solid var(--hair); border-left: 4px solid var(--accent);
+             border-radius: 8px; padding: 16px 20px; margin: 18px 0; }
+  .finding.warn { border-left-color: var(--warn); }
+  .finding.calm { border-left-color: var(--calm); }
+  .finding .label { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3);
+                    margin-bottom: 6px; }
+  /* hand-built flow diagram */
+  .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; margin: 20px 0; }
+  .flow .box { background: var(--surface); border: 1px solid var(--hair-strong); border-radius: 8px;
+               padding: 10px 14px; min-width: 150px; }
+  .flow .box .t { font-weight: 600; font-size: 14px; }
+  .flow .box .d { font-size: 12.5px; color: var(--ink-3); }
+  .flow .arrow { display: flex; flex-direction: column; justify-content: center; align-items: center;
+                 padding: 0 10px; font-size: 12px; color: var(--ink-3); text-align: center; }
+  .flow .arrow .line { font-size: 20px; color: var(--hair-strong); line-height: 1; }
+  .flow .arrow.bad .lbl { color: var(--alarm); font-weight: 600; }
+  .flow .arrow.good .lbl { color: var(--calm); font-weight: 600; }
+</style>
+<div class="page">
+  <div class="masthead">
+    <div class="kicker"><span>Issue #42 · tool gap D1</span><span>Deploy-shape verification</span><span>18 Aug 2026</span></div>
+    <h1>Deploy-shape harness: what a redirected deploy proves</h1>
+    <p class="standfirst">A prototype file-based harness (<code>StrongDev/.ai/tools/deployshape.cs</code>) now drives
+    real <code>-t:Deploy</code> builds of disposable probe projects into <code>.scratch/deploy-shape/</code> roots and
+    asserts the outcomes. Result: <strong>21 assertions pass, 0 fail</strong> — the overlay guards from the
+    2026-07-30 incident hold, the #37 version check both skips and refuses exactly as designed — and one genuine
+    gap surfaced: <strong>the mirror misses source deletions on plain incremental deploys</strong>, because staging
+    (<code>bin\</code>) is maintained additively.</p>
+  </div>
+
+  <section id="attempted">
+    <h2>What was attempted</h2>
+    <p>Issue #42's uncovered piece is the deploy shape: nothing automated exercises <code>-t:Deploy</code> and checks
+    what lands. This effort prototyped the harness as a C# file-based app per the #36 rule, following the
+    <code>loclint.cs</code> precedent (top-level program, <code>--selftest</code> mode, run via
+    <code>dotnet run</code>).</p>
+    <h3>The mechanism: synthesized probes, real build logic</h3>
+    <p>Stale-deletion and destructive scenarios must never touch tracked project sources. The task suggested copying a
+    small modlet under <code>.scratch/deploy-shape/src/</code> — but a copied csproj's relative
+    <code>..\build</code> imports would not resolve from there, and rewriting the copy's import line is the same act as
+    generating the project outright, with less control. So the harness <strong>synthesizes</strong> minimal probe
+    projects whose csprojs import the repo's <em>real</em> <code>build/Modlet.targets</code> (or
+    <code>Overlay.props</code> + <code>Overlay.targets</code>) by absolute path, computed at run time from the repo
+    root. This works because every tracked entry point resolves its own siblings via
+    <code>$(MSBuildThisFileDirectory)</code> — the importing project's location is irrelevant. The logic under test is
+    byte-for-byte what tracked projects run; only the content is disposable.</p>
+    <p>Every build runs with its working directory at the repo root, so relative <code>-p:ModsDir</code> values anchor
+    at <code>$(MSBuildStartupDirectory)</code> exactly as <code>build/Deploy.targets</code> documents (#46/#52). No
+    full-solution build was run (parallel efforts in flight), no real install was touched, and the
+    <code>Tests/</code> project was not modified. Each build's full log is kept under
+    <code>.scratch/deploy-shape/logs/</code>.</p>
+    <pre><code>dotnet run StrongDev/.ai/tools/deployshape.cs -- --selftest   # 9 internal cases, all pass
+dotnet run StrongDev/.ai/tools/deployshape.cs                 # full run: 21 pass, 0 fail, 1 observation</code></pre>
+    <p>Probe projects: <code>MirrorProbeModlet</code> (modlet, <code>ModLoadTier=AfterDependencies</code>, two Config
+    files), <code>OverlayProbeScoped</code> (overlay, <code>MirrorOnDeploy Include="Config"</code>),
+    <code>OverlayProbePlain</code>/<code>OverlayProbeEmpty</code> (overlays with <em>no</em> MirrorOnDeploy — the
+    empty-vector shape), and <code>RefusalProbeModlet</code> (deployed at a fake install planted in scratch).</p>
+  </section>
+
+  <section id="results">
+    <h2>Assertion results</h2>
+    <p>All from one run at 12:39–12:40 EDT; exact per-build commands are the first line of each log file under
+    <code>.scratch/deploy-shape/logs/</code>.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Scenario</th><th>Assertion</th><th>Result</th><th>Evidence</th></tr>
+      <tr><td rowspan="4">S1 — modlet mirror arrival</td>
+        <td>Deploy of a fresh modlet succeeds</td><td><span class="pass">pass</span></td>
+        <td><code>logs/s1-deploy.log</code>, exit 0</td></tr>
+      <tr><td><code>ModLoadTier=AfterDependencies</code> → <code>ZZ_</code> deploy-folder prefix</td><td><span class="pass">pass</span></td>
+        <td><code>roots/mirror/Mods/ZZ_MirrorProbeModlet/</code> exists</td></tr>
+      <tr><td><code>ModInfo.xml</code> arrives</td><td><span class="pass">pass</span></td>
+        <td>file present at destination</td></tr>
+      <tr><td><code>Config/</code> content arrives</td><td><span class="pass">pass</span></td>
+        <td><code>keep.xml</code> + <code>stale.xml</code> present</td></tr>
+      <tr><td rowspan="4">S2 — mirror stale deletion</td>
+        <td>Plain incremental <code>-t:Deploy</code> after deleting <code>Config/stale.xml</code> from source</td>
+        <td><span class="gap">observed</span></td>
+        <td>File <strong>survives</strong> at destination AND in <code>bin\Debug</code> staging; zero
+        <code>removed stale</code> lines in <code>logs/s2a-redeploy.log</code>. See finding 1.</td></tr>
+      <tr><td>After <code>-t:Clean;Deploy</code>, the removed file is deleted at the destination</td><td><span class="pass">pass</span></td>
+        <td><code>Config/stale.xml</code> exists=False after the run</td></tr>
+      <tr><td>Deletion announced in the build log</td><td><span class="pass">pass</span></td>
+        <td><code>removed stale: stale.xml</code> in <code>logs/s2b-clean-deploy.log</code></td></tr>
+      <tr><td>Kept file still deployed after the mirror pass</td><td><span class="pass">pass</span></td>
+        <td><code>Config/keep.xml</code> present</td></tr>
+      <tr><td rowspan="3">S3 — overlay protective-additive</td>
+        <td>Initial overlay deploy succeeds, content arrives</td><td><span class="pass">pass</span></td>
+        <td><code>roots/plain/Mods/OverlayProbePlain/</code></td></tr>
+      <tr><td>A <em>newer live edit</em> at the destination survives a redeploy</td><td><span class="pass">pass</span></td>
+        <td><code>topfile.txt</code> rewritten + mtime=now at destination; content intact after redeploy</td></tr>
+      <tr><td>A <em>newer staged</em> file overwrites an older destination copy</td><td><span class="pass">pass</span></td>
+        <td>source edited + mtime=now, destination backdated 2h; destination updated after redeploy</td></tr>
+      <tr><td rowspan="4">S4 — MirrorOnDeploy scoped mirror</td>
+        <td>Initial scoped-overlay deploy succeeds</td><td><span class="pass">pass</span></td><td>exit 0</td></tr>
+      <tr><td>Planted stale file <em>inside</em> the declared scope is deleted on redeploy</td><td><span class="pass">pass</span></td>
+        <td><code>Config/planted_stale.xml</code> exists=False</td></tr>
+      <tr><td>Unmanaged file <em>outside</em> the scope survives the same redeploy</td><td><span class="pass">pass</span></td>
+        <td><code>unmanaged_live_file.txt</code> present</td></tr>
+      <tr><td>Scoped deletion announced</td><td><span class="pass">pass</span></td>
+        <td><code>removed stale (mirrored scope)</code> in <code>logs/s4b-redeploy.log</code></td></tr>
+      <tr><td rowspan="3">S5 — empty MirrorOnDeploy vector</td>
+        <td>Deploy with an <em>undeclared</em> vector succeeds</td><td><span class="pass">pass</span></td><td>exit 0</td></tr>
+      <tr><td>NO planted file anywhere in the deploy root is deleted on redeploy</td><td><span class="pass">pass</span></td>
+        <td>3/3 planted files survive: deploy root, inside <code>Config/</code>, nested dir</td></tr>
+      <tr><td>No stale-removal announced</td><td><span class="pass">pass</span></td>
+        <td>no <code>removed stale</code> in <code>logs/s5b-redeploy.log</code></td></tr>
+      <tr><td>S6 — #37 skip on redirect</td>
+        <td>Redirected root with no game assembly above it: check silently skipped, deploy proceeds</td><td><span class="pass">pass</span></td>
+        <td>S1 succeeded with no refusal text; <code>roots/mirror/</code> has no <code>7DaysToDie*_Data</code>. Every
+        other scenario's deploys are implicit re-proofs.</td></tr>
+      <tr><td rowspan="3">S7 — #37 refusal path</td>
+        <td>Deploy onto a version-mismatched install refuses (non-zero exit)</td><td><span class="pass">pass</span></td>
+        <td>exit 1; fake install planted entirely in scratch</td></tr>
+      <tr><td>Refusal names the declared versions</td><td><span class="pass">pass</span></td>
+        <td><code>build\Deploy.targets(139,5): error : RefusalProbeModlet declares support for
+        [V3.1.0-b14;V3.0.1-b4], but the game install at …\roots\fakeinstall\ matches none of them</code></td></tr>
+      <tr><td>Nothing deployed into the refused destination</td><td><span class="pass">pass</span></td>
+        <td><code>fakeinstall/Mods/ZZ_RefusalProbeModlet</code> absent</td></tr>
+    </table></div>
+  </section>
+
+  <section id="findings">
+    <h2>Findings</h2>
+
+    <div class="finding warn">
+      <div class="label">Finding 1 · real gap · staging staleness defeats the mirror on incremental deploys</div>
+      <p>The documented contract — <em>"source is authoritative for content AND existence, so a file removed from
+      source stops existing … at the next deploy"</em> (<code>build/Deploy.targets</code> lines 10–12; same claim in
+      AGENTS.md) — <strong>does not hold for a plain incremental <code>dotnet build -t:Deploy</code></strong>. The
+      mirror runs staging→destination, but staging itself is maintained additively: <code>Modlet.targets</code>' Build
+      target (lines 30–36) copies Content into <code>bin\</code> and never removes what is no longer Content. The stale
+      file rides staging into every subsequent deploy.</p>
+      <div class="flow">
+        <div class="box"><div class="t">source</div><div class="d">Config/stale.xml deleted</div></div>
+        <div class="arrow bad"><span class="lbl">Build: additive copy</span><span class="line">──▶</span><span>stale file NOT removed</span></div>
+        <div class="box"><div class="t">bin\Debug staging</div><div class="d">stale.xml lingers</div></div>
+        <div class="arrow good"><span class="lbl">Deploy: faithful mirror</span><span class="line">──▶</span><span>mirrors staging exactly</span></div>
+        <div class="box"><div class="t">destination</div><div class="d">stale.xml still deployed</div></div>
+      </div>
+      <p>Evidence: S2a — after deleting <code>Config/stale.xml</code> from the probe source, a plain
+      <code>-t:Deploy</code> exits 0 with the file <strong>still present at the destination and in staging</strong>,
+      and zero <code>removed stale</code> announcements (<code>logs/s2a-redeploy.log</code>). After
+      <code>-t:Clean;Deploy</code> the deletion happens and is announced (S2b). Scope of the claim: verified on the
+      <strong>modlet</strong> path only. The code-mod path (<code>Mod.targets</code>, SDK <code>OutDir</code>) was not
+      run, but its staging is also maintained additively by the SDK's copy targets, so the same shape is plausible
+      there — <em>unverified</em>. Proposed ticket below.</p>
+    </div>
+
+    <div class="finding calm">
+      <div class="label">Finding 2 · guard confirmed · the 2026-07-30 empty-vector incident cannot recur today</div>
+      <p>With <em>no</em> <code>MirrorOnDeploy</code> declared (the exact shape that once turned the whole deploy root
+      mirror-scoped and deleted unmanaged files), the redeploy deleted <strong>nothing</strong>: planted files at the
+      deploy root, inside <code>Config/</code>, and in a nested directory all survived (3/3), with no stale-removal
+      announced. The load-bearing guards are the <code>Condition="'@(_MirrorDir)' != ''"</code> /
+      <code>'@(_MirrorFileId)' != ''"</code> clauses on every batched include in <code>build/Overlay.targets</code>
+      (lines 148–166). This was previously only protected by a comment saying "do not simplify these away" — it now has
+      an executable regression test.</p>
+    </div>
+
+    <div class="finding calm">
+      <div class="label">Finding 3 · #37 check · both branches proven without touching a real install</div>
+      <p>The skip branch: a redirected destination with no game assembly above it (<code>roots/*/Mods</code>) is not an
+      install and is not checked — every scenario deployed cleanly with no refusal text. The refusal branch: planting a
+      <strong>garbage <code>Assembly-CSharp.dll</code></strong> at
+      <code>.scratch/deploy-shape/roots/fakeinstall/7DaysToDie_Data/Managed/</code> makes
+      <code>_VerifyInstallVersion</code> classify the destination as a game install, hash the assembly against both
+      declared package trees under <code>packages/</code>, match neither, and refuse with the full instructional error
+      (quoted in the results table) — exit 1, nothing deployed. This technique needs only the restored packages tree,
+      which CI already has, so <strong>the refusal path is CI-assertable</strong>; no licensed install is involved at
+      any point.</p>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>Decisions and trade-offs</h2>
+    <ul>
+      <li><strong>Synthesized probes over a copied real modlet.</strong> A copy's <code>..\build</code> imports don't
+      resolve from <code>.scratch/</code>; pointing them home means editing the copy anyway. Synthesis gives complete
+      content control (needed for plant/delete/backdate steps) while the imported build logic stays the tracked files
+      themselves. Trade-off: probe content is minimal, so arrival assertions are shape-level — the harness does not
+      prove any <em>real</em> mod's content survives its own deploy (the solution-sweep lane below covers that).</li>
+      <li><strong>Absolute import paths, written at run time.</strong> Makes the probes machine-specific throwaways —
+      exactly right for <code>.scratch/</code>, never committable. The alternative (passing the build dir as a
+      <code>-p:</code> property into a property-referencing import) works too but adds a moving part to every
+      invocation.</li>
+      <li><strong>S2's stale-deletion assertion uses <code>-t:Clean;Deploy</code></strong>, matching the documented
+      intent, while the plain-incremental behavior is recorded as an observation rather than silently worked around —
+      the discrepancy is finding 1, not a harness bug to paper over.</li>
+      <li><strong>The refusal path was demonstrated, not just described.</strong> The task allowed stating how; a fake
+      install inside <code>.scratch/</code> proves it with zero risk to real installs, so the harness does that.</li>
+      <li><strong>Timestamp control for the protective tests</strong>: destination edits get
+      <code>mtime=now</code> (survival case); the overwrite case backdates the destination 2h and touches the source to
+      now. Deterministic regardless of copy-time mtime preservation.</li>
+      <li><strong>No full-solution deploy sweep in this session</strong> — solution builds were off-limits with
+      parallel efforts running. The per-mod sweep (every deployable mod lands its DLL/ModInfo/Config;
+      <code>IsDeployable=false</code> projects land nothing) is specified for CI below but not executed here.</li>
+    </ul>
+  </section>
+
+  <section id="ci">
+    <h2>Recommended CI shape for #42</h2>
+    <p>Two complementary lanes, both pure scratch-redirect, no artifact upload:</p>
+    <ol>
+      <li><strong>Semantics lane (this harness).</strong> Promote <code>deployshape.cs</code> from
+      <code>StrongDev/.ai/tools/</code> to <code>build/tools/</code> (the durable-tool home per #36) and add a workflow
+      step: <code>dotnet run build/tools/deployshape.cs</code> — its exit code already gates (1 on any failed
+      assertion). It covers mirror arrival + stale deletion, tier prefixes, protective-additive survival, scoped
+      mirroring, the empty-vector guard, and both #37 branches. Runtime cost observed locally: ~10 short modlet/overlay
+      builds, well under a minute after restore. Optional extension: plant a <code>7DaysToDieServer_Data</code> fake to
+      assert #37's unit-follows-destination rule.</li>
+      <li><strong>Sweep lane (not yet built).</strong> One solution-wide redirected deploy —
+      <code>dotnet build StrongMods.sln -t:Deploy -p:ModsDir=&lt;scratch&gt; -p:SdtdSavesDir=&lt;scratch2&gt;</code> —
+      then assert per project: deployable mods produce a folder with DLL (code mods), <code>ModInfo.xml</code>, and
+      <code>Config/</code>; folder names carry the declared tier prefix; <code>IsDeployable=false</code> projects and
+      templates produce nothing. This is cheap to express as a second mode of the same tool
+      (<code>--sweep &lt;root&gt;</code>) reading each csproj's declared tier.</li>
+    </ol>
+    <p>Both lanes keep the standing rule intact: workflows never run <code>-t:Deploy</code> without a scratch redirect,
+    and the harness hard-codes redirect-only invocation.</p>
+  </section>
+
+  <section id="remains">
+    <h2>What remains</h2>
+    <ul>
+      <li><strong>The sweep lane</strong> (solution-wide redirected deploy + per-mod assertions) — specified above,
+      not implemented.</li>
+      <li><strong>Code-mod deploy path unverified.</strong> All probes were modlets/overlays (no compile step keeps the
+      harness fast and game-tree-independent). A code-mod probe would verify the <code>Mod.targets</code> +
+      <code>OutDir</code> staging chain, including whether finding 1 reproduces there.</li>
+      <li><strong>The saves-root overlay shape</strong> (<code>DeployRoot=$(SdtdSavesDir)</code>,
+      <code>-p:SdtdSavesDir</code> redirect, StrongholdSaves' file-scoped mirror) — semantics are the same
+      <code>Overlay.targets</code> code proven here, but that specific root wiring was not exercised.</li>
+      <li><strong>Directory-demotion edge, untested:</strong> if a directory named in <code>MirrorOnDeploy</code> is
+      deleted from staging entirely, the <code>Directory.Exists</code> partition in <code>Overlay.targets</code>
+      (line 145) demotes the declaration to a file identity — what happens to the destination directory's contents was
+      not probed. Worth one more scenario before CI adoption.</li>
+      <li><strong>Promotion + workflow wiring</strong> is human-review work: moving the tool to
+      <code>build/tools/</code>, adding the workflow step, and deciding whether the sweep lane lands in the same
+      file.</li>
+      <li>All probe sources, roots, and logs remain under <code>.scratch/deploy-shape/</code> for inspection;
+      disposable at any time.</li>
+    </ul>
+    <h3>Proposed ticket</h3>
+    <p><strong>Mirror deploy misses source deletions on incremental builds (staging staleness)</strong> —
+    <code>type:build</code>, <code>scope:repo-wide</code>, <code>area:testing</code>. Body: finding 1 above, with the
+    repro (delete a Content file from a modlet, run plain <code>-t:Deploy</code>, file still deployed; exit 0, no
+    announcement) and candidate fixes: mirror the staging copy in <code>Modlet.targets</code>/<code>Overlay.targets</code>
+    Build targets, or derive the Deploy mirror's staged set from Content items rather than a staging-dir glob.</p>
+  </section>
+</div>

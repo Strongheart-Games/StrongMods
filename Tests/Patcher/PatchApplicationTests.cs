@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,17 +45,12 @@ public class PatchApplicationTests {
 
   // One replay per declared version label (#23 phase 6b): each mod's Config against every vanilla it
   // declares support for — vanilla XML differs per version, which is exactly why per-version assertion is
-  // worth having. Under the -p:SdtdDir escape hatch there is one pseudo-label and the pipeline runs
-  // unfiltered against that tree, as it did before the version axis existed.
-  private static readonly ConcurrentDictionary<string, Lazy<PatchPipeline>> Pipelines = new();
-
+  // worth having. The memoized runs moved to Fixtures\PipelineRuns.cs when PatchValueAssertionTests became
+  // the second class asserting over the same replay.
   public static IEnumerable<object[]> Labels() =>
     SmokeTestCtx.Labels.Value.Select(label => new object[] { label });
 
-  private static PatchPipeline Pipeline(string label) => Pipelines.GetOrAdd(label,
-    l => new Lazy<PatchPipeline>(() => SmokeTestCtx.TreeIsDeclared
-      ? PatchPipeline.Run(PatcherHost.ForLabel(l), l)
-      : PatchPipeline.Run(PatcherHost.Instance.Value))).Value;
+  private static PatchPipeline Pipeline(string label) => PipelineRuns.For(label);
 
   [Theory]
   [MemberData(nameof(Labels))]
