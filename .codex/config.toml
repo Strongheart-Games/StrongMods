@@ -2,3 +2,7 @@
 
 sandbox_mode = "workspace-write"
 approval_policy = "on-request"
+
+# Allow Codex to use the interactive questioning tool
+[features]
+default_mode_request_user_input = true
