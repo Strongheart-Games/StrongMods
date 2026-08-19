@@ -390,9 +390,9 @@ Between runs, remove only the mod folders this plan created — never the tree, 
 
 ### 6e. Results — executed 2026-08-17, lane A, all four runs exit 0
 
-Artifacts: `.scratch/tier1/lanes/r80/R{1..4}.{FINDINGS.md,serverlog,stdout}`. Driver
-`StrongDev/.ai/tools/tier1slice.cs`, unmodified. The tree was never rebuilt and never relocated; `0_TFP_Harmony` was
-moved aside for R4 and restored immediately after.
+The disposable run artifacts were not retained. The conclusions and measured results are preserved in this report.
+Driver `StrongDev/.ai/tools/tier1slice.cs` was unmodified. The tree was never rebuilt and never relocated;
+`0_TFP_Harmony` was moved aside for R4 and restored immediately after.
 
 | Run | Assertions | Outcome |
 |---|---|---|

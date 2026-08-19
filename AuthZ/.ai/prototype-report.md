@@ -14,8 +14,10 @@ is missing and stops there. Nothing here belongs in public issue text.
 
 ## What was measured
 
-A scan of all 190 `NetPackage` subclasses in `V3.1.0-b14` (`.scratch/np/scan.py`, over the existing
-`.scratch/decomp`):
+A source analyzer scanned all top-level `NetPackage*.cs` decompiled from
+`packages/7dtd.assemblies.game/3.1.0.14/7DaysToDie_Data/Managed/Assembly-CSharp.dll` with `ilspycmd` 11.0.0.9375. It
+read each override of `PackageDirection` and `AllowedBeforeAuth`, then searched `ProcessPackage` and `ShouldProcess`
+for calls to the two sender-validation helpers. The disposable analyzer and decompile were not retained.
 
 | Measure                                                              | Count |
 |----------------------------------------------------------------------|-------|
@@ -67,9 +69,9 @@ The shipped 0.0.1 damage check had both:
 * `dotnet test StrongMods.sln -c Debug` — 403 passed, 0 failed. The suite resolves `NetPackageGuard.TargetMethods()`
   against **both** `V3.1.0-b14` and `V3.0.1-b4`, so every one of the 19 packages named exists, and its
   `ProcessPackage` resolves, in both builds.
-* 22 checks in `.scratch/authz/harness/` over the game-free pieces: settings parsing and fallback, id uniqueness and
-  shape, every invariant class registered with the engine, and the shipped settings template naming exactly the set
-  the sources declare.
+* 22 disposable harness checks over the game-free pieces: settings parsing and fallback, id uniqueness and shape,
+  every invariant class registered with the engine, and the shipped settings template naming exactly the set the
+  sources declare. The harness was not retained; #130 tracks graduation into `Tests/ModLogic`.
 
 ## Not verified
 
@@ -86,8 +88,7 @@ Nothing has run against a server. Specifically untested:
 
 * **Family C (plausibility)** and **family E (rate)** are catalogued and not built. Both need thresholds that come
   from a real server's numbers.
-* The harness lives in `.scratch/`. A parallel session has landed `Tests/Fixtures/ModLogicHost.cs`, which executes mod
-  logic headlessly against the game assemblies with a Unity stub — the proper home for these checks, and for
-  `Ownership` tests that a source-scanning harness cannot do. Not built on tonight because that work is still
-  uncommitted.
+* The disposable harness was not retained. `Tests/Fixtures/ModLogicHost.cs` executes mod logic headlessly against the
+  game assemblies with a Unity stub — the proper home for these checks, and for `Ownership` tests that a
+  source-scanning harness cannot do. #130 tracks that work.
 * No console command to dump the current tallies. `ViolationLog.TotalFor` exists and nothing calls it.

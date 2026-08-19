@@ -6,7 +6,7 @@ deploy-shape verification in CI (#42) and behavioral/`<foreach>` tests (#43, whi
 
 ## 1. Established facts
 
-The spike (results on #14, 2026-08-01; code in `.scratch/spike-headless-load/spike.cs`) proved on Windows
+The disposable spike (results on #14, 2026-08-01; source not retained) proved on Windows
 .NET 10: `Assembly-CSharp` loads headlessly with 100% of types reflectable on all three vendored trees; 0Harmony's
 net4x code executes on modern .NET; 59/59 patch specs across all 18 built mod DLLs resolve against both units; a
 bogus target correctly fails. From the repo: CI (`.github/workflows/build.yml`) is a Debug × {game,

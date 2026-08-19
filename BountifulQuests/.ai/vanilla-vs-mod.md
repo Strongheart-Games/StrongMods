@@ -147,9 +147,9 @@ Verified off-game:
   `V3.1.0-b14` and `V3.0.1-b4`, and **replaying both XML patches against both vanilla trees with no warnings**. The
   game logs "did not apply" for a patch element that matches nothing and the suite fails on it, so every one of the 84
   dialog inserts and 4 XUi attribute writes really matched.
-* 33 checks over the selection logic — globbing, longest-pattern-wins, clamping, band schedule, the 3:1 weight ratio
-  over 40 000 draws, per-type caps, exhaustion, repeat avoidance, single-quest removal — via a harness at
-  `.scratch/bq/harness/`.
+* 33 disposable harness checks over the selection logic — globbing, longest-pattern-wins, clamping, band schedule,
+  the 3:1 weight ratio over 40 000 draws, per-type caps, exhaustion, repeat avoidance, single-quest removal. The
+  harness was not retained; #131 tracks graduation into `Tests/ModLogic`.
 
 **Not** verified, and needing an in-game pass (#49):
 

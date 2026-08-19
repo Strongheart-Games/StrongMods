@@ -7,9 +7,9 @@ namespace AuthZ.Invariants {
   /// </summary>
   /// <remarks>
   /// <para>
-  /// The connection bootstrap is a fixed sequence (see <c>.scratch/netpackage-bootstrap-audit.md</c>), and each of
-  /// these packages has a single send site the client reaches once. Repetition is therefore free of false positives
-  /// and needs no threshold — one bit of state per connection.
+  /// Static analysis of every construction and send site in V3.1.0-b14 found a fixed connection bootstrap sequence,
+  /// and each of these packages has a single send site the client reaches once. Repetition is therefore free of false
+  /// positives and needs no threshold — one bit of state per connection.
   /// </para>
   /// <para>
   /// Worth having beyond spoof detection: each of these makes the server do real work, so a repeat is load the server

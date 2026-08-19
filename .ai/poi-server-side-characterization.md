@@ -187,8 +187,8 @@ code 0, no orphan). Log evidence:
 | Mod localization not merged | no `"[MODS] Loading localization from mod"` line (both runs) |
 | No POI-related load errors | only benign `[EOS]`/`[HResult] E_XBL_NOT_INITIALIZED` noise, unrelated |
 
-Reuse note: the run reused the existing `…/Saves/Navezgane/StrongDevTier1` save (not deleted). Tooling left under
-`.scratch/tier1/lanes/poi/` (`poislice.cs` driver, `cecil.ps1` static-analysis helper, `FINDINGS.md`, per-run logs).
+Reuse note: the run reused the existing `…/Saves/Navezgane/StrongDevTier1` save (not deleted). The disposable driver,
+static-analysis helper, and per-run logs were not retained; the evidence and conclusions are preserved in this report.
 
 ## The Tier-1 / Tier-2 boundary
 
@@ -213,6 +213,8 @@ must fail for a server-only POI.
   entails a longer world-gen run and, for the client-facing modes, a joining client anyway.
 
 ## Reproduction
+
+The following commands record the historical method. Their disposable scratch inputs were not retained.
 
 ```bash
 # from repo root — stage a custom POI as a Mods folder (never the hardlinked Data tree), then run lane A:

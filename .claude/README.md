@@ -2,6 +2,28 @@
 
 This directory contains the shared project boundaries for Claude Code.
 
+Claude is not required for this repository. The tracked settings and `SessionStart` settings-lint hook are dormant
+compatibility infrastructure. The shared skill source is `.agents/skills`; `.claude/skills` is deliberately untracked
+so a local link cannot block Git worktrees on Windows.
+
+## Optional Claude skills setup
+
+Create the local link only when using Claude Code. From the repository root:
+
+```powershell
+cmd /c mklink /J .claude\skills .agents\skills
+```
+
+On Unix:
+
+```bash
+ln -s ../.agents/skills .claude/skills
+```
+
+Remove only the local link before changing its target. Do not commit it. A future Claude setup should refresh
+`mattpocock-skills` from its source instead of reusing the previously cached 1.2.0 package. Codex currently uses
+1.2.3.
+
 ## Prerequisites: Bash
 
 This repo's docs and agent instructions are POSIX shell throughout, so agents need the Bash tool rather than the

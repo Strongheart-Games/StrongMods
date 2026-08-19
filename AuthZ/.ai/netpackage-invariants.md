@@ -27,7 +27,9 @@ Both log a warning and return false. They are correct. They are just not called 
 
 ## Measured surface
 
-A scan of all 190 `NetPackage` subclasses in the shipped assembly (`.scratch/np/scan.py`):
+A source analyzer scanned all top-level `NetPackage*.cs` decompiled from the named package tree. It read each override
+of `PackageDirection` and `AllowedBeforeAuth`, then searched `ProcessPackage` and `ShouldProcess` for calls to the two
+sender-validation helpers. The disposable analyzer and decompile were not retained.
 
 | Measure                                                             | Count |
 |---------------------------------------------------------------------|-------|
@@ -122,7 +124,8 @@ week of numbers. That is the honest reason this family is third and not first.
 
 *A packet arrives at a point in the connection where a real client would never send it.*
 
-The bootstrap audit (`.scratch/netpackage-bootstrap-audit.md`) already established the legitimate order. Rules follow
+For V3.1.0-b14, the bootstrap order was established by finding every construction/send site for the connection
+packages in `Assembly-CSharp.dll`, then following the enclosing control flow and receiver callback. Rules follow
 directly: a second `NetPackageRequestToEnterGame` on a connection that already entered, a
 `NetPackageRequestToSpawnPlayer` from a client already bound to an entity, a `NetPackagePlayerLogin` after
 `loginDone`. These are cheap — one bit of per-connection state each — and they have essentially no false-positive rate,

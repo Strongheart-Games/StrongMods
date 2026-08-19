@@ -291,8 +291,8 @@ dotnet run StrongDev/.ai/tools/deployshape.cs                 # full run: 21 pas
       <li><strong>Promotion + workflow wiring</strong> is human-review work: moving the tool to
       <code>build/tools/</code>, adding the workflow step, and deciding whether the sweep lane lands in the same
       file.</li>
-      <li>All probe sources, roots, and logs remain under <code>.scratch/deploy-shape/</code> for inspection;
-      disposable at any time.</li>
+      <li>The disposable probe sources, roots, and logs were not retained. This report preserves the conclusions;
+      #107 carries the durable verification work.</li>
     </ul>
     <h3>Proposed ticket</h3>
     <p><strong>Mirror deploy misses source deletions on incremental builds (staging staleness)</strong> —

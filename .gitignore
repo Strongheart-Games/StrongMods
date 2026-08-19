@@ -24,6 +24,7 @@ CLAUDE.local.md
 settings.local.json
 .claude/memory/
 .claude/memory-backup-*/
+/.claude/skills
 
 # Harness-created worktrees (the EnterWorktree tool and subagents run with isolation: "worktree") land here, one
 # checkout per branch. Untracked content inside the working tree would otherwise trip the AGENTS.md commit gate,

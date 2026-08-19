@@ -96,8 +96,8 @@
     <h2>What was attempted</h2>
     <p>This effort resumes a run that died mid-flight at about 12:15; the earlier attempt had already written
        <code>StrongDev/.ai/tools/caselint.cs</code>, disassembled the relevant game classes into
-       <code>.scratch/caselint/*.il</code>, and left a skeleton of this report. This session verified all of that
-       rather than trusting it, then finished the four task parts:</p>
+       disposable IL captures, and left a skeleton of this report. This session verified all of that rather than
+       trusting it, then finished the four task parts. The disposable IL captures were not retained:</p>
     <ol>
       <li><strong>Research</strong> — what the runtime <code>CaseSensitiveFilesystem</code> feature checks today and
           what #89/#90/#91 say is broken (all read via <code>gh issue view 95 89 90 91</code> and the current source).</li>
@@ -203,7 +203,7 @@
        of the OS and Mono's file APIs, asserted from platform behavior, <em>not</em> verified by running on Linux
        this session.</p>
     <div class="tablewrap"><table>
-      <tr><th>Load path</th><th>IL evidence (file:line in .scratch/caselint/)</th><th>On a wrong-case name (Linux)</th></tr>
+      <tr><th>Load path</th><th>Historical IL evidence (disposable capture not retained)</th><th>On a wrong-case name (Linux)</th></tr>
       <tr><td><code>Mod.LoadDefinitionFromFolder</code><br>folder + <code>"/ModInfo.xml"</code></td>
           <td><code>Mod.il:931</code> <code>ldstr "/ModInfo.xml"</code> → Concat → <code>:939</code>
               <code>SdFile::Exists</code>; miss logs <code>"[MODS] Folder … does not contain a ModInfo.xml, ignoring"</code></td>

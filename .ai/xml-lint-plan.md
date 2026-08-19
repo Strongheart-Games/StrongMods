@@ -107,7 +107,7 @@ Well under the 100-line target. No `.csproj` changes anywhere; no evaluation-vis
 | Step | Result |
 | --- | --- |
 | 1. Baseline sweep | ✅ `dotnet build StrongMods.sln -c Debug` green, 0 warnings/errors — all in-scope files well-formed. Target execution positively confirmed at `-v:d` (runs before `PrepareForBuild` in code mods, before `Build` in bare projects). |
-| 2. Negative tests | ✅ F2 `--`-in-comment case fails the modlet build, exit 1, `Config\broken.xml(3,48): error : An XML comment cannot contain '--'…`; truncated doc fails likewise; `-p:XmlLintEnabled=false` passes. Scratch projects left in `.scratch/lint-test/` for inspection. |
+| 2. Negative tests | ✅ F2 `--`-in-comment case fails the modlet build, exit 1, `Config\broken.xml(3,48): error : An XML comment cannot contain '--'…`; truncated doc fails likewise; `-p:XmlLintEnabled=false` passes. The disposable scratch projects were not retained. |
 | 3. Entry-point coverage | ✅ All three shapes fail on broken Config XML with exit 1 (code mod / modlet / overlay scratch projects). |
 | 4. Evaluation diff | ✅ `compare-eval` vs a `HEAD` worktree on `BloodRain`, `AECInternationalMarketFixes`, `StrongholdSaves`: modlet and overlay IDENTICAL; code mod's only diffs are the worktree's absolute-path prefix in `TargetDir`/`TargetPath` (both resolve `bin\Debug\` correctly) — no drift. |
 | 5. Full `MSBuild.exe` | ⚠️ Not executable on this machine: no VS install, no `vswhere`; Rider drives SDK projects through the .NET SDK MSBuild, which is the tested toolchain. `RoslynCodeTaskFactory` is documented to work on full MSBuild ≥ 15.8; this leg stays unverified until a machine with one builds the repo. |
