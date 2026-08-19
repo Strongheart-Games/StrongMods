@@ -11,6 +11,11 @@ one thing it exists to be. `.claude/settings.json` denies `Edit`/`Write` on it, 
 never route around it with a shell command, a patch file, or a git operation. If something in it reads wrong, stale, or
 missing, say so in a sentence or file an issue — and leave the wording to the human.
 
+## Communication
+
+End each final response with a concise call to action: name the recommended next action, the approval or decision
+needed, or explicitly say that no action is needed.
+
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
