@@ -1,7 +1,7 @@
 # Domain docs
 
 **Layout: single-context.** One `CONTEXT.md` at the repo root, with durable decisions recorded as ADRs under
-`docs/adr/` and effort-scoped planning under `.ai/`.
+`docs/adr/` and active effort review documents under `.ai/reviews/`.
 
 The repo is a monorepo of ~25 mods, but it is **wide and shallow** — most projects are a handful of files with no
 vocabulary of their own, and `CONTEXT.md` is human-authored by design, so a per-project split would mean two dozen
@@ -14,7 +14,7 @@ revisiting it is written down below.
 |------------------------------------|------------------------------------------|-------------------|----------------------------------|
 | Domain model / ubiquitous language | `CONTEXT.md` (repo root)                 | the whole repo    | **Human only**                   |
 | Architecture Decision Records      | `docs/adr/NNNN-kebab-title.md`           | one decision      | Agents may draft; human approves |
-| Effort plans, specs, handoffs      | `.ai/` (repo root or per project)        | one piece of work | Agents                           |
+| Active effort review document      | `.ai/reviews/YYYY-MM-DD-<effort>-review.html` | one piece of work | Agents                       |
 | Working rules for agents           | `AGENTS.md` (repo root)                  | the whole repo    | Human-led; agents may propose    |
 | Per-project detail                 | `<Project>/README.md`, `<Project>/Docs/` | one project       | Agents                           |
 
@@ -32,29 +32,29 @@ revisiting it is written down below.
 - **This binds the `domain-modeling` skill too.** That skill normally maintains the domain model in `CONTEXT.md`; here
   it may only *propose* changes in chat or as an issue. ADRs are its writable surface.
 
-## ADRs vs `.ai/`
+## ADRs vs active review documents
 
 Both explain *why*. They differ in what they are scoped to and how long they are meant to last.
 
-|           | `.ai/*.md`                               | `docs/adr/*.md`                                      |
+|           | `.ai/reviews/*-review.html`               | `docs/adr/*.md`                                      |
 |-----------|------------------------------------------|------------------------------------------------------|
 | Unit      | one effort (a migration, a refactor)     | one decision                                         |
 | Lifespan  | goes stale when the work lands           | outlives the work; that is the point                 |
 | On change | edited or abandoned                      | never edited — superseded by a new ADR               |
 | Size      | 100–550 lines                            | ~30–60 lines                                         |
-| Named by  | effort (`f5b-game-assembly-packages.md`) | number + decision (`0007-vendor-game-assemblies.md`) |
+| Named by  | date + effort (`2026-08-19-example-review.html`) | number + decision (`0007-vendor-game-assemblies.md`) |
 | Cited as  | path + section, breaks on rename         | `ADR-0007`, stable forever                           |
 | Contains  | options weighed, verification, handoff   | the decision and its consequences                    |
 
 **Which one to write:**
 
 > Would a new contributor need this to avoid re-litigating a settled choice? → **ADR**.
-> Does it only make sense while the work is in flight? → **`.ai/`**.
+> Does it only make sense while the work is in flight? → **HTML review document**.
 
-Most plan docs produce zero to two ADRs. Do not backfill the existing `.ai/` docs wholesale — write ADRs going forward,
-and retro-file only a decision you find yourself explaining twice. Reserve them for choices that are expensive to
-reverse or that keep getting re-asked; five or six a year is healthy. An ADR for every small choice rots the same way a
-stub `CONTEXT.md` would.
+Most review documents produce zero to two ADRs. Start active efforts from
+`docs/agents/review-document-template.html`; do not backfill existing effort documents wholesale. Reserve ADRs for
+choices that are expensive to reverse or that keep getting re-asked; five or six a year is healthy. An ADR for every
+small choice rots the same way a stub `CONTEXT.md` would.
 
 When an ADR exists, the rule sites stop carrying the rationale inline and cite it instead — `AGENTS.md`, header comments
 in `build/`, and issue threads should say "see ADR-0007" rather than restating the argument. One home per *why*.

@@ -4,11 +4,11 @@
 //
 // After changing this file, run `dotnet clean build/tools/verify-submission-candidate.cs`, then
 // `dotnet build build/tools/verify-submission-candidate.cs`. Usage:
-//   dotnet run --file build/tools/verify-submission-candidate.cs --no-build -- --base HEAD --report <report.html> \
+//   dotnet run --file build/tools/verify-submission-candidate.cs --no-build -- --base HEAD --review <review.html> \
 //     --file <repo-relative-file> [--file <repo-relative-file> ...] -- <command> [arguments...] [--then <command> ...]
 //
 // The tool creates an ignored .scratch worktree at the named base, overlays only the supplied files from the current
-// tree, runs the command there, and writes a generated report section only when that exact candidate passes. `--base`
+// tree, runs the command there, and writes a generated review section only when that exact candidate passes. `--base`
 // and `--file` are deliberately explicit: inferring either from a dirty shared tree would recreate #144's failure.
 
 using System.Diagnostics;
@@ -26,7 +26,7 @@ try {
   return 2;
 }
 
-internal sealed record CandidateOptions(string Base, string Report, List<string> Files, List<List<string>> Commands);
+internal sealed record CandidateOptions(string Base, string Review, List<string> Files, List<List<string>> Commands);
 
 internal static class SubmissionCandidateVerifier {
   private const string SectionStart = "<!-- submission-candidate:verified:start -->";
@@ -36,19 +36,19 @@ internal static class SubmissionCandidateVerifier {
     CandidateOptions options = Parse(args);
     string root = Path.GetFullPath(Git(Environment.CurrentDirectory, "rev-parse", "--show-toplevel").Trim());
     string baseSha = Git(root, "rev-parse", "--verify", options.Base + "^{commit}").Trim();
-    string report = Normalize(root, options.Report);
+    string review = Normalize(root, options.Review);
     List<string> files = NormalizeFiles(root, options.Files);
-    if (!files.Contains(report, StringComparer.OrdinalIgnoreCase)) {
-      throw new ArgumentException("--report must also be one of the explicit --file values.");
+    if (!files.Contains(review, StringComparer.OrdinalIgnoreCase)) {
+      throw new ArgumentException("--review must also be one of the explicit --file values.");
     }
 
-    string reportSource = Path.Combine(root, report);
-    if (!File.Exists(reportSource)) {
-      throw new ArgumentException($"report does not exist in the current tree: {report}");
+    string reviewSource = Path.Combine(root, review);
+    if (!File.Exists(reviewSource)) {
+      throw new ArgumentException($"review document does not exist in the current tree: {review}");
     }
 
     string section = RenderSection(baseSha, files, options.Commands);
-    string renderedReport = ReplaceSection(File.ReadAllText(reportSource), section);
+    string renderedReview = ReplaceSection(File.ReadAllText(reviewSource), section);
     string scratchRoot = Path.Combine(root, ".scratch");
     string worktree = Path.Combine(scratchRoot, "submission-candidate-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(scratchRoot);
@@ -60,16 +60,16 @@ internal static class SubmissionCandidateVerifier {
         Overlay(root, worktree, file);
       }
 
-      File.WriteAllText(Path.Combine(worktree, report), renderedReport, new UTF8Encoding(false));
+      File.WriteAllText(Path.Combine(worktree, review), renderedReview, new UTF8Encoding(false));
       foreach (List<string> command in options.Commands) {
         int exitCode = RunCommand(worktree, command);
         if (exitCode != 0) {
-          Console.Error.WriteLine($"candidate failed validation with exit code {exitCode}; report was not updated.");
+          Console.Error.WriteLine($"candidate failed validation with exit code {exitCode}; review was not updated.");
           return exitCode;
         }
       }
 
-      File.WriteAllText(reportSource, renderedReport, new UTF8Encoding(false));
+      File.WriteAllText(reviewSource, renderedReview, new UTF8Encoding(false));
       Console.WriteLine($"verified submission candidate at {baseSha}: {string.Join(", ", files)}");
       return 0;
     } finally {
@@ -84,7 +84,7 @@ internal static class SubmissionCandidateVerifier {
       + "<!-- submission-candidate:verified:end -->\n</html>";
     string result = ReplaceSection(input, "<section><p>new &amp; checked</p></section>");
     if (!result.Contains("new &amp; checked", StringComparison.Ordinal) || result.Contains("old", StringComparison.Ordinal)) {
-      Console.Error.WriteLine("self-test failed: report section replacement was not exact.");
+      Console.Error.WriteLine("self-test failed: review section replacement was not exact.");
       return 1;
     }
 
@@ -125,13 +125,22 @@ internal static class SubmissionCandidateVerifier {
       return 1;
     }
 
+    CandidateOptions options = Parse(new[] {
+      "--base", "HEAD", "--review", ".ai/reviews/example-review.html", "--file", ".ai/reviews/example-review.html",
+      "--", "dotnet", "build"
+    });
+    if (options.Review != ".ai/reviews/example-review.html") {
+      Console.Error.WriteLine("self-test failed: --review was not parsed as the review document.");
+      return 1;
+    }
+
     Console.WriteLine("self-test passed");
     return 0;
   }
 
   private static CandidateOptions Parse(string[] args) {
     string? baseRevision = null;
-    string? report = null;
+    string? review = null;
     var files = new List<string>();
     var command = new List<string>();
     for (var index = 0; index < args.Length; index++) {
@@ -141,15 +150,15 @@ internal static class SubmissionCandidateVerifier {
         break;
       }
 
-      if (arg is "--base" or "--report" or "--file") {
+      if (arg is "--base" or "--review" or "--file") {
         if (++index == args.Length) {
           throw new ArgumentException($"{arg} requires a value.");
         }
 
         if (arg == "--base") {
           baseRevision = args[index];
-        } else if (arg == "--report") {
-          report = args[index];
+        } else if (arg == "--review") {
+          review = args[index];
         } else {
           files.Add(args[index]);
         }
@@ -159,11 +168,11 @@ internal static class SubmissionCandidateVerifier {
     }
 
     List<List<string>> commands = SplitCommands(command);
-    if (baseRevision is null || report is null || files.Count == 0 || commands.Count == 0) {
-      throw new ArgumentException("usage: --base <revision> --report <report.html> --file <path> ... -- <command> ...");
+    if (baseRevision is null || review is null || files.Count == 0 || commands.Count == 0) {
+      throw new ArgumentException("usage: --base <revision> --review <review.html> --file <path> ... -- <command> ...");
     }
 
-    return new CandidateOptions(baseRevision, report, files, commands);
+    return new CandidateOptions(baseRevision, review, files, commands);
   }
 
   private static List<List<string>> SplitCommands(List<string> source) {
@@ -272,15 +281,15 @@ internal static class SubmissionCandidateVerifier {
       """;
   }
 
-  private static string ReplaceSection(string report, string section) {
-    int start = report.IndexOf(SectionStart, StringComparison.Ordinal);
-    int end = report.IndexOf(SectionEnd, StringComparison.Ordinal);
+  private static string ReplaceSection(string review, string section) {
+    int start = review.IndexOf(SectionStart, StringComparison.Ordinal);
+    int end = review.IndexOf(SectionEnd, StringComparison.Ordinal);
     if (start < 0 || end < start) {
-      throw new ArgumentException($"report must contain {SectionStart} and {SectionEnd} markers.");
+      throw new ArgumentException($"review document must contain {SectionStart} and {SectionEnd} markers.");
     }
 
     int afterEnd = end + SectionEnd.Length;
-    return report[..start] + SectionStart + "\n" + section + SectionEnd + report[afterEnd..];
+    return review[..start] + SectionStart + "\n" + section + SectionEnd + review[afterEnd..];
   }
 
   private static int RunCommand(string directory, List<string> command) {

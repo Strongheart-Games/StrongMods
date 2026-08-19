@@ -1,6 +1,6 @@
 ---
 name: verify-submission-candidate
-description: Verify the exact uncommitted files a human may submit before handing off a candidate or a report that names candidate files. Do not use for ordinary whole-working-tree tests.
+description: Verify an exact uncommitted candidate before handoff or reviewing a document that names candidate files.
 ---
 
 # Verify submission candidate
@@ -8,7 +8,7 @@ description: Verify the exact uncommitted files a human may submit before handin
 Use this skill when an agent gives a human a reviewable, uncommitted file set. The candidate is the exact set the
 human may submit, not every modification sharing the current working tree.
 
-1. Name every candidate file explicitly, including the report and coupled acceptance-registry changes.
+1. Name every candidate file explicitly, including the review document and coupled acceptance-registry changes.
 2. Add the verifier markers, then clean and build the file app:
    `dotnet clean build/tools/verify-submission-candidate.cs`; `dotnet build build/tools/verify-submission-candidate.cs`.
    Run `dotnet run --file build/tools/verify-submission-candidate.cs --no-build` from an explicit base revision with

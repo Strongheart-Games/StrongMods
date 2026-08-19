@@ -64,7 +64,7 @@
     <h1>HTML review documents</h1>
     <p class="standfirst">One readable artifact follows an effort from planning through decisions, verification, and
       handoff—without separating the design you review from the evidence you need to trust it.</p>
-    <div class="statusbar"><span class="chip open">planning review</span><span class="chip">repository-wide</span>
+    <div class="statusbar"><span class="chip open">implementation review</span><span class="chip">repository-wide</span>
       <span class="chip">GitHub issue owns status</span></div>
     <p class="muted">The <a href="https://github.com/Strongheart-Games/StrongMods/issues/148">GitHub issue</a>, not this file,
       owns work status and follow-on tracking.</p>
@@ -175,7 +175,7 @@
     <p>The verifier continues to receive explicit candidate files for now. Reading a prior generated manifest would
       risk validating a stale list. A future <strong>candidate declaration</strong> inside the review document could
       become the input only if its convenience justifies another maintained section; that is deliberately deferred.
-      Once #145 is submitted independently, #148 will rename the unshipped command-line parameter
+      #145 is now submitted independently. #148 renames the command-line parameter
       <code>--report</code> to <code>--review</code>, its marker wording, and its skill language. This is a naming
       correction, not an expansion into a general documentation-authoring skill.</p>
   </section>
@@ -184,17 +184,16 @@
     <p class="eyebrow">After approval</p>
     <h2>Implementation plan</h2>
     <ol>
-      <li>Review the draft <a href="../../docs/agents/review-document-template.html">annotated template</a> at
+      <li>The approved <a href="../../docs/agents/review-document-template.html">annotated template</a> at
         <code>docs/agents/review-document-template.html</code>, grounded in
-        <code>.ai/reports/2026-08-17-bountiful-quests-prototype.html</code>. Once approved, it will include
-        the document metadata, linked decision and naming tables, accessible diagram guidance, and a placeholder for
-        verifier-owned evidence.</li>
+        <code>.ai/reports/2026-08-17-bountiful-quests-prototype.html</code> supplies document metadata, linked
+        decision and naming tables, accessible diagram guidance, and a placeholder for verifier-owned evidence.</li>
       <li>Update <code>AGENTS.md</code> planning and handoff pointers: new/revised effort plans are review documents in
         <code>.ai/reviews/</code>; the issue remains the only work tracker.</li>
       <li>Update <code>docs/agents/domain.md</code> to replace its hard-coded <code>.ai/*.md</code> convention with the
         bounded review-document rule and link the template.</li>
-      <li>After #145 lands, revise its active documentation as the first adoption and make the verifier speak of a
-        <code>--review</code> target. Verify #148’s exact candidate in its own scratch worktree.</li>
+      <li>Make the verifier speak of a <code>--review</code> target for this active review document. #145’s submitted
+        report remains historical; verify #148’s exact candidate in its own scratch worktree.</li>
     </ol>
   </section>
 
@@ -211,12 +210,32 @@
     </ul>
   </section>
 
+  <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>d68ac9afdd8d3cc80d6d6073a51f22877e151dda</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>git diff --check</code> (exit 0)</li>
+        <li><code>dotnet clean build/tools/verify-submission-candidate.cs</code> (exit 0)</li>
+        <li><code>dotnet build build/tools/verify-submission-candidate.cs</code> (exit 0)</li>
+        <li><code>dotnet run --file build/tools/verify-submission-candidate.cs --no-build -- --selftest</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>.agents/skills/verify-submission-candidate/SKILL.md</code></li>
+      <li><code>.ai/reviews/2026-08-19-html-review-documents-review.html</code></li>
+      <li><code>AGENTS.md</code></li>
+      <li><code>build/tools/verify-submission-candidate.cs</code></li>
+      <li><code>docs/agents/domain.md</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+
   <section id="dependency">
     <p class="eyebrow">Keep the changelists independent</p>
     <h2>Sequencing</h2>
-    <p>#145’s uncommitted candidate must be reviewed and submitted before #148 modifies the verifier’s vocabulary or
-      converts its document. This preserves the requested independent dogfood test and keeps the two changesets
-      reviewable. This document is planning-only; implementation waits for explicit approval and the #145 commit gate.</p>
+    <p>#145 was submitted before #148 modifies the verifier’s vocabulary, preserving the requested independent
+      dogfood test. This review document is now the first active adoption; historical reports are not bulk-converted.</p>
   </section>
   </div>
 </body>

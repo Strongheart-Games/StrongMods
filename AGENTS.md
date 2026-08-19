@@ -277,8 +277,10 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
   touches conforms as part of that change, and new names conform always.
 - `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
-- **Docs have homes** — effort-scoped plans, specs and handoffs in `.ai/` (per project, or repo-root for repo-wide
-  work); durable decisions as ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
+- **Docs have homes** — one self-contained HTML review document carries planning, decisions, verification, and handoff
+  for each new or actively revised effort: `.ai/reviews/YYYY-MM-DD-<effort>-review.html` (per project, or repo-root
+  for repo-wide work). Start from `docs/agents/review-document-template.html`. Historical effort docs stay where they
+  are; durable decisions are ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
 - **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options weighed,
   the verification. The issue carries the work and its status. **Never add a status or follow-on table to a doc:** it
   becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number. The older plans
@@ -353,8 +355,9 @@ cycle must produce self-contained edits.
 
 **1. Planning Phase**
 
-* Before making edits that touch multiple files, write a brief, itemized plan and save it in the relevant project's
-  `.ai/` directory (e.g., `DynamicFeralSense/.ai/plan.md`). Do not pollute the root directory.
+* Before making edits that touch multiple files, create or update the effort's HTML review document under
+  `.ai/reviews/` with a brief, itemized plan. Start from `docs/agents/review-document-template.html`; do not create a
+  parallel Markdown plan for a new or actively revised effort.
 * Request explicit human validation on this plan if the proposed changes will exceed the 100-line target.
 
 **2. Implementation Phase**
@@ -373,11 +376,13 @@ cycle must produce self-contained edits.
 
 * Upon a successful build, explicitly PAUSE your workflow.
 * Present a brief, clear summary of the changes made.
-* End the phase with a report, not a menu. State what changed, how it was verified, and what remains uncommitted — then
-  stop. The human reviews and commits; that hand-off needs no question from you. If the phase also leaves a genuinely
-  gated action pending (something on the ask list, e.g. gh issue close), raise it separately and explicitly — never
+* End the phase with a concise handoff, not a menu. State what changed, how it was verified, and what remains
+  uncommitted — then stop. The human reviews and commits; that hand-off needs no question from you. If the phase
+  also leaves a genuinely gated action pending (something on the ask list, e.g. gh issue close), raise it separately
+  and explicitly — never
   blended into a list alongside things you cannot do.
-* **Submission candidate:** before handing off an uncommitted candidate or a report naming files for submission, use
+* **Submission candidate:** before handing off an uncommitted candidate or a review document naming files for
+  submission, use
   `verify-submission-candidate`; its generated verified section is the authoritative file list and validation evidence.
 * **Each phase needs its own explicit go.** Approval of a plan authorizes nothing but the plan itself; answers to side
   questions, decision confirmations, or filed follow-up issues are not a "go" for the next phase — even a phase that
@@ -413,4 +418,4 @@ dependencies. See the *Wayfinding operations* section of `docs/agents/issue-trac
 ### Domain docs
 
 Single-context: one human-authored `CONTEXT.md` at the repo root, with durable decisions as ADRs under `docs/adr/`
-and effort-scoped plans under `.ai/`. See `docs/agents/domain.md`.
+and active effort review documents under `.ai/reviews/`. See `docs/agents/domain.md`.
