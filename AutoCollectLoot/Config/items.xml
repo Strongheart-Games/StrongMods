@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <foreach source="entityclasses"
-           xpath="/entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer'] and not(property[@name='LootList'][@value='cntDropBag'])]"
+           xpath="/entity_classes/entity_class[(property[@name='Class'][@value='EntityLootContainer'] or @extends = /entity_classes/entity_class[property[@name='Class'][@value='EntityLootContainer']]/@name) and property[@name='Mesh'] and property[@name='LootList'] and not(property[@name='LootList'][@value='cntDropBag'])]"
            as="lootContainer">
     <bind name="icons">
       <row mesh="@:Entities/LootContainers/zpackPrefab.prefab"     icon="cntSportsBag02White" tint="#78783A" />
