@@ -10,6 +10,7 @@ namespace StrongMods {
       InitBreadthFirstXmlPatcher(mod, harmony);
       InitXmlPatchMethodForeach(mod, harmony);
       InitXmlPatchMethodEnsure();
+      InitXPathInheritance(harmony);
       InitCaseSensitiveFilesystem(mod, harmony);
       InitModInfoDependencies(mod, harmony);
     }
@@ -50,6 +51,14 @@ namespace StrongMods {
       // Explicitly add this patch method so we control whether it's enabled or disabled
       MethodInfo method = AccessTools.Method(typeof(XmlPatchMethodEnsure), nameof(XmlPatchMethodEnsure.Ensure));
       XmlPatcher.addXmlFilePatchMethod("ensure", method);
+    }
+
+    private static void InitXPathInheritance(Harmony harmony) {
+      if (!Config.XPathInheritanceEnabled) {
+        return;
+      }
+
+      harmony.PatchCategory(XPathInheritance.Category);
     }
 
     private static void InitCaseSensitiveFilesystem(Mod mod, Harmony harmony) {

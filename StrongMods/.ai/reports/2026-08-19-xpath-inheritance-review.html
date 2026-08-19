@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XPath inheritance review — #143</title>
+  <style>
+    body { color: #1d2630; font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 76rem; padding: 0 1rem; }
+    h1, h2, h3 { line-height: 1.2; } table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #c7d0d9; padding: .55rem; text-align: left; vertical-align: top; }
+    th { background: #edf2f7; } .status { background: #e6f4ea; border-left: 4px solid #22863a; padding: 1rem; }
+    .risk { background: #fff4ce; border-left: 4px solid #b08800; padding: 1rem; } code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <h1>XPath inheritance functions: implementation review</h1>
+  <p><strong>Tracking:</strong> <a href="https://github.com/Strongheart-Games/StrongMods/issues/143">#143</a> ·
+    <strong>Plan:</strong> <a href="../xpath-inheritance-v1-spec.md">StrongMods/.ai/xpath-inheritance-v1-spec.md</a> ·
+    <strong>Date:</strong> 2026-08-19</p>
+
+  <div class="status"><strong>Executive status — candidate implementation, not ready to submit.</strong> The read-only
+    XPath engine, <code>sm:chain</code> / <code>sm:inherited</code> contexts, category-gated selector interception, author documentation,
+    and ten focused conformance cases are present. The candidate now has direct evidence through the selector funnel,
+    cross-file <code>&lt;foreach&gt;</code>, interpolation, broken-chain containment, and post-mutation reevaluation. It builds and
+    the full local suite passes (497/497). The remaining work is the plan’s scale, return-order, and cross-unit/Linux proof.</div>
+
+  <h2>Decisions needing review</h2>
+  <table><thead><tr><th>Priority</th><th>Decision</th><th>Recommendation</th><th>Why it matters</th></tr></thead><tbody>
+    <tr><td>P1</td><td><a href="#interception">Interception proof</a></td><td>Run the new real patched-`XmlFile` test on both CI units before merge.</td><td>The harness now proves dispatch locally; CI supplies cross-unit and Linux evidence.</td></tr>
+    <tr><td>P1</td><td><a href="#lifecycle">Per-evaluation cache lifetime</a></td><td>Keep the current scope boundary; test mutation between commands.</td><td>Correctness depends on rebuilding indexes after an XML command mutates a document.</td></tr>
+    <tr><td>P1</td><td><a href="#warnings">Data-error warning contract</a></td><td>Specify exact useful messages in tests, not just that a warning exists.</td><td>Broken inheritance must isolate one chain without concealing mod-data defects.</td></tr>
+    <tr><td>P1</td><td><a href="#consumer-acceptance">Consumer acceptance boundary</a></td><td>Keep #144’s immediate-child selector deliberately plain XPath; do not widen the bug fix transitively.</td><td>It validates composition without changing the promised AutoCollectLoot scope.</td></tr>
+    <tr><td>P2</td><td><a href="#docs">Documentation staging</a></td><td>Retain the new author doc and make its clauses the test inventory.</td><td>It prevents the feature’s compact API from becoming an undocumented implementation detail.</td></tr>
+  </tbody></table>
+
+  <h2>Key developer-facing naming decisions</h2>
+  <table><thead><tr><th>Priority</th><th>Name</th><th>Recommendation</th><th>Developer impact</th></tr></thead><tbody>
+    <tr><td>P0</td><td><a href="#name-inherited"><code>sm:inherited</code></a></td><td>Keep, but consistently say “declared or inherited.”</td><td>It is concise in selectors but can imply self is excluded when it is intentionally included.</td></tr>
+    <tr><td>P1</td><td><a href="#name-chain"><code>sm:chain</code></a></td><td>Keep self-inclusion and reject a v1 ancestor variant.</td><td>“Is or descends from” is the normal predicate and avoids optional-argument ambiguity.</td></tr>
+    <tr><td>P1</td><td><a href="#name-shorthand"><code>#Name</code></a></td><td>Keep as narrowly-scoped property shorthand.</td><td>It removes unreadable nested XML/XPath quoting without hiding the hierarchy wiring.</td></tr>
+    <tr><td>P2</td><td><a href="#name-category"><code>XPathInheritance</code></a></td><td>Keep for category, engine, and configuration vocabulary.</td><td>It identifies the game concept rather than exposing a transport detail such as “XPath extension.”</td></tr>
+  </tbody></table>
+
+  <h2>Detailed review</h2>
+  <h3 id="interception">P0 — selector interception</h3>
+  <p><strong>Evidence.</strong> The implementation puts the Harmony prefix on
+    <code>XmlFile.GetXpathResultsInList</code>, the plan’s verified funnel. Its fast path leaves expressions without
+    <code>sm:</code> to vanilla. The prefix is category-gated by <code>Config.XPathInheritanceEnabled</code> and
+    <code>ModApi.InitXPathInheritance</code>. PatcherHost applies that category and the fourth conformance test drives a
+    marked selector through real <code>singlePatch</code> dispatch. <strong>Recommendation.</strong> Require it on both
+    declared units in CI. <strong>Impact.</strong> The local proof covers the funnel; CI remains the game-version and
+    Linux compatibility proof.</p>
+
+  <h3 id="lifecycle">P1 — cache and mutation lifecycle</h3>
+  <p><strong>Evidence.</strong> The engine creates an evaluation scope around each marked XPath and indexes candidate
+    keys only inside that scope. It keys the default population by the actual sibling parent and element name, and an
+    explicit population by its XPath text. <strong>Recommendation.</strong> Preserve that boundary and add a test where
+    one command changes a parent then a later command resolves a child. <strong>Impact.</strong> A process-wide cache
+    would make selector results stale after ordinary patch mutation; rebuilding per selector avoids invalidation logic.</p>
+
+  <h3 id="warnings">P1 — chain damage is local</h3>
+  <p><strong>Evidence.</strong> The walk truncates only its current chain for multiple links, missing keys, duplicate
+    keys, cycles, and the 64-hop backstop. It logs through the game logger. <strong>Recommendation.</strong> Build the
+    planned row-by-row warning tests and tune messages to include the node and scheme arguments. <strong>Impact.</strong>
+    This determines whether a malformed mod is diagnosable while unrelated selector matches continue to work.</p>
+
+  <h3 id="consumer-acceptance">P1 — #144 is an acceptance boundary, not a scope expansion</h3>
+  <p><strong>Evidence.</strong> The new <a href="../../../AutoCollectLoot/.ai/reports/2026-08-19-inherited-loot-container-bug-144-review.html">#144 bug report</a>
+    records a shipped-patch regression test for a direct entity loot container, its immediate child, a transitive grandchild,
+    and an incomplete child. The consumer selector intentionally uses direct <code>@extends</code> membership instead of
+    <code>sm:inherited</code>, because the issue asks for one level only. <strong>Recommendation.</strong> Preserve that
+    narrow selector. <strong>Impact.</strong> #144 proves the StrongMods patch pipeline still composes with a real dependent
+    mod while avoiding an accidental product commitment that every descendant should generate loot.</p>
+
+  <h3 id="docs">P2 — author documentation</h3>
+  <p><strong>Evidence.</strong> <code>StrongMods/Docs/inheritance.md</code> now describes the function signatures,
+    return-order caveat, shorthand, population default, data failures, and interaction with foreach variables.
+    <strong>Recommendation.</strong> Treat each behavior as a conformance-test row, as the plan requires. <strong>Impact.</strong>
+    The feature is a developer tool: an API example without the caveats would invite subtly wrong selectors.</p>
+
+  <h3 id="name-inherited">Naming — <code>sm:inherited</code></h3>
+  <p>The name was ratified because it reads naturally in predicates, although its operation begins with the current
+    node. The new docs use “declared or inherited” at every semantic explanation. Recommendation: keep this pairing;
+    changing to <code>effective</code> would be technically plainer but less immediately readable in the common query.</p>
+
+  <h3 id="name-chain">Naming — <code>sm:chain</code></h3>
+  <p>“Chain” accurately describes the node plus successive ancestors without promising an ordering XPath may later
+    change. It includes self by design. Recommendation: keep it and do not introduce <code>ancestors</code> or a
+    boolean self flag before a real strict-descent caller establishes the need.</p>
+
+  <h3 id="name-shorthand">Naming — <code>#Name</code></h3>
+  <p>The leading marker reads as a compact property reference and cannot be confused with general XPath. It is limited
+    to <code>select</code> and <code>link</code>, where it expands to the game’s flat property shape. Recommendation:
+    retain the limitation; extending it to keys would make an already-clear <code>@name</code> less explicit.</p>
+
+  <h3 id="name-category">Naming — <code>XPathInheritance</code></h3>
+  <p>The category, feature class, configuration switch, and report all use the same concept phrase. That makes the
+    feature discoverable in patch configuration, source search, and an eventual user issue. Recommendation: keep this
+    vocabulary rather than splitting it across “extension functions,” “resolver,” and “selector patch.”</p>
+
+  <h2>Implementation and verification status</h2>
+  <ul><li>Added the engine, extension-function context, Harmony prefix, config gate, ModApi registration, and foreach
+    interpolation hookup.</li><li>Added author-facing <code>Docs/inheritance.md</code>.</li><li>Added four original
+    conformance cases: nearest effective value, transitive self-inclusive chain, explicit population with general XPath
+    forms, and end-to-end selector interception. Six further cases cover empty and invalid inputs; broken chains;
+    source-document selection; interpolation over a bound node; and rebuilding after a prior command mutates a parent.</li>
+    <li>Empty node sets now return empty, population must be absolute, and compiled subexpressions are cached for one
+    evaluation.</li><li>Updated the test harness to use modern
+    <code>MonoMod.RuntimeDetour</code> / <code>MonoMod.Utils</code>, allowing Harmony interception on .NET 10.</li><li>
+    <code>dotnet build StrongMods/StrongMods.csproj -c Debug --no-restore</code>: passed.
+    <code>dotnet test Tests/Tests.csproj -c Debug --no-restore --filter FullyQualifiedName~Tests.Inheritance</code>:
+    passed (10/10). A subsequent full-suite run passed (497/497). No deploy, commit, push, or submission occurred.</li></ul>
+
+  <h2>Uncommitted effort files</h2>
+  <ul><li><code>StrongMods/XPathInheritance.cs</code>, <code>StrongMods/XPathFunctionContext.cs</code>,
+    <code>StrongMods/Config.cs</code>, <code>StrongMods/ModApi.cs</code>,
+    <code>StrongMods/XmlPatchMethodForeach.cs</code></li><li><code>StrongMods/Docs/inheritance.md</code></li><li>
+    <code>Tests/Inheritance/InheritanceFunctionTests.cs</code>, <code>Tests/Fixtures/PatcherHost.cs</code>, and
+    <code>Tests/Tests.csproj</code></li><li>this report. Other concurrent effort files are intentionally not listed as
+    XPath work.</li></ul>
+
+  <h2>Remaining work and risks</h2>
+  <div class="risk"><strong>Do not submit yet.</strong> The first failure, composition, and cache-lifecycle coverage is
+    now present, but closure still needs a direct non-node-set assertion; all plan-table rows including the 64-link cap;
+    bind-specific, unmarked-fast-path, and plain-command-variable cases; real-vanilla scale; and a return-order caveat
+    test. Linux detour compatibility and both declared units remain unproven until CI runs it. Review the new public API names and
+    docs before adopting the syntax as a supported StrongMods contract.</div>
+</body>
+</html>

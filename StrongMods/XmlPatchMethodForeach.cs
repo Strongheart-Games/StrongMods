@@ -607,7 +607,9 @@ namespace StrongMods {
       try {
         var compiled = XPathExpression.Compile(text);
         compiled.SetContext(s_xsltContext);
-        result = s_contextNavigator.Evaluate(compiled);
+        using (XPathInheritance.BeginEvaluation(Log.Warning)) {
+          result = XPathInheritance.SnapshotNodeSet(s_contextNavigator.Evaluate(compiled));
+        }
         return true;
       } catch (Exception e) when (e is XPathException or ArgumentException) {
         failure = SubstitutionFailure.Fail($"\"{text}\" failed to evaluate: {e.Message}");
@@ -1239,6 +1241,11 @@ namespace StrongMods {
 
       public override IXsltContextFunction ResolveFunction(string prefix, string name,
         XPathResultType[] argTypes) {
+        IXsltContextFunction inheritanceFunction = XPathInheritance.ResolveFunction(prefix, name, argTypes);
+        if (inheritanceFunction != null) {
+          return inheritanceFunction;
+        }
+
         throw new XPathException($"unknown XPath function \"{name}()\"; a declared patch function " +
                                  "must be the entire side of an expression, not part of one");
       }

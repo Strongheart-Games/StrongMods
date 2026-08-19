@@ -26,7 +26,10 @@
          CoreCLR no longer exposes — found when #48 step 3 tried resolving them from the game folder). These
          packages supply the modern-TFM builds of the same versions the game's 0Harmony references. -->
     <PackageReference Include="MonoMod.Backports" Version="1.1.2" />
-    <PackageReference Include="MonoMod.Utils" Version="25.0.6" />
+    <PackageReference Include="MonoMod.Utils" Version="25.0.14" />
+    <!-- The runtime detour implementation is a separate package on modern CoreCLR. Pin it with the modern MonoMod
+         helpers so PatcherHost can prove category-gated Harmony prefixes end to end. -->
+    <PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.6" />
     <!-- Reads the patch entry-point list out of the game's IL. Executing the type that holds it is impossible
          headlessly — its initializer wants Unity engine types — so Fixtures\EntryPoints.cs inspects instead. -->
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />

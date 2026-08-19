@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Xml.Linq;
+using HarmonyLib;
 
 namespace Tests.Fixtures;
 
@@ -90,13 +91,19 @@ public sealed class PatcherHost {
       .First(m => m.Name == "PatchXml" && m.GetParameters().Length == 4);
 
     SubscribeToLog(logLibrary);
+    var xpathInheritanceHarmony = new Harmony("Tests.XPathInheritance");
+    xpathInheritanceHarmony.PatchCategory(strongMods, "XPathInheritance");
     SeedPatchMethods(acs, strongMods, patcher);
     RegisterFixtureMod(acs, functionMod);
     Cache = new PatcherCache(strongMods.GetType("StrongMods.BreadthFirstXmlPatcher")!, xmlFileType, xmlDocField);
+    StrongModsAssembly = strongMods;
   }
 
   /// <summary>The game tree this host loaded — which version, which unit, where.</summary>
   public GameTree Tree { get; }
+
+  /// <summary>The StrongMods assembly loaded into this host's isolated game-assembly universe.</summary>
+  public Assembly StrongModsAssembly { get; }
 
   /// <summary>
   ///   The tree's own <c>Data\Config</c> — the vanilla XML and Localization.csv that mod patches are applied
