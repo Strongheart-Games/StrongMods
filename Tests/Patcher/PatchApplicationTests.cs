@@ -31,9 +31,6 @@ public class PatchApplicationTests {
     ["ProjectZFixes/items"] = "targets Project Z's content, absent from vanilla",
     ["ProjectZFixes/item_modifiers"] = "targets Project Z's content, absent from vanilla",
     ["ProjectZFixes/recipes"] = "targets Project Z's content, absent from vanilla",
-
-    // A documented foreach skip, working exactly as foreach.md says it should.
-    ["AutoCollectLoot/items"] = "vanilla twitch_crate_template has no Mesh property, so that iteration skips",
   };
 
   /// <summary>
