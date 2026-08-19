@@ -28,19 +28,21 @@ The word *candidate* means precisely "the set a human may submit", not all uncom
 The checked-in C# file-based tool accepts:
 
 ```text
-dotnet run build/tools/verify-submission-candidate.cs -- \
+dotnet run --file build/tools/verify-submission-candidate.cs --no-build -- \
   --base HEAD --report AutoCollectLoot/.ai/reports/example.html \
   --file AutoCollectLoot/Config/items.xml \
   --file Tests/AutoCollectLoot/InheritedLootContainerTests.cs \
   --file Tests/Patcher/PatchApplicationTests.cs \
   --file AutoCollectLoot/.ai/reports/example.html -- \
-  dotnet test StrongMods.sln -c Debug --no-restore
+  dotnet build StrongMods.sln -c Debug --then \
+  dotnet test Tests/Tests.csproj -c Debug --no-restore --no-build
 ```
 
 It will resolve the base revision, reject duplicate/out-of-repo paths, create a unique `.scratch/` worktree from that
 revision, overlay each named file from the current tree (or remove it if it is selected for deletion), run the command
-inside that worktree, and always remove the worktree. It exits nonzero on invalid input, setup failure, or validation
-failure. The report is updated only after a successful validation, inside explicit HTML markers owned by the tool.
+sequence inside that worktree, and always remove the worktree. It exits nonzero on invalid input, setup failure, or
+validation failure. The report is updated only after a successful validation, inside explicit HTML markers owned by the
+tool.
 
 The first real proof will run two candidates from the #144 base: the three-file historical set must fail with the stale
 exception; adding `Tests/Patcher/PatchApplicationTests.cs` must pass. The tool's `--selftest` will cover parsing and
@@ -73,7 +75,9 @@ implementation under the repository workflow. It will stay below the 250-line ha
 
 ## Verification
 
-1. `dotnet run build/tools/verify-submission-candidate.cs -- --selftest`.
+1. `dotnet clean build/tools/verify-submission-candidate.cs`, then
+   `dotnet build build/tools/verify-submission-candidate.cs`, then
+   `dotnet run --file build/tools/verify-submission-candidate.cs --no-build -- --selftest`.
 2. Historical three-file #144 candidate: verifier exits nonzero and surfaces the stale expected-log failure.
 3. Complete four-file #144 candidate: verifier exits zero.
 4. `dotnet test StrongMods.sln -c Debug --no-restore` and `git diff --check`.

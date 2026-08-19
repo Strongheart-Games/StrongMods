@@ -22,8 +22,7 @@ public class ProjectConventionTests {
     // A ProjectReference (even ReferenceOutputAssembly=false, which orders without referencing) is the fix.
     var repoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     var configuration = AssemblyMetadata.Get("Configuration");
-    List<string> projects = Directory.EnumerateFiles(repoRoot, "*.csproj", SearchOption.AllDirectories)
-      .Where(IsSourceProject).Select(Path.GetFullPath).ToList();
+    List<string> projects = SourceProjects(repoRoot).ToList();
     // Longest first: Tests\FunctionMod must win over Tests for a path inside it.
     List<string> projectDirs = projects.Select(p => Path.GetDirectoryName(p)!)
       .OrderByDescending(d => d.Length).ToList();
@@ -323,7 +322,7 @@ public class ProjectConventionTests {
 
   private static IEnumerable<string> SourceProjects(string repoRoot) =>
     Directory.EnumerateFiles(repoRoot, "*.csproj", SearchOption.AllDirectories)
-      .Where(IsSourceProject).Select(Path.GetFullPath);
+      .Where(path => IsSourceProject(Path.GetRelativePath(repoRoot, path))).Select(Path.GetFullPath);
 
   /// <summary>The file name if this element imports something out of build\, else null.</summary>
   private static string SharedBuildFile(XElement element) {
@@ -366,8 +365,8 @@ public class ProjectConventionTests {
   ///   ModInventory already skips <c>.ai\</c> for the same reason. Added when #82's Tier-2 client and its
   ///   isolation mod landed under StrongDev\.ai\.
   /// </summary>
-  private static bool IsSourceProject(string path) {
-    var parts = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+  private static bool IsSourceProject(string relativePath) {
+    var parts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     return !parts.Any(p => p is "bin" or "obj" or ".scratch" or "vendor" or ".git" or ".ai");
   }
 }

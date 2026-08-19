@@ -372,6 +372,8 @@ cycle must produce self-contained edits.
   stop. The human reviews and commits; that hand-off needs no question from you. If the phase also leaves a genuinely
   gated action pending (something on the ask list, e.g. gh issue close), raise it separately and explicitly — never
   blended into a list alongside things you cannot do.
+* **Submission candidate:** before handing off an uncommitted candidate or a report naming files for submission, use
+  `verify-submission-candidate`; its generated verified section is the authoritative file list and validation evidence.
 * **Each phase needs its own explicit go.** Approval of a plan authorizes nothing but the plan itself; answers to side
   questions, decision confirmations, or filed follow-up issues are not a "go" for the next phase — even a phase that
   changes no tracked files (e.g. a baseline capture). If the human's message doesn't clearly say to proceed, ask.
