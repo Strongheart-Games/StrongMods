@@ -81,6 +81,18 @@
   <Import Project="$(MSBuildThisFileDirectory)Deploy.targets" />
   <Import Project="$(MSBuildThisFileDirectory)XmlLint.targets" />
 
+  <!-- CopyFilesToOutputDirectory couples the required assembly copy to an unconditional high-importance message.
+       A solution Deploy skips that copy/message pair, so reproduce only the copy here. -->
+  <Target Name="_CopyBuildProductSilentlyForSolutionDeploy" BeforeTargets="CopyFilesToOutputDirectory"
+          Condition="'$(SolutionDeployLogging)' == 'true' AND '$(CopyBuildOutputToOutputDirectory)' != 'false'">
+    <Copy SourceFiles="@(IntermediateAssembly)" DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)">
+      <Output TaskParameter="DestinationFiles" ItemName="MainAssembly" />
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
   <!-- Turn a missing/moved game install, or a forgotten Mod.props import, into one readable error instead of
        ~200 CS0246s or a silently wrong output folder. -->
   <Target Name="VerifyGameInstall" BeforeTargets="ResolveAssemblyReferences">

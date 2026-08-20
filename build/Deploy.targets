@@ -149,17 +149,29 @@
     </PropertyGroup>
     <ItemGroup>
       <_StagedFile Include="$(_StagingDir)**\*" />
+      <_StagedFile>
+        <DestPath>$(_DeployDir)%(RecursiveDir)%(Filename)%(Extension)</DestPath>
+      </_StagedFile>
       <!-- Stale = deployed but no longer staged. Deleted below: that is the mirror. -->
       <_StaleDeployedFile Include="$(_DeployDir)**\*"
-                          Exclude="@(_StagedFile->'$(_DeployDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+                          Exclude="@(_StagedFile->'%(DestPath)')" />
+    </ItemGroup>
+    <DeployFileChangeDetector SourceFiles="@(_StagedFile)" DestinationFiles="@(_StagedFile->'%(DestPath)')">
+      <Output TaskParameter="ChangedSourceFiles" ItemName="_ChangedStagedFile" />
+    </DeployFileChangeDetector>
+    <ItemGroup>
+      <_DeployAction Include="@(_ChangedStagedFile);@(_StaleDeployedFile)" />
     </ItemGroup>
     <Copy SourceFiles="@(_StagedFile)"
-          DestinationFiles="@(_StagedFile->'$(_DeployDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(_StagedFile->'%(DestPath)')"
           SkipUnchangedFiles="true" />
     <Delete Files="@(_StaleDeployedFile)" />
-    <Message Importance="high" Text="  $(MSBuildProjectName) deployed (mirror) -> $(_DeployDir)" />
+    <Message Importance="high" Text="  $(MSBuildProjectName) deployed (mirror) -> $(_DeployDir)"
+             Condition="'@(_DeployAction)' != ''" />
     <Message Importance="high" Text="    removed stale: @(_StaleDeployedFile->'%(Filename)%(Extension)', ', ')"
              Condition="'@(_StaleDeployedFile)' != ''" />
   </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)DeployLogging.targets" />
 
 </Project>

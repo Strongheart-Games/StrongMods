@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Project Deploy targets populate @(_DeployAction) only when they copy or delete. A direct project invocation
+    reports its own no-op; after.StrongMods.sln.targets aggregates solution invocations.
+  -->
+  <UsingTask TaskName="DeployFileChangeDetector" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)DeployFileChangeDetector.cs" />
+    </Task>
+  </UsingTask>
+
+  <Target Name="_ReportDeployResult" AfterTargets="Deploy" Condition="'$(IsDeployable)' == 'true'">
+    <WriteLinesToFile File="$(SolutionDeployActionMarkerDir)$(MSBuildProjectName).action"
+                      Lines="$(MSBuildProjectFullPath)" Overwrite="true"
+                      Condition="'$(SolutionDeployLogging)' == 'true' AND '@(_DeployAction)' != ''" />
+    <Message Importance="high" Text="  $(MSBuildProjectName) deployment is already up to date."
+             Condition="'$(BuildingSolutionFile)' != 'true' AND '@(_DeployAction)' == ''" />
+  </Target>
+
+</Project>

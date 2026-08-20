@@ -173,6 +173,17 @@
       <_ProtectedStaged>
         <IsNewerThanDest Condition="!Exists('%(DestPath)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('%(DestPath)').Ticks)">true</IsNewerThanDest>
       </_ProtectedStaged>
+
+      <_ChangedProtectedStaged Include="@(_ProtectedStaged)"
+                               Condition="'%(_ProtectedStaged.IsNewerThanDest)' == 'true'" />
+    </ItemGroup>
+
+    <DeployFileChangeDetector SourceFiles="@(_MirrorStaged)" DestinationFiles="@(_MirrorStaged->'%(DestPath)')"
+                              Condition="'@(_MirrorStaged)' != ''">
+      <Output TaskParameter="ChangedSourceFiles" ItemName="_ChangedMirrorStaged" />
+    </DeployFileChangeDetector>
+    <ItemGroup>
+      <_DeployAction Include="@(_ChangedMirrorStaged);@(_MirrorStale);@(_ChangedProtectedStaged)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_MirrorStaged)" DestinationFiles="@(_MirrorStaged->'%(DestPath)')"
@@ -181,11 +192,13 @@
     <Copy SourceFiles="@(_ProtectedStaged)" DestinationFiles="@(_ProtectedStaged->'%(DestPath)')"
           Condition="'%(_ProtectedStaged.IsNewerThanDest)' == 'true'" />
 
-    <Message Importance="high" Text="  $(MSBuildProjectName) overlaid -> $(_DeployDir)" />
+    <Message Importance="high" Text="  $(MSBuildProjectName) overlaid -> $(_DeployDir)"
+             Condition="'@(_DeployAction)' != ''" />
     <Message Importance="high" Text="    removed stale (mirrored scope): @(_MirrorStale->'%(Filename)%(Extension)', ', ')"
              Condition="'@(_MirrorStale)' != ''" />
   </Target>
 
+  <Import Project="$(MSBuildThisFileDirectory)DeployLogging.targets" />
   <Import Project="$(MSBuildThisFileDirectory)XmlLint.targets" />
 
 </Project>

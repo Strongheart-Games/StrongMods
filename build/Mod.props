@@ -44,6 +44,10 @@
          compile this repo. It also means what compiles is what the game's runtime actually has. Decision evidence:
          .ai/f1-sdk-migration.md §3. -->
     <FrameworkPathOverride>$(SdtdManagedDir)</FrameworkPathOverride>
+
+    <!-- A solution Deploy replaces the SDK's unconditional "Project -> DLL" message with action-aware Deploy
+         output. Mod.targets still performs the skipped product copy, without emitting that message. -->
+    <SkipCopyBuildProduct Condition="'$(SolutionDeployLogging)' == 'true'">true</SkipCopyBuildProduct>
   </PropertyGroup>
 
   <!-- DebugType is pinned to the pre-SDK values (the SDK would default to portable); the game's Mono runtime and

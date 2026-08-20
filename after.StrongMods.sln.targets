@@ -1,0 +1,31 @@
+<Project>
+
+  <!--
+    MSBuild auto-imports after.<solution>.sln.targets into the generated solution project. This hook gives a
+    solution Deploy one shared result: projects leave action markers, and the solution reports the all-no-op case.
+    The properties added to ProjectReference apply only to this Deploy target invocation.
+  -->
+  <Target Name="_PrepareSolutionDeployLogging" BeforeTargets="Deploy">
+    <PropertyGroup>
+      <_SolutionDeployActionMarkerDir>$(SolutionDir).scratch\deploy-logging\$(Configuration)\</_SolutionDeployActionMarkerDir>
+      <_SolutionDeployProperties>SolutionDeployLogging=true;SolutionDeployActionMarkerDir=$(_SolutionDeployActionMarkerDir)</_SolutionDeployProperties>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_SolutionDeployActionMarkerDir)" />
+    <MakeDir Directories="$(_SolutionDeployActionMarkerDir)" />
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)">
+        <AdditionalProperties>%(AdditionalProperties);$(_SolutionDeployProperties)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ReportSolutionDeployResult" AfterTargets="Deploy">
+    <ItemGroup>
+      <_SolutionDeployActionMarker Include="$(_SolutionDeployActionMarkerDir)*.action" />
+    </ItemGroup>
+    <Message Importance="high" Text="  No projects needed deployment."
+             Condition="'@(_SolutionDeployActionMarker)' == ''" />
+    <RemoveDir Directories="$(_SolutionDeployActionMarkerDir)" />
+  </Target>
+
+</Project>

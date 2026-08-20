@@ -98,6 +98,59 @@ public class BuildPathResolutionTests {
   }
 
   [Fact]
+  public void Project_deploy_logs_an_action_then_reports_the_no_op() {
+    using var space = new Workspace();
+    var project = space.ModletProject();
+    var arguments = new[] { "msbuild", project, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      "-p:ModsDir=deployed", "-nodeReuse:false" };
+
+    (var exitCode, var log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains($"{ProbeName} deployed (mirror)"),
+      $"The first deploy must announce its copy action — got exit {exitCode}:\n{log}");
+
+    (exitCode, log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains($"{ProbeName} deployment is already up to date."),
+      $"A direct no-op deploy must say so — got exit {exitCode}:\n{log}");
+    Assert.DoesNotContain($"{ProbeName} deployed (mirror)", log);
+  }
+
+  [Fact]
+  public void Overlay_deploy_logs_an_action_then_reports_the_no_op() {
+    using var space = new Workspace();
+    var project = space.OverlayProject();
+    var arguments = new[] { "msbuild", project, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      "-p:ModsDir=overlaid", "-nodeReuse:false" };
+
+    (var exitCode, var log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains($"{ProbeName} overlaid"),
+      $"The first overlay deploy must announce its copy action — got exit {exitCode}:\n{log}");
+
+    (exitCode, log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains($"{ProbeName} deployment is already up to date."),
+      $"A direct no-op overlay must say so — got exit {exitCode}:\n{log}");
+    Assert.DoesNotContain($"{ProbeName} overlaid", log);
+  }
+
+  [Fact]
+  public void Solution_deploy_reports_actions_then_one_no_op_summary() {
+    using var space = new Workspace();
+    var solution = space.Solution(space.ModletProject());
+    var arguments = new[] { "msbuild", solution, "-nologo", "-t:Deploy", "-p:Configuration=Debug",
+      "-p:ModsDir=deployed", "-nodeReuse:false" };
+
+    (var exitCode, var log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains($"{ProbeName} deployed (mirror)"),
+      $"The first solution deploy must announce its project action — got exit {exitCode}:\n{log}");
+    Assert.DoesNotContain("No projects needed deployment.", log);
+
+    (exitCode, log) = space.Run(arguments);
+    Assert.True(exitCode == 0 && log.Contains("No projects needed deployment."),
+      $"An all-no-op solution deploy must report one summary — got exit {exitCode}:\n{log}");
+    Assert.DoesNotContain($"{ProbeName} deployment is already up to date.", log);
+    Assert.DoesNotContain($"{ProbeName} deployed (mirror)", log);
+  }
+
+  [Fact]
   public void The_game_tree_follows_the_declaration_and_the_install_side_does_not() {
     // The two-root split (#23): SdtdDir resolves from the DECLARED version under the repo's packages layout,
     // never from the machine's install; ModsDir and SdtdServerDir derive from the INSTALL, never from the
@@ -303,6 +356,42 @@ public class BuildPathResolutionTests {
           <Import Project="{BuildDir}\Modlet.targets" />
         </Project>
         """);
+    }
+
+    internal string OverlayProject() {
+      File.WriteAllText(Path.Combine(ProjectDir, "ModInfo.xml"),
+        $"<xml><Name value=\"{ProbeName}\" /><Version value=\"1.0.0\" /></xml>");
+      return WriteProject($"""
+        <Project DefaultTargets="Build">
+          <Import Project="{BuildDir}\Overlay.props" />
+          <PropertyGroup><DeployRoot>$(ModsDir)\{ProbeName}</DeployRoot></PropertyGroup>
+          <ItemGroup><MirrorOnDeploy Include="ModInfo.xml" /></ItemGroup>
+          <Import Project="{BuildDir}\Overlay.targets" />
+        </Project>
+        """);
+    }
+
+    internal string Solution(string project) {
+      const string projectGuid = "{4BBE36DA-F16D-43A0-992C-F6B690454A15}";
+      File.Copy(Path.Combine(RepoRoot, "after.StrongMods.sln.targets"),
+        Path.Combine(InvocationDir, "after.StrongMods.sln.targets"));
+      var projectPath = Path.GetRelativePath(InvocationDir, project).Replace('/', '\\');
+      var path = Path.Combine(InvocationDir, "StrongMods.sln");
+      File.WriteAllText(path, $$"""
+        Microsoft Visual Studio Solution File, Format Version 12.00
+        Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "{{ProbeName}}", "{{projectPath}}", "{{projectGuid}}"
+        EndProject
+        Global
+          GlobalSection(SolutionConfigurationPlatforms) = preSolution
+            Debug|Any CPU = Debug|Any CPU
+          EndGlobalSection
+          GlobalSection(ProjectConfigurationPlatforms) = postSolution
+            {{projectGuid}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+            {{projectGuid}}.Debug|Any CPU.Build.0 = Debug|Any CPU
+          EndGlobalSection
+        EndGlobal
+        """);
+      return path;
     }
 
     private string WriteProject(string content) {
