@@ -11,8 +11,8 @@ Modding tools from Strongheart.
   `Docs/foreach.md`](Docs/foreach.md) for the complete spec.
 * Because of the breadth-first ordering, a `<foreach>` can see vanilla XML and any mod *earlier* in load order, but
   never a mod that loads *after* it.
-* Adds the `<ensure>` XML-patch command: makes a child element exist, with the attributes you give it, on every node
-  an XPath matches — adding it where it is absent and merging into it where it is present. It replaces the paired
+* Adds the `<ensure>` XML-patch command: makes a child element exist, with the attributes you give it, on every node an
+  XPath matches — adding it where it is absent and merging into it where it is present. It replaces the paired
   `setattribute`+`append` idiom, in which one command always misses and logs `did not apply` even though the patch did
   exactly what its author intended. See [`Docs/ensure.md`](Docs/ensure.md) for the complete spec.
 * On case-insensitive filesystems (Windows) it enforces the case-sensitivity rules a Linux server would apply, logging
@@ -49,17 +49,10 @@ patch site — the last one was converted to categorized attribute patches (#44)
   `Mods/000000-StrongMods`
 * Make sure the `ModInfo.xml` appears one folder below `Mods/`, i.e. `Mods/000000-StrongMods/ModInfo.xml`, otherwise the
   mod won't be loaded
-* **It must load before every mod that uses it**, because it replaces the XML patcher; the `000000-` prefix is what
-  guarantees that
-* Dedicated servers:
-  * Server-side only
-  * EAC-friendly
-* All other deployments:
-  * Deploy to host (in single-player this is your game)
-  * EAC must be disabled
-* There are no configuration options for now; each feature (breadth-first patcher, `<foreach>`, `<ensure>`,
-  case-sensitivity checks, dependency validation) is toggled in code and all are on by default, except the
-  case-sensitivity checks which only activate on a case-insensitive filesystem
+* Server-side only
+* EAC-friendly
+* **StrongMods must load before every mod that uses it**, because it replaces the XML patcher; the `000000-` prefix is
+  what guarantees that
 
 ## Changelog
 

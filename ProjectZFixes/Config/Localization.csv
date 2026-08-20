@@ -28,3 +28,56 @@ perkBitchRank9Desc,progression,Skills,Kill the Banshee 90 time
 perkBitchRank9LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]27%[-], Damage reduction from the Banshee by [DECEA3]20%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]24%[-]"
 perkBitchRank10Desc,progression,Skills,Kill the Banshee 120 time
 perkBitchRank10LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to the Banshee increased by [DECEA3]30%[-], Damage reduction from the Banshee by [DECEA3]25%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]30%[-]\n\n[FFB800]BONUS ABILITY:[-]\nYou are not afraid of the Banshee. You are not affected by the armor reduction and active radiation of the miniboss."
+CallBitch,items,Resources,Hunting for [8692FF]Banshee[-]
+CallBitchDesc,items,Request,Activates the quest to summon [8692FF]Banshee[-].\n\n[DECEA3]Unlocked at Zombie Expert level 3.[-]
+questCallBitchName,Quest,Quest Info,Hunting for [8692FF]Banshee[-]
+questCallBitchOffer,Quest,Quest Info,You must place a bait to summon [8692FF]Banshee[-]\n\nBe extremely careful!
+BuffCarrierAOE,buffs,Buff,Patient Zero
+BuffCarrierAOETooltip,buffs,buff,Patient Zero is on the hunt
+BuffCarrierImmortalPlayer,buffs,Buff,Patient Zero protected
+BuffCarrierImmortalPlayerName,buffs,buff,Patient Zero protected
+BuffCarrierImmortalPlayerTooltip,buffs,buff,Patient Zero protected
+BuffCarrierImmortalPlayerIncDesc,buffs,Buff,Patient Zero is reinforced by a defender. He neutralizes all damage.\nIt's better not to hit him for now. Kill the defender so you can deal damage.
+BuffCarrierActivePlayer,buffs,Buff,Patient Zero activated
+BuffCarrierActivePlayerName,buffs,buff,Patient Zero activated
+BuffCarrierActivePlayerTooltip,buffs,buff,Patient Zero activated
+BuffCarrierActivePlayerIncDesc,buffs,Buff,Patient Zero activated. Its movement speed and damage are significantly increased.\nKill the activator to deactivate it.
+buffEmissionPlayerIncDesc,buffs,Buff,"Patient Zero emits critical radiation.\nWhile you are under the effect of the emission, you accumulate radiation every second. Your mobility is reduced by [DECEA3]30%[-]. Weapon spread is significantly increased."
+bossCarrier,entityclasses,Entity,[FF6666]Z-BOSS[-] PATIENT ZERO
+zombieCarrierDef,entityclasses,Entity,[94CBFF]DEFENDER[-] Patient Zero
+zombieCarrierActive,entityclasses,Entity,[94CBFF]ACTIVATOR[-] Patient Zero
+BossLootContainerCarrier,entityclasses,Entity,Loot [FF6666]PATIENT ZERO[-]
+BulldogLegURANUSDesc,items,Gun,"Unique Bulldog model.\nAllows you to fire only .44 caliber [5AFF75](Depleted Uranium)[-] ammunition. Significantly improved primary stats. When hitting an enemy, it causes them to bleed and slows them down for [DECEA3]6[-] seconds.\nThe best way to negotiate with any horde, on your terms.\n\n[F0B18A]URANIUM[-] - The larger the target, the greater the consequences. Deals [DECEA3]5%[-] more damage to elite enemies and a chance to knock them down on hit. Deals [DECEA3]10%[-] more damage to minibosses, [DECEA3]20%[-] more damage to bosses, and [DECEA3]30%[-] more damage to Patient Zero.\n\n[DECEA3]Repair requires repair kit (legendary)[-]"
+EraserLegURANUSDesc,items,Gun,"Unique Eraser model.\nAllows firing only with shotgun [5AFF75](Depleted Uranium)[-] ammunition. An ideal weapon for large groups of enemies at short and medium range. Its greatly improved stats let you do more than kill — they let you erase.\n\n[F0B18A]URANIUM[-] - The larger the target, the greater the consequences. Deals [DECEA3]5%[-] more damage to elite enemies. Deals [DECEA3]10%[-] more damage to minibosses, [DECEA3]20%[-] more damage to bosses, and [DECEA3]30%[-] more damage to Patient Zero.\n\n[DECEA3]Repair requires repair kit (legendary)[-]"
+GausLegURANUSDesc,items,Gun,"Unique Gaus model.\nAllows you to fire 7.62 mm [5AFF75](Depleted Uraniu)[-] ammunition. The most powerful weapon in terms of damage per shot. The enemy literally won't be able to resist this. Eliminating targets with a large HP reserve won't be a problem.\n\n[F0B18A]URANIUM[-] - The larger the target, the greater the consequences. Deals [DECEA3]5%[-] more damage to elite enemies. Deals [DECEA3]10%[-] more damage to minibosses, [DECEA3]20%[-] more damage to bosses, and [DECEA3]30%[-] more damage to Patient Zero.\n\n[DECEA3]Repair requires repair kit (legendary)[-]"
+ZingerLegURANUSDesc,items,Gun,"The unique Zinger model.\nAllows firing only with 9 mm [5AFF75](Depleted Uranium)[-] ammunition. Because of its rate of fire, many stalkers named the model after a fast and reliable sewing machine. And for good reason.\nVery fast and light - an ideal gift for zombies if you decide to visit them.\n\n[F0B18A]URANIUM[-] - The larger the target, the greater the consequences. Deals [DECEA3]5%[-] more damage to elite enemies and a chance to knock them down on hit. Deals [DECEA3]10%[-] more damage to minibosses, [DECEA3]20%[-] more damage to bosses, and [DECEA3]30%[-] more damage to Patient Zero.\n\n[DECEA3]Repair requires repair kit (legendary)[-]"
+perkBossCarrierName,progression,perk,Patient Zero
+Carrier_LevelUP,UI,Tooltip,Increased passive skill: Patient Zero
+perkCarrierRank1Desc,progression,Skills,Kill Patient Zero 1 time
+perkCarrierRank1LongDesc,progression,Skills,[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]3%[-]
+perkCarrierRank2Desc,progression,Skills,Kill Patient Zero 2 times
+perkCarrierRank2LongDesc,progression,Skills,[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]6%[-]
+perkCarrierRank3Desc,progression,Skills,Kill Patient Zero 4 times
+perkCarrierRank3LongDesc,progression,Skills,[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]9%[-]
+perkCarrierRank4Desc,progression,Skills,Kill Patient Zero 6 times
+perkCarrierRank4LongDesc,progression,Skills,[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]12%[-]
+perkCarrierRank5Desc,progression,Skills,Kill Patient Zero 10 times
+perkCarrierRank5LongDesc,progression,Skills,[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]15%[-]
+perkCarrierRank6Desc,progression,Skills,Kill Patient Zero 14 times
+perkCarrierRank6LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]18%[-], Damage taken from Patient Zero decreased by [DECEA3]5%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]6%[-]"
+perkCarrierRank7Desc,progression,Skills,Kill Patient Zero 18 times
+perkCarrierRank7LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]21%[-], Damage taken from Patient Zero decreased by [DECEA3]10%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]12%[-]"
+perkCarrierRank8Desc,progression,Skills,Kill Patient Zero 24 times
+perkCarrierRank8LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]24%[-], Damage taken from Patient Zero decreased by [DECEA3]15%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]18%[-]"
+perkCarrierRank9Desc,progression,Skills,Kill Patient Zero 32 times
+perkCarrierRank9LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]27%[-], Damage taken from Patient Zero decreased by [DECEA3]20%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]24%[-]"
+perkCarrierRank10Desc,progression,Skills,Kill Patient Zero 40 times
+perkCarrierRank10LongDesc,progression,Skills,"[DECEA3]BONUSES:[-]\nDamage to Patient Zero increased by [DECEA3]30%[-], Damage taken from Patient Zero decreased by [DECEA3]25%[-], Amount of «Mutation Samples» obtained increased by [DECEA3]30%[-]\n\n[DECEA3]BONUS ABILITY[-] [FFB800]PATIENT ZERO'S FEAR[-]\nYou are not afraid of Patient Zero. You are not affected by the miniboss's active radiation."
+perkZombieExpertRank7LongDesc,progression,Skills,"You can meet a lot of people in the wasteland, even huge experimental creatures. But now you know how to fight them more effectively. Damage to feral zombies increased by [DECEA3]50%[-], to irradiated by [DECEA3]35%[-], to charged by [DECEA3]25%[-], to hellish by [DECEA3]20%[-], to elite by [DECEA3]15%[-], to minibosses by [DECEA3]10%[-], to bosses by [DECEA3]5%[-]\n\n[DECEA3]Unlocks the Patient Zero hunt request at the Radio Station.[-]"
+CallCarrier,items,Resources,Hunting for [C65F5F]Patient Zero[-]
+CallCarrierDesc,items,Request,Activates the quest to summon [C65F5F]Patient Zero[-].\n\n[DECEA3]Unlocked at Zombie Expert level 7.[-]
+questCallCarrierName,Quest,Quest Info,Hunting for [C65F5F]Patient Zero[-]
+questCallCarrierOffer,Quest,Quest Info,You must place a bait to summon [C65F5F]Patient Zero[-]\n\nBe extremely careful!
+ObjectiveCarrier_key,Quest,Quest Info,Patient Zero
+RareSamples10Offer,Quest,Quest Info,"[FFB800]Chapter 10. Big threat[-]\n\n«You are simply a hero. How you managed to survive after all this, for me personally, remains a mystery. In any case, your merits are undeniable and very soon we will be able to secure the Quarantine Zone as much as possible. Of course, clearing the entire zone requires a lot of time and effort. But now there is one last task for you. We are hearing rumors about the appearance of a huge creature—Patient Zero. Kill it and we will be able to understand a lot about what is happening with the virus now.» [DECEA3]- Adel[-]"
+RareSamples10Desc,Quest,Quest Info,"[FFB800]Chapter 10. Big threat[-]\n\n«You are simply a hero. How you managed to survive after all this, for me personally, remains a mystery. In any case, your merits are undeniable and very soon we will be able to secure the Quarantine Zone as much as possible. Of course, clearing the entire zone requires a lot of time and effort. But now there is one last task for you. We are hearing rumors about the appearance of a huge creature—Patient Zero. Kill it and we will be able to understand a lot about what is happening with the virus now.» [DECEA3]- Adel\n\nWarning! Canceling this quest will break the entire quest chain. Restarting is only possible with the help of an administrator.[-]"

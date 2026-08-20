@@ -2,14 +2,14 @@
 
 Send loot bags directly to players rather than dropping them on the ground.
 
-* When a tagged entity dies, its loot bag is converted into a single `AutoLoot_*` inventory item and handed straight
-  to a player instead of spawning a bag in the world. Opening the item rolls the same loot list the original bag would
-  have used.
+* When a tagged entity dies, its loot bag is converted into a single `AutoLoot_*` inventory item and handed straight to
+  a player instead of spawning a bag in the world. Opening the item rolls the same loot list the original bag would have
+  used.
 * An auto-loot item is generated for every loot-container entity in the game, carrying over the bag's mesh, icon and
   tint where possible, so modded loot bags are covered as well as vanilla ones.
 * The recipient is chosen by lottery: the player who landed the killing blow wins outright at a configurable chance,
-  otherwise the winner is drawn from the killer's party members within the game's shared-kill range (or, if there was
-  no player killer, from all players within that range).
+  otherwise the winner is drawn from the killer's party members within the game's shared-kill range (or, if there was no
+  player killer, from all players within that range).
 * By default this only applies during blood moons. Horde-night zombies are always eligible; other entities get a
   5-minute marker buff that expires afterwards.
 * If the winner's inventory is full, the item is spawned as a pickup assigned to them with a 20-minute lifetime rather
@@ -33,12 +33,8 @@ engine that `StrongMods` provides, and the mod will not work without it.
   can only see mods that loaded before it
 * This mod adds items and buffs, so it must be installed on both the server and every client — it is not server-side
   only
-* Dedicated servers:
-  * Install on the server and on every client
-  * EAC must be disabled
-* All other deployments:
-  * Deploy to host (in single-player this is your game)
-  * EAC must be disabled
+* Server-side only
+* EAC friendly
 
 ## Configuration
 
@@ -63,8 +59,8 @@ Runtime changes made with `autoloot` are not persisted and are overwritten the n
 
 ### 0.2.3
 
-* Return to the single-pass direct loot-container generator. Project Z compatibility is supplied before this mod runs
-  by ProjectZFixes, which makes its boss loot containers' inherited class explicit.
+* Return to the single-pass direct loot-container generator. Project Z compatibility is supplied before this mod runs by
+  ProjectZFixes, which makes its boss loot containers' inherited class explicit.
 
 ### 0.2.2
 
