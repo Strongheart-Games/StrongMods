@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local review browser automation — #149</title>
+  <style>
+    :root {
+      --ground: #eff1f4; --surface: #fff; --surface-2: #e6e9ed; --ink: #12171c; --ink-2: #38424d;
+      --ink-3: #626d79; --hair: #cfd5dc; --hair-strong: #a9b3bd; --accent: #9a5b00;
+      --accent-tint: #f7ebd8; --risk: #8e2a22; --risk-tint: #f3e1de;
+      --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+      --mono: ui-monospace, "Cascadia Mono", Consolas, monospace; --measure: 86ch;
+      --pad: clamp(20px, 4vw, 56px);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.6 var(--sans); }
+    .page { max-width: 1120px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+    .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong); padding: 24px 0 28px; }
+    .kicker, .eyebrow, .chip, thead th { font: 12px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .kicker { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--accent); }
+    h1 { max-width: 20ch; margin: 16px 0; font-size: clamp(34px, 6vw, 58px); line-height: 1.02; letter-spacing: -.035em; }
+    h2 { max-width: var(--measure); margin: -8px 0 0; font-size: clamp(24px, 3.4vw, 33px); line-height: 1.12; }
+    p { max-width: var(--measure); margin: 0; }
+    .standfirst { color: var(--ink-2); font-size: clamp(17px, 2.1vw, 20px); line-height: 1.5; }
+    .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .chip { padding: 5px 10px; border: 1px solid var(--hair-strong); background: var(--surface); color: var(--ink-2); }
+    .chip.open { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); }
+    section { display: flex; flex-direction: column; gap: 18px; padding: 44px 0 8px; border-bottom: 1px solid var(--hair); }
+    section:last-of-type { border-bottom: 0; }
+    .eyebrow, .muted { color: var(--ink-3); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    code { padding: 1px 5px; background: var(--surface-2); font: .88em var(--mono); white-space: nowrap; }
+    .scroller { overflow-x: auto; border: 1px solid var(--hair); background: var(--surface); }
+    table { min-width: 680px; width: 100%; border-collapse: collapse; font-size: 15.5px; }
+    th, td { padding: 11px 16px; border-bottom: 1px solid var(--hair); text-align: left; vertical-align: top; }
+    thead th { background: var(--surface-2); color: var(--ink-3); font-size: 11.5px; font-weight: 500; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .finding { padding: 22px 24px; border: 1px solid var(--accent); background: var(--accent-tint); }
+    .risk { border-color: var(--risk); background: var(--risk-tint); }
+    ul, ol { max-width: var(--measure); margin: 0; padding-left: 1.1em; }
+    li + li { margin-top: 8px; }
+    li::marker { color: var(--accent); }
+    @media (prefers-color-scheme: dark) {
+      :root { --ground: #0e1216; --surface: #161b21; --surface-2: #1e252c; --ink: #e6eaee;
+        --ink-2: #c0c8d0; --ink-3: #8a95a1; --hair: #262e37; --hair-strong: #3a4550; --accent: #f0a73c;
+        --accent-tint: #2a2015; --risk: #e8837a; --risk-tint: #2a1917; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="kicker"><span>Tooling diagnosis</span><span>Issue #149</span><span>Updated 20 Aug 2026</span></div>
+      <h1>Local review browser automation</h1>
+      <p class="standfirst">The Browser plugin now attaches and selects the in-app browser. Windows Browser Use then
+        rejects the repository-local <code>file://</code> URL before navigation, at a host policy boundary this
+        repository cannot change safely.</p>
+      <div class="statusbar"><span class="chip open">parked · external blocker</span><span class="chip">repository-wide</span>
+        <span class="chip">GitHub issue owns status</span></div>
+      <p class="muted">The <a href="https://github.com/Strongheart-Games/StrongMods/issues/149">GitHub issue</a>, not
+        this document, owns work status and follow-on tracking.</p>
+    </header>
+
+    <section id="finding">
+      <p class="eyebrow">Measured result</p>
+      <h2>The trust failure cleared; URL policy is now red</h2>
+      <p>A fresh task reaches Browser discovery and selects the Codex in-app browser. The smallest remaining repro is
+        one navigation to this review document's <code>file://</code> URL; Browser rejects it under URL policy before
+        reading the file.</p>
+      <div class="scroller"><table>
+        <thead><tr><th>Check</th><th>Observed</th><th>Implication</th></tr></thead>
+        <tbody>
+          <tr><td>Browser bootstrap</td><td>The Browser service initializes successfully.</td>
+            <td>The earlier trusted-component failure is not the current blocker.</td></tr>
+          <tr><td>Browser selection</td><td>The runtime selects the Codex in-app browser and returns its supported API.</td>
+            <td>Attachment now satisfies the first half of #149's first acceptance criterion.</td></tr>
+          <tr><td>Direct-file navigation</td><td>The first <code>file://</code> navigation is rejected by Browser URL policy
+            before the page loads.</td><td>Rendered inspection and screenshots cannot start.</td></tr>
+          <tr><td>Upstream comparison</td><td><a href="https://github.com/openai/codex/issues/24847">openai/codex#24847</a>
+            remains open with the same Windows behavior.</td><td>The remaining boundary is a known host defect.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="decision">
+      <p class="eyebrow">Scope boundary</p>
+      <h2>Do not bypass URL policy or broaden filesystem trust</h2>
+      <p>A repository change cannot relax Browser's URL policy. Running Codex with more privilege, broadening trusted
+        paths, or using an alternate browser-control path would add risk without changing the measured policy decision.
+        The earlier client-digest repair recommendation is superseded because bootstrap now succeeds.</p>
+      <div class="finding"><strong>Recommendation.</strong> Park #149 as blocked on upstream information. Preserve its
+        direct-file acceptance boundary instead of silently replacing it with a local server or another browser.</div>
+    </section>
+
+    <section id="evidence">
+      <p class="eyebrow">Safe reporting</p>
+      <h2>Sanitized evidence contract</h2>
+      <p>Issue comments and upstream reports may name configuration keys and version numbers, but replace user names,
+        profile directories, runtime identifiers, pipe identifiers, thread identifiers, and full local paths with
+        category placeholders such as <code>&lt;CODEX_HOME&gt;</code>, <code>&lt;RUNTIME&gt;</code>, and
+        <code>&lt;PLUGIN_CACHE&gt;</code>.</p>
+      <p><a href="https://github.com/openai/codex/issues/25247">openai/codex#25247</a> remains useful history for the
+        cleared bootstrap failure. <a href="https://github.com/openai/codex/issues/24847">openai/codex#24847</a> is the
+        current match: attachment succeeds, then Windows rejects local file navigation.</p>
+      <p>The <a href="https://developers.openai.com/codex/app/browser">current official Browser documentation</a>
+        describes local web apps and gives a <code>localhost</code> example. It does not currently establish that
+        <code>file://</code> previews are supported, so #149's acceptance boundary is stricter than the published
+        product contract.</p>
+    </section>
+
+    <section id="reactivation">
+      <p class="eyebrow">Parking contract</p>
+      <h2>Reopen only on a concrete support signal</h2>
+      <p>Re-triage #149 when either upstream issue #24847 closes with a released fix, or official OpenAI release notes
+        or Browser documentation explicitly state that Windows Browser supports repository-local
+        <code>file://</code> previews. A plugin or app update alone is not a trigger.</p>
+      <p>If the desired workflow changes to a loopback preview server, treat that as a separate design decision with a
+        threat model and explicit acceptance change; it is not a workaround to attempt while Browser policy forbids
+        this navigation.</p>
+    </section>
+
+    <section id="verification">
+      <p class="eyebrow">Reactivation test</p>
+      <h2>One fresh-task check decides readiness</h2>
+      <ol>
+        <li>In a fresh task, attach Browser and open this review document directly from disk.</li>
+        <li>Inspect the rendered heading and decision table, then capture a screenshot.</li>
+        <li>Record only the sanitized result in #149.</li>
+      </ol>
+      <div class="finding risk"><strong>Parked, not accepted.</strong> Browser attaches, but URL policy blocks the page
+        before navigation. Source inspection cannot satisfy #149's rendered-page acceptance criteria.</div>
+    </section>
+
+    <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>8b761f936b3dc8d632d94e174bdf012298c4459b</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>git add -N .ai/reviews/2026-08-19-browser-automation-review.html</code> (exit 0)</li>
+        <li><code>git diff --check</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>.ai/reviews/2026-08-19-browser-automation-review.html</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+  </main>
+</body>
+</html>
