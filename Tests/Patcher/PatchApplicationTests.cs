@@ -27,10 +27,6 @@ public class PatchApplicationTests {
     // them against the mods they actually target.
     ["AECInternationalMarketFixes/gameevents"] = "targets AEC International Market's content, absent from vanilla",
     ["AECVehiclesFixes/vehicles"] = "targets AEC Vehicles' content, absent from vanilla",
-    ["ProjectZFixes/gameevents"] = "targets Project Z's content, absent from vanilla",
-    ["ProjectZFixes/items"] = "targets Project Z's content, absent from vanilla",
-    ["ProjectZFixes/item_modifiers"] = "targets Project Z's content, absent from vanilla",
-    ["ProjectZFixes/recipes"] = "targets Project Z's content, absent from vanilla",
   };
 
   /// <summary>

@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModInfo>
   <Name value="ProjectZFixes" />
-  <Version value="2.2.4.2" />
+  <Version value="2.2.4.3" />
   <DisplayName value="Project Z Fixes" />
   <Description value="Fixes for critical issues in Project Z version 2.2.4.1." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/ProjectZFixes" />
   <Dependencies>
     <Game version="[3,4)" />
-    <Mod name="StrongMods" version="1.0" />
+    <Mod name="StrongMods" version="1.1.0" />
     <Mod name="ProjectZ" version="[3,4)" optional="true" />  <!-- Required, but EXPERIMENTAL / STABLE versions have different mod names -->
   </Dependencies>
 </ModInfo>

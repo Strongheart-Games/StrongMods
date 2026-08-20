@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <!-- AutoCollectLoot compatibility: all auto-looted drops must directly declare themselves EntityLootContainers -->
+  <conditional>
+    <if cond="xpath('/entity_classes/entity_class[@extends=&quot;BossMasterLoot&quot;]') != null">
+      <ensure xpath="/entity_classes/entity_class[@extends='BossMasterLoot']">
+        <property name="Class" value="EntityLootContainer" />
+      </ensure>
+    </if>
+  </conditional>
+</config>

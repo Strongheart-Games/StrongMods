@@ -55,6 +55,9 @@
     <None Remove="Stubs\**" />
     <Compile Remove="FunctionMod\**" />
     <None Remove="FunctionMod\**" />
+    <!-- The pure report model is shared source: runtime adapters remain in AutoCollectLoot, while its classification
+         and stability rules get deterministic synthetic tests here without a game world. -->
+    <Compile Include="..\AutoCollectLoot\LootCoverageAudit.cs" Link="AutoCollectLoot\LootCoverageAudit.cs" />
   </ItemGroup>
 
   <ItemGroup>

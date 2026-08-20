@@ -14,6 +14,8 @@ Send loot bags directly to players rather than dropping them on the ground.
   5-minute marker buff that expires afterwards.
 * If the winner's inventory is full, the item is spawned as a pickup assigned to them with a 20-minute lifetime rather
   than being lost.
+* At server startup, one coverage audit reports every enemy loot container that could not be configured, why, and the
+  affected enemy classes. If the game state never settles within 30 seconds, it reports an inconclusive result instead.
 * Bad-luck protection is not implemented yet, and the marker buff is not refreshed periodically during horde night.
 
 ## Dependencies
@@ -58,6 +60,24 @@ autoloot enableoutsidebloodmoon | disableoutsidebloodmoon
 Runtime changes made with `autoloot` are not persisted and are overwritten the next time the XML is reloaded.
 
 ## Changelog
+
+### 0.2.3
+
+* Return to the single-pass direct loot-container generator. Project Z compatibility is supplied before this mod runs
+  by ProjectZFixes, which makes its boss loot containers' inherited class explicit.
+
+### 0.2.2
+
+* Include loot containers selected by enemies that inherit `IsEnemyEntity` from an entity-class base.
+
+### 0.2.1
+
+* Generate substitute items only for loot containers referenced by enemies, preventing unrelated entity classes from
+  exhausting the game's item-ID space.
+
+### 0.2.0
+
+* Add a server-side startup coverage audit for omitted enemy loot containers.
 
 ### 0.1.0
 

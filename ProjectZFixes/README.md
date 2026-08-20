@@ -12,6 +12,8 @@ Fixes for critical issues in Project Z version 2.2.4.1.
   slow enough that an accidental scrap can be cancelled.
 * Adds the missing English localization for the Banshee mini-boss: its entity name, its `BuffBitchAOE` and
   `BuffReducedProtectionAOE` buff strings, and the Banshee perk with all 10 of its rank descriptions.
+* Project Z boss loot containers now explicitly declare their inherited loot-container class. This makes them usable
+  by mods that enumerate direct loot-container declarations, including AutoCollectLoot.
 
 ## Installation
 
@@ -25,6 +27,10 @@ Fixes for critical issues in Project Z version 2.2.4.1.
 The mod folder is prefixed with `ZZ_` to ensure it loads after Project Z itself.
 
 ## Changelog
+
+### 2.2.4.3
+
+* Explicitly declare `EntityLootContainer` for Project Z boss loot containers that inherit it from `BossMasterLoot`.
 
 ### 2.2.4.2
 

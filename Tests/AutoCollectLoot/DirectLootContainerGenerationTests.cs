@@ -5,11 +5,11 @@ using Xunit;
 namespace Tests.AutoCollectLoot;
 
 /// <summary>
-///   Regression coverage for #144: apply AutoCollectLoot's shipped items patch to an entityclasses source with a
-///   direct loot container and its immediate child. The synthetic content deliberately has no third-party identity.
+///   Regression coverage for AutoCollectLoot's direct-container item generator. The synthetic content deliberately has
+///   no third-party identity.
 /// </summary>
 [Collection(PatcherHostCollection.Name)]
-public class InheritedLootContainerTests {
+public class DirectLootContainerGenerationTests {
   [Fact]
   public void Shipped_items_patch_generates_substitutes_only_for_loot_containers_with_direct_required_data() {
     PatcherHost host = PatcherHost.Instance.Value;
@@ -24,9 +24,7 @@ public class InheritedLootContainerTests {
       Assert.Contains("""<item name="AutoLoot_DirectContainer">""", result);
       Assert.Contains("""<property name="AutoLootSubstituteFor" value="DirectContainer" />""", result);
       Assert.Contains("""<item name="AutoLoot_DirectExtendedContainer">""", result);
-      Assert.Contains("""<item name="AutoLoot_SyntheticBossContainer">""", result);
-      Assert.Contains("""<property name="AutoLootSubstituteFor" value="SyntheticBossContainer" />""", result);
-      Assert.Contains("""<property name="LootList" value="syntheticBossRewards" />""", result);
+      Assert.DoesNotContain("AutoLoot_SyntheticBossContainer", result);
       Assert.DoesNotContain("AutoLoot_TransitiveContainer", result);
       Assert.DoesNotContain("AutoLoot_IncompleteChild", result);
       Assert.DoesNotContain("AutoLoot_DirectMissingMesh", result);
