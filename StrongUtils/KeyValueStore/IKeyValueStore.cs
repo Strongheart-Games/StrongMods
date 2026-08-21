@@ -99,7 +99,8 @@ namespace StrongUtils.KeyValueStore {
 
     /// <summary>
     ///   Raised after any key is created, updated, or deleted.
-    ///   The event arg carries the key, old raw value, new raw value, and the change type.
+    ///   The event arg carries the key, old raw value, new raw value, and the change type. A Deleted event carries
+    ///   the value stored immediately before deletion and a null new raw value.
     /// </summary>
     event EventHandler<VarChangedEventArgs> VarChanged;
   }

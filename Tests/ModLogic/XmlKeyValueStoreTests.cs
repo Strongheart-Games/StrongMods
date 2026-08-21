@@ -284,7 +284,7 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
   }
 
   [Fact]
-  public void Clear_raises_one_Deleted_per_key() {
+  public void Clear_raises_one_Deleted_per_key_with_the_removed_value() {
     ModLogicHost.Call(store, "Set", "a", 1);
     ModLogicHost.Call(store, "Set", "b", 2);
     List<object> seen = Observe(store);
@@ -293,6 +293,9 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
 
     Assert.Equal(2, seen.Count);
     Assert.All(seen, c => Assert.Equal("Deleted", ModLogicHost.Call(c, "get_ChangeType").ToString()));
+    Assert.All(seen, c => Assert.Null(ModLogicHost.Call(c, "get_NewRawValue")));
+    Assert.Equal("1", ModLogicHost.Call(ChangedFor(seen, "a"), "get_OldRawValue"));
+    Assert.Equal("2", ModLogicHost.Call(ChangedFor(seen, "b"), "get_OldRawValue"));
   }
 
   private T Get<T>(string key, T fallback) where T : IConvertible =>
@@ -313,6 +316,9 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
       Delegate.CreateDelegate(varChanged.EventHandlerType!, new Collector(seen), collector));
     return seen;
   }
+
+  private static object ChangedFor(IEnumerable<object> changes, string key) =>
+    Assert.Single(changes, change => (string)ModLogicHost.Call(change, "get_Key") == key);
 
   private sealed class Collector {
     private readonly List<object> seen;

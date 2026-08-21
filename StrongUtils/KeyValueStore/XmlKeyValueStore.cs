@@ -116,16 +116,20 @@ namespace StrongUtils.KeyValueStore {
     }
 
     public void Clear() {
-      List<string> keys;
+      List<(string Key, string Raw)> entries;
 
       lock (_lock) {
-        keys = new List<string>(_store.Keys);
+        entries = new List<(string Key, string Raw)>();
+        foreach (KeyValuePair<string, (string Raw, VarType Type)> entry in _store) {
+          entries.Add((entry.Key, entry.Value.Raw));
+        }
+
         _store.Clear();
         FlushLocked();
       }
 
-      foreach (var key in keys) {
-        RaiseChanged(key, null, null, VarChangeType.Deleted);
+      foreach ((string key, string raw) in entries) {
+        RaiseChanged(key, raw, null, VarChangeType.Deleted);
       }
     }
 
