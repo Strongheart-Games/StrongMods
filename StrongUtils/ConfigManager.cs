@@ -86,6 +86,10 @@ namespace StrongUtils {
         throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
       }
 
+      if (Path.IsPathRooted(filename)) {
+        throw new ArgumentException("Filename must be relative, not an absolute path.", nameof(filename));
+      }
+
       var fullPath = Path.Combine(_configDirectory, filename);
       return XElement.Load(fullPath);
     }

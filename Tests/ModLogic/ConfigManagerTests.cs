@@ -122,6 +122,12 @@ public sealed class ConfigManagerTests : IDisposable {
   }
 
   [Fact]
+  public void Read_rejects_an_absolute_path() {
+    Assert.Throws<ArgumentException>(() =>
+      ModLogicHost.Call(instance, "ReadConfigFile", Path.Combine(root, "rooted.xml")));
+  }
+
+  [Fact]
   public void Write_to_an_unregistered_file_is_rejected() {
     InvalidOperationException error = Assert.Throws<InvalidOperationException>(
       () => ModLogicHost.Call(instance, "WriteConfigFile", "stranger.xml", XElement.Parse("<config />")));
