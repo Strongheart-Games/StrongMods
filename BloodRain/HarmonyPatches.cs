@@ -65,12 +65,12 @@ namespace BloodRain {
           CodeMatch.Calls(() => Utils.FastMin(-1, -1)),
           CodeMatch.StoresField(typeof(AIDirectorBloodMoonParty).GetField(nameof(AIDirectorBloodMoonParty.enemyActiveMax)))
         )
-        .ThrowIfInvalid("[StrongUtils] Could not find enemyMaxActive calculation")
+        .ThrowIfInvalid("[BloodRain] Could not find enemyMaxActive calculation")
         .RemoveInstruction()
         .Insert(
           CodeInstruction.Call(() => BloodRain.GetPartyEnemyCountMax())
         );
-      //Log.Out($"[StrongUtils] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
+      //Log.Out($"[BloodRain] Instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
       return codeMatcher.Instructions();
     }
   }
