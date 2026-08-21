@@ -5,7 +5,7 @@ quest_aec_im_tutorial,quests,Quest,[DECEA3]International Market[-] Tutorial
 quest_aec_im_tutorial_offer,quests,Quest,"Learn the basics of the International Market. Harvest [DECEA3]Zombie Ears[-], exchange them for a [DECEA3]Crypto Miner[-], and begin generating passive income."
 quest_aec_im_tutorial_desc,quests,Quest,"Welcome to the International Market.\n\nThe old world may be gone, but commerce survived...and adapted.\n\nThrough the International Market, you can request thousands of different items by air drop, including food, medicine, building supplies, tools, and even vehicles.\n\nThis tutorial will teach you how to craft an [DECEA3]International Market Terminal[-] and use it to request your first [DECEA3]Crypto Miner[-]. You'll pay for it with [DECEA3]Zombie Ears[-], the first of many commodities accepted by the Market.\n\nOnce your Crypto Miner is running, you'll be ready to collect [DECEA3]Connection Cards[-] from participating nations. These unlock additional cryptocurrencies to mine, allowing you to purchase increasingly valuable items through the Market."
 internationalMarket,blocks,Block,International Market Terminal
-AEC_Groenland_ResearchPapers,items,item,,Greenland research papers
+AEC_Groenland_ResearchPapers,items,item,Greenland research papers
 PassiveCryptoMinerGroenland01,blocks,Block,MINING\n\nPassively generates [DECEA3]Greenland Coins[-] over time.\n\nUp to [DECEA3]40 coins every 30 minutes[-].
 PassiveCryptoMinerGroenland00,blocks,Block,MINING\n\nCurrently mining [DECEA3]Greenland Coins[-] over time.\n\nUp to [DECEA3]40 coins every 30 minutes[-].
 PassiveCryptoMinerGroenland02,blocks,Block,READY\n\nCollect your [DECEA3]Greenland Coins[-].
