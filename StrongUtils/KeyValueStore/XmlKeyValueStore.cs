@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace StrongUtils.KeyValueStore {
@@ -9,6 +10,7 @@ namespace StrongUtils.KeyValueStore {
   ///   All values are stored as their string representation with a type attribute.
   ///   Thread-safe; all mutations are protected by a single lock.
   ///   VarChanged events are raised outside the lock to avoid deadlocks in handlers.
+  ///   Malformed persisted state is logged and treated as an empty store so it cannot stop startup.
   /// </summary>
   public class XmlKeyValueStore : IKeyValueStore {
     private const string RootElement = "Store";
@@ -261,16 +263,35 @@ namespace StrongUtils.KeyValueStore {
 
     /// <summary>Loads from disk. Caller must already hold <see cref="_lock" /> or be in the constructor.</summary>
     private void Load() {
-      var doc = XDocument.Load(_filePath);
-
-      foreach (XElement el in doc.Root.Elements(EntryElement)) {
-        var key = (string)el.Attribute(KeyAttr);
-        var raw = (string)el.Attribute(ValueAttr);
-        var type = (VarType)Enum.Parse(typeof(VarType), (string)el.Attribute(TypeAttr));
-
-        if (!string.IsNullOrEmpty(key)) {
-          _store[key] = (raw, type);
+      try {
+        var doc = XDocument.Load(_filePath);
+        XElement root = doc.Root;
+        if (root is null || root.Name != RootElement) {
+          throw new InvalidDataException($"Expected a {RootElement} root element.");
         }
+
+        var loaded = new Dictionary<string, (string Raw, VarType Type)>();
+        foreach (XElement el in root.Elements(EntryElement)) {
+          string key = el.Attribute(KeyAttr)?.Value;
+          string raw = el.Attribute(ValueAttr)?.Value;
+          string typeName = el.Attribute(TypeAttr)?.Value;
+          if (key is null || raw is null || typeName is null ||
+              !Enum.TryParse(typeName, out VarType type) || !Enum.IsDefined(typeof(VarType), type)) {
+            throw new InvalidDataException("An Entry must have key, type, and value attributes with a supported type.");
+          }
+
+          if (!string.IsNullOrEmpty(key)) {
+            loaded[key] = (raw, type);
+          }
+        }
+
+        _store.Clear();
+        foreach (KeyValuePair<string, (string Raw, VarType Type)> entry in loaded) {
+          _store[entry.Key] = entry.Value;
+        }
+      } catch (Exception e) when (e is InvalidDataException or XmlException) {
+        _store.Clear();
+        Log.Error($"[StrongUtils] Ignoring malformed key-value store '{_filePath}': {e.Message}");
       }
     }
 

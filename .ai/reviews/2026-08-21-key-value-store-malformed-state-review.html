@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Key-value store malformed-state review</title>
+  <style>
+    body { max-width: 860px; margin: 3rem auto; padding: 0 1.5rem; color: #17202a; font: 17px/1.55 system-ui, sans-serif; }
+    code { padding: .1rem .3rem; background: #edf1f5; font-family: ui-monospace, Consolas, monospace; }
+    section { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #ccd4dc; }
+    .finding { padding: 1rem 1.25rem; border-left: 4px solid #9a5b00; background: #fbf3e7; }
+  </style>
+</head>
+<body>
+  <header>
+    <p>Implementation review · 21 Aug 2026</p>
+    <h1>Recover from a malformed key-value store</h1>
+    <p><a href="https://github.com/Strongheart-Games/StrongMods/issues/124">Issue #124</a></p>
+  </header>
+
+  <section>
+    <h2>Problem</h2>
+    <p>The key-value store loaded persisted XML during startup. Invalid XML structure or an unsupported type value
+      could throw from that load and stop the caller’s startup path.</p>
+  </section>
+
+  <section>
+    <h2>Recovery policy</h2>
+    <div class="finding">Malformed persisted state is logged and treated as an empty store. It does not stop
+      StrongUtils startup.</div>
+    <p>The loader first validates all entries in a temporary dictionary. It replaces the live state only after the
+      complete file is valid. A malformed file therefore cannot leave a partial in-memory store. The original file
+      remains in place until a later write replaces it.</p>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <p>The regression test writes an unsupported type into <code>kvstore.xml</code>, runs
+      <code>KeyValueStore.Init</code>, and verifies that it returns without an error and creates an empty store. The
+      focused <code>XmlKeyValueStoreTests</code> suite passed 32/32.</p>
+  </section>
+
+  <section>
+    <h2>Handoff evidence</h2>
+    <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>19da761447f5ab2d7109baf96f68ace34206bd64</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>dotnet build StrongUtils/StrongUtils.csproj -c Debug -p:SdtdDir=../../packages/7dtd.assemblies.game/3.1.0.14</code> (exit 0)</li>
+        <li><code>dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=../../packages/7dtd.assemblies.game/3.1.0.14 --filter FullyQualifiedName~XmlKeyValueStoreTests</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>.ai/reviews/2026-08-21-key-value-store-malformed-state-review.html</code></li>
+      <li><code>StrongUtils/KeyValueStore/XmlKeyValueStore.cs</code></li>
+      <li><code>Tests/ModLogic/XmlKeyValueStoreTests.cs</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+  </section>
+</body>
+</html>

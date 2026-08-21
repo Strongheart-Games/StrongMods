@@ -19,6 +19,7 @@ namespace Tests.ModLogic;
 [Collection(ModLogicCollection.Name)]
 public sealed class XmlKeyValueStoreTests : IDisposable {
   private readonly Type storeType;
+  private readonly Type keyValueStoreType;
   private readonly Type varType;
   private readonly string path;
   private readonly object store;
@@ -26,6 +27,7 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
   public XmlKeyValueStoreTests() {
     ModLogicHost host = ModLogicHost.For("StrongUtils");
     storeType = host.ModType("StrongUtils.KeyValueStore.XmlKeyValueStore");
+    keyValueStoreType = host.ModType("StrongUtils.KeyValueStore.KeyValueStore");
     varType = host.ModType("StrongUtils.KeyValueStore.VarType");
     path = Path.Combine(Path.GetTempPath(), "strongmods-kv-" + Guid.NewGuid().ToString("N") + ".xml");
     store = Open();
@@ -228,6 +230,24 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
     ModLogicHost.Call(store, "Reload");
 
     Assert.Equal(new[] { "real" }, Keys(store));
+  }
+
+  [Fact]
+  public void Malformed_persisted_state_does_not_abort_key_value_store_startup() {
+    string directory = Path.Combine(Path.GetTempPath(), "strongmods-kv-init-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(directory);
+    try {
+      File.WriteAllText(Path.Combine(directory, "kvstore.xml"),
+        "<Store><Entry key=\"k\" type=\"not-a-type\" value=\"1\" /></Store>");
+
+      Exception error = Record.Exception(() => ModLogicHost.CallStatic(keyValueStoreType, "Init", directory));
+
+      Assert.Null(error);
+      object recovered = ModLogicHost.CallStatic(keyValueStoreType, "get_Instance");
+      Assert.Empty(Keys(recovered));
+    } finally {
+      Directory.Delete(directory, true);
+    }
   }
 
   // ---------------------------------------------------------------------------------------------
