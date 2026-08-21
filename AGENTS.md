@@ -16,6 +16,9 @@ missing, say so in a sentence or file an issue — and leave the wording to the 
 End each final response with a concise call to action: name the recommended next action, the approval or decision
 needed, or explicitly say that no action is needed.
 
+When a response refers to a GitHub issue, link the issue number directly to that issue. When it refers to a posted
+comment, link the reference directly to that comment.
+
 ## What this repo is
 
 A monorepo of ~25 mods for the game **7 Days to Die** (a dedicated-server / Unity title). Each top-level directory
