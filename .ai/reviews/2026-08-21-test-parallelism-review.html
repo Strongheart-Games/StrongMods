@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test parallelism review</title>
+  <style>
+    :root { --ground: #eff1f4; --surface: #fff; --ink: #12171c; --ink-2: #38424d; --hair: #cfd5dc;
+      --accent: #9a5b00; --accent-tint: #f7ebd8; --mono: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, sans-serif; }
+    main { max-width: 1040px; margin: 0 auto; padding: 48px clamp(20px, 5vw, 64px) 80px; }
+    header { padding: 24px 0 32px; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair); }
+    h1 { max-width: 19ch; margin: 12px 0; font-size: clamp(34px, 6vw, 56px); line-height: 1.05; }
+    h2 { margin: 0; font-size: 28px; line-height: 1.2; }
+    h3 { margin: 0 0 10px; }
+    p { max-width: 82ch; margin: 0; }
+    section { display: grid; gap: 18px; padding: 40px 0; border-bottom: 1px solid var(--hair); }
+    .kicker, th { color: var(--accent); font: 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .standfirst { color: var(--ink-2); font-size: 20px; }
+    .finding, .candidate { padding: 20px 22px; border: 1px solid var(--accent); background: var(--accent-tint); }
+    .candidate { border-color: var(--hair); background: var(--surface); }
+    .scroller { overflow-x: auto; border: 1px solid var(--hair); background: var(--surface); }
+    table { min-width: 650px; width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 14px; border-bottom: 1px solid var(--hair); text-align: left; vertical-align: top; }
+    code { padding: 1px 5px; background: #e6e9ed; font: .88em var(--mono); white-space: nowrap; }
+    ul { margin: 0; padding-left: 1.2em; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ground: #0e1216; --surface: #161b21; --ink: #e6eaee; --ink-2: #c0c8d0; --hair: #303944;
+        --accent: #f0a73c; --accent-tint: #2a2015; }
+      code { background: #1e252c; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="kicker">Test infrastructure · 21 Aug 2026</p>
+      <h1>Remove the false test scheduling barrier</h1>
+      <p class="standfirst">The suite was already parallel, but one large build-path class stayed serial and the
+        <code>mod-logic</code> collection could not start until every parallel collection finished. This change splits
+        the isolated build-path checks and removes only the runner-wide barrier around <code>mod-logic</code>.</p>
+    </header>
+
+    <section>
+      <p class="kicker">Measured cause</p>
+      <h2>Configuration, not shared build state, caused the wait</h2>
+      <div class="finding"><strong>Result:</strong> <code>DisableParallelization = true</code> made xUnit run all
+        parallel-capable collections first and <code>mod-logic</code afterwards. The baseline trace placed the first
+        <code>mod-logic</code> test 9.2 ms after the last <code>BuildPathResolutionTests</code> test ended.</div>
+      <p>The named <code>mod-logic</code> collection already keeps its own classes mutually serial. Its hosts load game
+        and mod assemblies into private <code>AssemblyLoadContext</code> instances, so the extra runner-wide barrier did
+        not protect those static values from another test collection.</p>
+    </section>
+
+    <section>
+      <p class="kicker">Implementation</p>
+      <h2>Expose the parallel work already present</h2>
+      <ul>
+        <li>Split the eleven build-path methods into six concern-named classes.</li>
+        <li>Keep the shared workspace harness in <code>BuildPathResolutionTestBase</code>.</li>
+        <li>Keep every <code>mod-logic</code> test in one serial collection.</li>
+        <li>Remove <code>DisableParallelization = true</code> so that collection can run beside unrelated work.</li>
+      </ul>
+    </section>
+
+    <section>
+      <p class="kicker">Verification</p>
+      <h2>The structural change beats a larger thread pool</h2>
+      <div class="scroller"><table>
+        <thead><tr><th>Measurement</th><th>Before</th><th>After</th></tr></thead>
+        <tbody>
+          <tr><td>Full no-build wall time</td><td>12.154 s</td><td>5.137 s, 5.239 s, 5.291 s</td></tr>
+          <tr><td>xUnit execution duration</td><td>11 s</td><td>4 s</td></tr>
+          <tr><td>Focused default threads</td><td>Not measured</td><td>4.095 s, 4.104 s</td></tr>
+          <tr><td>Focused unlimited threads</td><td>Not measured</td><td>4.101 s, 4.068 s</td></tr>
+        </tbody>
+      </table></div>
+      <p>Unlimited xUnit threads produced no useful change. The runner already defaults to the machine's 32 processor
+        threads. A repository setting above that default would add load without measured benefit.</p>
+    </section>
+
+    <section>
+      <p class="kicker">Handoff evidence</p>
+      <h2>Exact submission candidate</h2>
+      <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>d558611526bbb068ddd43460bfea8aeb0bf1dbd9</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>dotnet build StrongMods.sln -c Debug -p:SdtdPackagesDir=C:\Users\jcottr\RiderProjects\StrongMods\packages -p:RestoreConfigFile=nuget.config</code> (exit 0)</li>
+        <li><code>dotnet test Tests/Tests.csproj -c Debug --no-build --no-restore -p:SdtdPackagesDir=C:\Users\jcottr\RiderProjects\StrongMods\packages</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>.ai/reviews/2026-08-21-test-parallelism-review.html</code></li>
+      <li><code>Tests/BuildPathResolutionTests.cs</code></li>
+      <li><code>Tests/ModLogic/ModLogicCollection.cs</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+    </section>
+  </main>
+</body>
+</html>

@@ -32,7 +32,7 @@ namespace Tests;
 ///   so "resolved against the invocation" and "resolved against the project" cannot be mistaken for one another,
 ///   and neither can accidentally coincide with the repo root.
 /// </summary>
-public class BuildPathResolutionTests {
+public sealed class BuildPathRelativeOverrideTests : BuildPathResolutionTestBase {
   [Fact]
   public void Relative_SdtdDir_resolves_against_the_invocation_directory() {
     using var space = new Workspace();
@@ -96,7 +96,9 @@ public class BuildPathResolutionTests {
       $"{space.InvocationDir}. Deploy log:\n{log}");
     Assert.Single(Directory.GetFileSystemEntries(Path.Combine(space.InvocationDir, "deployed")));
   }
+}
 
+public sealed class BuildPathModletDeployLoggingTests : BuildPathResolutionTestBase {
   [Fact]
   public void Project_deploy_logs_an_action_then_reports_the_no_op() {
     using var space = new Workspace();
@@ -113,7 +115,9 @@ public class BuildPathResolutionTests {
       $"A direct no-op deploy must say so — got exit {exitCode}:\n{log}");
     Assert.DoesNotContain($"{ProbeName} deployed (mirror)", log);
   }
+}
 
+public sealed class BuildPathOverlayDeployLoggingTests : BuildPathResolutionTestBase {
   [Fact]
   public void Overlay_deploy_logs_an_action_then_reports_the_no_op() {
     using var space = new Workspace();
@@ -130,7 +134,9 @@ public class BuildPathResolutionTests {
       $"A direct no-op overlay must say so — got exit {exitCode}:\n{log}");
     Assert.DoesNotContain($"{ProbeName} overlaid", log);
   }
+}
 
+public sealed class BuildPathSolutionDeployLoggingTests : BuildPathResolutionTestBase {
   [Fact]
   public void Solution_deploy_reports_actions_then_one_no_op_summary() {
     using var space = new Workspace();
@@ -149,7 +155,9 @@ public class BuildPathResolutionTests {
     Assert.DoesNotContain($"{ProbeName} deployment is already up to date.", log);
     Assert.DoesNotContain($"{ProbeName} deployed (mirror)", log);
   }
+}
 
+public sealed class BuildPathGameTreeResolutionTests : BuildPathResolutionTestBase {
   [Fact]
   public void The_game_tree_follows_the_declaration_and_the_install_side_does_not() {
     // The two-root split (#23): SdtdDir resolves from the DECLARED version under the repo's packages layout,
@@ -209,7 +217,9 @@ public class BuildPathResolutionTests {
       "the unit's own directory name (dedicated-server keeps its hyphen; only the package id drops it), " +
       "regardless of what packages\\ holds.");
   }
+}
 
+public sealed class BuildPathInstallVersionTests : BuildPathResolutionTestBase {
   [Fact]
   public void Deploy_refuses_a_live_install_on_an_undeclared_version() {
     // #37's failure mode: a live install whose Assembly-CSharp.dll matches NONE of the mod's declared
@@ -271,10 +281,12 @@ public class BuildPathResolutionTests {
       $"A live install with no declared trees restored must refuse as UNVERIFIABLE, teaching the restore " +
       $"command — got exit {exitCode}:\n{log}");
   }
+}
 
+public abstract class BuildPathResolutionTestBase {
   /// <summary>The repo default declaration, read from build\GameVersions.props so a version bump never
   ///   rots these tests: the label plus its registry package version.</summary>
-  private static (string Label, string Version) DefaultDeclaration() {
+  protected static (string Label, string Version) DefaultDeclaration() {
     XDocument versions = XDocument.Load(Path.Combine(Workspace.RepoRoot, "build", "GameVersions.props"));
     var label = versions.Descendants().First(e => e.Name.LocalName == "SdtdDevVersion").Value;
     var version = versions.Descendants().First(e => e.Name.LocalName == "SdtdGameVersionMap").Value
@@ -282,14 +294,14 @@ public class BuildPathResolutionTests {
     return (label, version);
   }
 
-  private const string ProbeName = "PathProbe";
+  protected const string ProbeName = "PathProbe";
 
   /// <summary>
   ///   A disposable temp tree holding an invocation directory and a sibling probe project, plus the plumbing to
   ///   run MSBuild against them. Siblings on purpose: a test that put the project inside the invocation
   ///   directory could not tell the two resolution bases apart.
   /// </summary>
-  private sealed class Workspace : IDisposable {
+  protected sealed class Workspace : IDisposable {
     internal static readonly string RepoRoot = Path.GetFullPath(AssemblyMetadata.Get("RepoRoot"));
     private static readonly string BuildDir = Path.Combine(RepoRoot, "build");
 
