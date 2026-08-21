@@ -13,26 +13,26 @@ namespace QuestUnlockFixes {
         .MatchStartForward(
           CodeMatch.LoadsLocal(name: "prefabFromWorldPos")
         )
-        .ThrowIfInvalid("[StrongUtils] Could not find load instruction");
+        .ThrowIfInvalid("[QuestUnlockFixes] Could not find load instruction");
       CodeInstruction load = codeMatcher.Instruction;
       codeMatcher
         .MatchEndForward(
           CodeMatch.LoadsField(typeof(PrefabInstance).GetField(nameof(PrefabInstance.lockInstance))),
           CodeMatch.Branches()
         )
-        .ThrowIfInvalid("[StrongUtils] Could not find branch instruction");
+        .ThrowIfInvalid("[QuestUnlockFixes] Could not find branch instruction");
       CodeInstruction branch = codeMatcher.Instruction;
       codeMatcher
         .MatchStartBackwards(
           CodeMatch.StoresLocal("prefabFromWorldPos")
         )
-        .ThrowIfInvalid("[StrongUtils] Could not find insertion point")
+        .ThrowIfInvalid("[QuestUnlockFixes] Could not find insertion point")
         .Advance(1)
         .Insert(
           load,
           branch
         );
-      //Log.Out($"[StrongUtils] QuestUnlockPOI instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
+      //Log.Out($"[QuestUnlockFixes] QuestUnlockPOI instructions:\n    {string.Join("\n    ", codeMatcher.Instructions())}");
       return codeMatcher.Instructions();
     }
 
@@ -41,7 +41,7 @@ namespace QuestUnlockFixes {
         .GetPrefabFromWorldPos((int)prefabPos.x, (int)prefabPos.z);
       if (prefabFromWorldPos is null) {
         Log.Error(
-          $"[StrongUtils] Could not find prefabFromWorldPos, skipping: entityID: {entityID} prefabPos: {prefabPos}\n{Environment.StackTrace}");
+          $"[QuestUnlockFixes] Could not find prefabFromWorldPos, skipping: entityID: {entityID} prefabPos: {prefabPos}\n{Environment.StackTrace}");
       }
     }
   }
