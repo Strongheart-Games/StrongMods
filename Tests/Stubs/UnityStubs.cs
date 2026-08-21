@@ -15,6 +15,44 @@ namespace UnityEngine {
 
   public enum RuntimePlatform { WindowsPlayer = 2, WindowsEditor = 7, LinuxPlayer = 13, LinuxEditor = 16 }
 
+  public struct Vector2 {
+    public float x;
+    public float y;
+
+    public Vector2(float x, float y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
+
+  public struct Vector2Int {
+    public int x;
+    public int y;
+
+    public Vector2Int(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
+
+  public struct Vector3 {
+    public float x;
+    public float y;
+    public float z;
+
+    public Vector3(float x, float y, float z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+
+    public static float Distance(Vector3 a, Vector3 b) {
+      float squaredDistance = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) +
+                              (a.z - b.z) * (a.z - b.z);
+      return (float)System.Math.Sqrt(squaredDistance);
+    }
+  }
+
   public class Application {
     public delegate void LogCallback(string condition, string stackTrace, LogType type);
 

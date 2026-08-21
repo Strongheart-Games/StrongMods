@@ -299,7 +299,7 @@ namespace StrongUtils {
     }
 
     public static void UpdatePrefabZones() {
-      s_zones = new StrongZones(GeneratePrefabZones());
+      s_zones = new StrongZones(GeneratePrefabZones(), s_zones?._customZones);
     }
 
     private static List<StrongZone> GeneratePrefabZones(List<PrefabInstance> prefabs = null) {
@@ -415,7 +415,7 @@ namespace StrongUtils {
     }
 
     private static void UpdateCustomZones(XElement element) {
-      s_zones = new StrongZones(customZones: GenerateCustomZones(element));
+      s_zones = new StrongZones(s_zones?._prefabZones, GenerateCustomZones(element));
     }
 
     private static List<StrongZone> GenerateCustomZones(XElement zones = null) {
