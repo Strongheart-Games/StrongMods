@@ -1,9 +1,9 @@
-﻿# AGENTS.md
+# AGENTS.md
 
 This file provides guidance to coding agents (e.g. Claude Code) when working with code in this repository.
 
-The repo's purpose and vocabulary live in @CONTEXT.md — read it before making design decisions; this file carries
-the working rules.
+The repo's purpose and vocabulary live in @CONTEXT.md — read it before making design decisions; this file carries the
+working rules.
 
 **CONTEXT.md is human-authored and read-only to agents.** It is the human's own voice and judgment — the baseline the
 rest of the repo is measured against — so an agent editing it, *or drafting prose a human then pastes in*, destroys the
@@ -12,9 +12,6 @@ never route around it with a shell command, a patch file, or a git operation. If
 missing, say so in a sentence or file an issue — and leave the wording to the human.
 
 ## Communication
-
-End each final response with a concise call to action: name the recommended next action, the approval or decision
-needed, or explicitly say that no action is needed.
 
 When a response refers to a GitHub issue, link the issue number directly to that issue. When it refers to a posted
 comment, link the reference directly to that comment.
@@ -61,6 +58,7 @@ A code mod imports the props file as the first element of its body and the targe
 `Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwich holds:
 
 ```xml
+
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\Mod.props" />
   <!-- deviations only: ModLoadTier, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
@@ -243,8 +241,8 @@ This is the foundational mod other mods depend on (only cross-project reference 
 ### `StrongUtils` — shared administration/modding grab-bag
 
 Not a library the others link against — it's its own standalone mod bundling many small server features alongside
-infrastructure worth reusing (`ConfigManager`, `KeyValueStore`, `Chat`, `StrongAudit`, `ServerLifecycle`).
-**`StrongUtils/README.md` has the inventory**; read it before writing something the mod already provides.
+infrastructure worth reusing (`ConfigManager`, `KeyValueStore`, `Chat`, `StrongAudit`, `ServerLifecycle`). **
+`StrongUtils/README.md` has the inventory**; read it before writing something the mod already provides.
 
 Its `Commands/` folder is also the reference for server console commands generally: each is a `ConsoleCmdAbstract`
 subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `getCommands`, `getDescription`,
@@ -281,9 +279,9 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
 - `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
 - **Docs have homes** — one self-contained HTML review document carries planning, decisions, verification, and handoff
-  for each new or actively revised effort: `.ai/reviews/YYYY-MM-DD-<effort>-review.html` (per project, or repo-root
-  for repo-wide work). Start from `docs/agents/review-document-template.html`. Historical effort docs stay where they
-  are; durable decisions are ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
+  for each new or actively revised effort: `.ai/reviews/YYYY-MM-DD-<effort>-review.html` (per project, or repo-root for
+  repo-wide work). Start from `docs/agents/review-document-template.html`. Historical effort docs stay where they are;
+  durable decisions are ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
 - **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options weighed,
   the verification. The issue carries the work and its status. **Never add a status or follow-on table to a doc:** it
   becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number. The older plans
@@ -292,133 +290,11 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
 - While most projects have little or no docs yet, we strive to put a README.md in the root of each project and
   supporting detailed docs in its `Docs/` directory
 
-## Adding a new mod
-
-Scaffold from a template (`Template7DtDMod` for a code mod, `Template7DtDModlet` for XML-only), then add the project to
-`StrongMods.sln`. The template already imports the shared build files, so there is **no** reference block, property
-group or `OutputPath` to copy, and no `Content` entries to declare — `ModInfo.xml`, `README.md`,
-`Config\**\*` and `Docs\**\*` are picked up automatically for code mods, and a modlet ships its whole directory.
-
-Scaffold into the repo root: the imports are relative (`..\build\...`), so a project one level down resolves them.
-
-New `.cs` files are picked up automatically by the SDK's glob — no csproj edit when adding a file. The flip side:
-**every `.cs` file in the project directory compiles**, so never leave scratch or half-finished `.cs` files lying around
-(`.ai\**` is excluded). Deviate from the defaults only where needed, between the two imports: `ModLoadTier`
-for load order, `ModsDir` to target the dedicated server, `GameAssembly` for an extra game DLL.
-
-The templates set `<IsDeployable>false</IsDeployable>` inside a `<!--#if (IsTemplate) -->` block so they never install
-themselves into the game. `dotnet new` strips that block, so generated projects deploy normally — leave it alone.
-
-A new mod also needs a `mod:<Name>` issue label, and only a human can create it (see *Issues* below) — ask for it as
-part of landing the mod.
-
 ## Agent Workflow & Workstyle Constraints
 
-**Core Directive: Small, Atomic Changes**
-You must strictly adhere to principles for creating small, reviewable, and single-focused changes. Every code generation
-cycle must produce self-contained edits.
-
-**Strict Limits & Constraints**
-
-* **Filesystem Scope:** Work only within this project directory (including its `.scratch/` area) and the 7 Days to Die
-  install and save directories. In the game directories, read freely — vanilla configs, game DLLs — but write only
-  through the build: the `Deploy` target installing a mod into a `Mods\` or `Saves\` folder, of the client or the
-  dedicated server, is the designed install step, not a scope violation. Never create, hand-edit, or delete files in
-  those locations outside of that build path without explicit human approval, and use a redirected build (see *Scratch
-  space* below) whenever deploying is not the goal. Treat everything else on the machine as out of scope.
-* **Scratch space:** Use the gitignored repo-root `.scratch/` directory for everything disposable — redirected
-  verification builds (recipe under *Verifying*), baseline `git worktree`s, captured evaluation JSON, experiment
-  output. Never use `C:\Temp` or other out-of-scope locations. Anything under `.scratch/` may be deleted at any time;
-  clean up worktrees with `git worktree remove` before deleting their directories so git's metadata does not dangle.
-  Spell scratch paths repo-relative in shell commands
-  (`mkdir -p .scratch\...`, `rm -rf .scratch/...` — never absolute): the `mkdir`/`rm`/`git worktree`
-  allowlist rules in `.claude/settings.json` key on the literal `.scratch` prefix, so relative spellings run promptless
-  while absolute ones fall back to prompting.
-* **Windows shell:** Prefer Git Bash for shell commands. When the execution tool supports explicit shell selection, use
-  `C:\Program Files\Git\bin\bash.exe`. Use PowerShell when the task or command requires Windows- or PowerShell-specific
-  behavior.
-* **Size Target:** Aim for ~100 lines of changed code (excluding auto-generated files or structural configuration
-  boilerplate).
-* **Hard Stop:** Do not modify more than 250 lines of code across a single iteration loop.
-* **Single Focus:** Address exactly ONE logical bug fix, ONE task, or ONE discrete component feature. Never combine
-  functional changes with refactoring.
-* **Isolation:** When tasked with updating a standalone mod, do not modify the foundational `StrongMods` runtime mod
-  unless explicitly requested.
-* **Git**
-  * Stage only the files you intentionally modified.
-  * Do not commit, push, or rewrite Git history — and do not ask to. These are blocked by permission deny rules, so
-    offering to commit claims a capability you don't have and makes the human decline something that was never on the
-    table. Committing is the human's step, not a gated one of yours.
-* **Issues** — the backlog lives in GitHub Issues on
+* **Small, Atomic Changes** -- You must strictly adhere to principles for creating small, reviewable, and single-focused
+  changes. Every code generation cycle must produce self-contained edits.
+* **Issues** -- the backlog lives in GitHub Issues on
   [Strongheart-Games/StrongMods](https://github.com/Strongheart-Games/StrongMods/issues), driven with the `gh` CLI.
   `docs/agents/issue-tracker.md` is the whole contract: the bot identity to confirm before writing, the label facets,
   and the apply-only / close-never-delete rules. Read it before filing or labelling anything.
-
-### Required Agent Workflow
-
-**1. Planning Phase**
-
-* Before making edits that touch multiple files, create or update the effort's HTML review document under
-  `.ai/reviews/` with a brief, itemized plan. Start from `docs/agents/review-document-template.html`; do not create a
-  parallel Markdown plan for a new or actively revised effort.
-* Request explicit human validation on this plan if the proposed changes will exceed the 100-line target.
-
-**2. Implementation Phase**
-
-* Do not batch multiple independent modifications. If you notice an unrelated bug or a refactoring opportunity while
-  coding, leave it alone and note it in a summary instead of fixing it now.
-* Keep any structural modifications or configuration updates isolated from your core logic implementation.
-
-**3. Verification Phase**
-
-* Verification is layered — see *Verifying* above for the three levels. Two gates are mandatory: build the project you
-  changed (`dotnet build <ProjectName>/<ProjectName>.csproj -c Debug`), and run `dotnet test StrongMods.sln -c Debug`
-  for any change touching code or patch targets.
-
-**4. Handoff & Review Phase**
-
-* Upon a successful build, explicitly PAUSE your workflow.
-* Present a brief, clear summary of the changes made.
-* End the phase with a concise handoff, not a menu. State what changed, how it was verified, and what remains
-  uncommitted — then stop. The human reviews and commits; that hand-off needs no question from you. If the phase
-  also leaves a genuinely gated action pending (something on the ask list, e.g. gh issue close), raise it separately
-  and explicitly — never
-  blended into a list alongside things you cannot do.
-* **Submission candidate:** before handing off an uncommitted candidate or a review document naming files for
-  submission, use
-  `verify-submission-candidate`; its generated verified section is the authoritative file list and validation evidence.
-* **Each phase needs its own explicit go.** Approval of a plan authorizes nothing but the plan itself; answers to side
-  questions, decision confirmations, or filed follow-up issues are not a "go" for the next phase — even a phase that
-  changes no tracked files (e.g. a baseline capture). If the human's message doesn't clearly say to proceed, ask.
-* **Commit gate:** before starting a phase, confirm the previous phases' artifacts are committed — `git status
-  --porcelain` must show no uncommitted changes to files *this effort* has touched (including its plan doc).
-  Pre-existing untracked or modified files unrelated to the effort do not block. If the gate fails, stop and ask for the
-  commit rather than proceeding on top of unreviewed work.
-
-## Agent skills
-
-Per-repo configuration for the installed agent skills. Each section below is a one-line summary; the detail lives in
-the linked file under `docs/agents/`.
-
-Verify agent skill and plugin discovery empirically with a positive control and a clean negative control; remove
-cached plugin and marketplace registrations before interpreting the negative result.
-
-### Issue tracker
-
-Issues live in GitHub Issues on `Strongheart-Games/StrongMods`, driven with the `gh` CLI under the bot identity.
-See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-All five triage roles use a `triage:` facet, matching the repo's `type:` / `mod:` / `scope:` style; the repo has no
-unfaceted labels at all. See `docs/agents/triage-labels.md`.
-
-### Wayfinder
-
-A map and its tickets are GitHub issues carrying a `wayfinder:` facet, wired with native sub-issues and issue
-dependencies. See the *Wayfinding operations* section of `docs/agents/issue-tracker.md`.
-
-### Domain docs
-
-Single-context: one human-authored `CONTEXT.md` at the repo root, with durable decisions as ADRs under `docs/adr/`
-and active effort review documents under `.ai/reviews/`. See `docs/agents/domain.md`.

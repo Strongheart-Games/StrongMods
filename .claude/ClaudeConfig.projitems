@@ -10,7 +10,4 @@
   </PropertyGroup>
   <!-- Everything in .claude/ becomes visible to the IDE (and its inspections) via this glob, per machine,
        including gitignored files where they exist. Backups are excluded as churn nobody edits. -->
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)**\*" Exclude="$(MSBuildThisFileDirectory)*.shproj;$(MSBuildThisFileDirectory)*.projitems;$(MSBuildThisFileDirectory)memory-backup-*\**" />
-  </ItemGroup>
 </Project>
