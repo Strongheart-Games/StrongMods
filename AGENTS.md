@@ -32,92 +32,8 @@ scaffolding a new mod, not shippable mods themselves.
 
 ## Building
 
-### Shared build files
-
-Every project gets its settings from `build/`. Individual `.csproj` files carry only what is unique to them — the
-canonical code mod is 4 lines (the `Sdk` attribute plus the two imports), and only genuine deviations add lines.
-`.cs` files are globbed by the SDK; there are no `Compile` lists and no `ProjectGuid`s.
-
-| File                                            | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `build/GamePaths.props`                         | The shared game-tree and install paths. Pulled in by the project entry points. |
-| `build/GameVersions.props`                      | The game-version defaults and registry. Pulled in by `GamePaths.props`. |
-| `build/Mod.props`                               | Code-mod defaults. Imported **before** the project body, so the body overrides it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `build/Mod.targets`                             | Code-mod references, content and `OutputPath`. Imported **after** the body.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `build/Modlet.targets`                          | The whole build for an XML-only modlet: stages content to `bin\`, plus `Clean`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `build/Deploy.targets`                          | The shared `Deploy` target (mirror install into the live game). Pulled in by `Mod.targets` and `Modlet.targets`, like `GamePaths.props`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `build/XmlLint.targets` + `build/XmlLint.cs`    | XML well-formedness lint for each project's `ModInfo.xml` + `Config\**\*.xml`, run inside every build. Pulled in by all three entry points, like `Deploy.targets`; the `.cs` is the task body, compiled at build time by `RoslynCodeTaskFactory` — it belongs to no project. Bypass: `-p:XmlLintEnabled=false`. Project XML needs no pass — MSBuild parses it to build at all.                                                                                                                                                                                                                                                                                 |
-| `build/Overlay.props` + `build/Overlay.targets` | The overlay entry-point pair: protective-additive `Deploy` with `MirrorOnDeploy` scoped mirroring into a declared `DeployRoot`. A props/targets **sandwich** like code mods, because an overlay's body *references* shared path properties — see the `Overlay.props` header for the incident that makes the order load-bearing. Never combined with the other entry points.                                                                                                                                                                                                                                                                                   |
-| `build/tools/compare-eval.cs`                   | Verification helper; not imported by MSBuild. See *Verifying* below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-
-**Nothing is auto-imported — there is deliberately no `Directory.Build.props`/`.targets`, and adding one is a mistake.**
-Import position is explicit and load-bearing.
-
-A code mod imports the props file as the first element of its body and the targets file as the last; the SDK's implicit
-`Sdk.props`/`Sdk.targets` imports bracket the whole body, so the sandwich holds:
-
-```xml
-
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\build\Mod.props" />
-  <!-- deviations only: ModLoadTier, ModsDir, GameAssembly items, PlatformTarget, PackageReference -->
-  <Import Project="..\build\Mod.targets" />
-</Project>
-```
-
-A modlet imports one file: `<Import Project="..\build\Modlet.targets" />`. An overlay uses a **two-import sandwich**
-(`..\build\Overlay.props` first, `..\build\Overlay.targets` last) with `<DeployRoot>` and its
-`<MirrorOnDeploy>` declarations between them — the props import must come first because `DeployRoot` references shared
-path properties, which would otherwise expand empty.
-
-### References
-
-**Everything compiles against the game's own assemblies**, including framework types. A complete game tree must be
-present to build or test. By default, each project resolves its declared version from restored private packages under
-`packages/`. A live game install is needed only for deployment or the publishing workflow. To add a game assembly to a
-project, use `<GameAssembly Include="Noemax.GZip" />`.
-
-Game assemblies are licensed. Keep `vendor/` out of Git. Keep `7DtD.Assemblies.*` packages private and unlinked from
-the public repository. Never expose the assemblies through a public package or CI artifact. CI must never run
-`-t:Deploy`.
-
-**Every project needs a NuGet restore before its first build** (SDK-style projects require the assets file even with no
-packages). This is automatic in practice: `dotnet build` restores implicitly, IDEs restore on load, and bare `msbuild`
-needs `-restore`. A build without one fails with a single readable `NETSDK1004` "run a restore" error. Only `BloodRain`
-actually pulls a package — Cronos, a bare `<PackageReference>`, fetched from nuget.org once per machine. Its csproj also
-sets `CopyDocumentationFilesFromPackages=true` so `Cronos.xml` keeps deploying beside `Cronos.dll`, as it always has —
-the SDK skips package doc files by default.
-
-Full `MSBuild.exe` (as opposed to `dotnet build`) resolves `Microsoft.NET.Sdk` only if a .NET SDK is discoverable on the
-machine.
-
-### Deploying
-
-**Building never touches a live install.** It stages the shippable folder under `bin\$(Configuration)\`. Installation
-uses the explicit `Deploy` target and can overwrite or delete files within its managed scope. Run it only when the user
-asks to install or deploy. Redirect deployment to `.scratch\` when testing the deployment process. `Clean` touches only
-staging output; removing an installed mod is a separate manual operation.
-
-### Verifying
-
-Three levels beyond running the game:
-
-1. **Evaluation diff, no build.** `msbuild <proj> -getProperty:... -getItem:...` prints a project's resolved settings as
-   JSON without running any target — no compile, no copy, nothing written to the game. Diff that against a
-   `git worktree` of `HEAD` to prove a `.csproj` change is a no-op. `build/tools/compare-eval.cs` does the diff; its
-   header comment has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
-2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. Every build also lints
-   `ModInfo.xml` and `Config\**\*.xml` for XML well-formedness (`build/XmlLint.targets`), so a malformed patch file
-   fails the build instead of failing at game load.
-3. **The test suite** — `Tests` (modern .NET, not a mod; the single home for every runner-based test in the repo):
-   `dotnet test StrongMods.sln -c Debug`
-   resolves every mod's Harmony patch targets — `[HarmonyPatch]` attributes and `[PatchTargetManifest]`-published
-   programmatic targets — against the unit `$(SdtdDir)` points at (live install, or a vendored tree via
-   `-p:SdtdDir=vendor/...`). Failure messages carry the version tested and near-miss signatures, so a target lost to a
-   game update is diagnosed from the message alone. CI runs the suite against both units on every push.
-
-**StrongMods loads first**, via `<ModLoadTier>First</ModLoadTier>` (the `000000-` prefix) — the tier forces it ahead of
-other mods in load order, which matters because it replaces the XML patcher (see below).
+For builds, restores, tests, MSBuild evaluation, build failures, or changes to shared build logic, follow
+`.agents/skills/build-and-test/SKILL.md`.
 
 ## Architecture
 
@@ -141,6 +57,9 @@ logger; prefix messages with `[ModName]`.
 
 This is the foundational mod other mods depend on (only cross-project reference in the repo:
 `AutoCollectLoot` → `StrongMods` via `ProjectReference`). It provides two things:
+
+**StrongMods loads first**, via `<ModLoadTier>First</ModLoadTier>` (the `000000-` prefix). The tier places it ahead of
+other mods because it replaces the XML patcher.
 
 1. **A breadth-first XML patcher** (`BreadthFirstXmlPatcher.cs`). Vanilla patches file-major (every mod's patch for
    `items.xml`, then every mod's patch for `entityclasses.xml`, …), which makes cross-file reads during patching

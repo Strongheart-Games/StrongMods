@@ -1,5 +1,12 @@
 # StrongMods
 
+## Building
+
+See the [build guide](BUILDING.md#quick-start) for fresh-machine requirements, setup, build commands, and build-system
+details.
+
+## Mods
+
 | Mod Name                        | Description                                                                                                                        |
 |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------|
 | **AECInternationalMarketFixes** | Fixes for the AEC International Market mod, plus a starter tutorial quest.                                                         |
