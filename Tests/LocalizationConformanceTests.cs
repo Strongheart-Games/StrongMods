@@ -52,6 +52,22 @@ public sealed class LocalizationConformanceTests {
     }
   }
 
+  [Fact]
+  public void Player_spawned_trader_block_description_keys_are_defined() {
+    string repositoryRoot = AssemblyMetadata.Get("RepoRoot");
+    var localizationKeys = new HashSet<string>(LocalizationKeys(
+      Path.Combine(repositoryRoot, "PlayerSpawnedTraders", "Config", "Localization.csv")));
+    XDocument blocks = XDocument.Load(Path.Combine(repositoryRoot, "PlayerSpawnedTraders", "Config", "blocks.xml"));
+    string[] referencedKeys = blocks.Descendants("property")
+      .Where(property => (string)property.Attribute("name") == "DescriptionKey")
+      .Select(property => (string)property.Attribute("value"))
+      .ToArray();
+
+    foreach (string key in referencedKeys) {
+      Assert.Contains(key, localizationKeys);
+    }
+  }
+
   private static IEnumerable<string> LocalizationKeys(string file) {
     using var reader = new TextFieldParser(file) {
       TextFieldType = FieldType.Delimited,

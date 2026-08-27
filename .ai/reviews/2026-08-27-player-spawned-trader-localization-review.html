@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlayerSpawnedTraders localization review</title>
+  <style>
+    body { max-width: 860px; margin: 3rem auto; padding: 0 1.5rem; color: #17202a; font: 17px/1.55 system-ui, sans-serif; }
+    code { padding: .1rem .3rem; background: #edf1f5; font-family: ui-monospace, Consolas, monospace; }
+    section { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #ccd4dc; }
+    .finding { padding: 1rem 1.25rem; border-left: 4px solid #9a5b00; background: #fbf3e7; }
+  </style>
+</head>
+<body>
+  <header>
+    <p>Implementation review · 27 Aug 2026</p>
+    <h1>Define PlayerSpawnedTraders block descriptions</h1>
+    <p><a href="https://github.com/Strongheart-Games/StrongMods/issues/120">Issue #120</a></p>
+  </header>
+
+  <section>
+    <h2>Problem</h2>
+    <p>Five individual trader blocks used distinct <code>DescriptionKey</code> values that the mod did not define.
+      Their descriptions could not resolve in game.</p>
+  </section>
+
+  <section>
+    <h2>Change</h2>
+    <div class="finding">Each individual trader block now has a description that names the trader it creates.</div>
+    <p>The localization conformance suite now reads PlayerSpawnedTraders block XML and requires every
+      <code>DescriptionKey</code> to exist in its localization table.</p>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <p>The PlayerSpawnedTraders modlet build passed. The focused localization conformance suite passed 3/3.</p>
+  </section>
+
+  <section>
+    <h2>Handoff evidence</h2>
+    <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>fd9c30d3de3710f7fee1cf2ac8f192c7beca6c4d</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>dotnet build PlayerSpawnedTraders/PlayerSpawnedTraders.csproj -c Debug -p:SdtdDir=../../packages/7dtd.assemblies.game/3.1.0.14</code> (exit 0)</li>
+        <li><code>dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=../../packages/7dtd.assemblies.game/3.1.0.14 --filter FullyQualifiedName~LocalizationConformanceTests</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>.ai/reviews/2026-08-27-player-spawned-trader-localization-review.html</code></li>
+      <li><code>PlayerSpawnedTraders/Config/Localization.csv</code></li>
+      <li><code>Tests/LocalizationConformanceTests.cs</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+  </section>
+</body>
+</html>
