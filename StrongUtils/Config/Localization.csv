@@ -1,4 +1,6 @@
 ﻿Key,Source,Type,english
+buff_in_stronghold_name,buffs,Buff,"Stronghold"
+buff_in_stronghold_desc,buffs,Buff,"The walls of Stronghold protect you."
 buff_strongsworn_zone_violation_name,buffs,Buff,"Stygian Exile"
 buff_strongsworn_zone_violation_desc,buffs,Buff,"You have trespassed into a forbidden sector or abandoned your post. The weight of the Styx pulls at your limbs, draining your stamina and clouding your vision. Return to authorized StrongSworn territory before the underworld claims you entirely."
 buff_strongsworn_zone_violation_tooltip,buffs,Buff,"StrongSworn Zone Violation"
