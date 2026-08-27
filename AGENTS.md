@@ -94,40 +94,10 @@ machine.
 
 ### Deploying
 
-**Building never touches a live install.** Every build stages the shippable mod folder to `bin\$(Configuration)\`;
-installing is the explicit `Deploy` target (`build/Deploy.targets`, shared by both project shapes):
-
-```bash
-dotnet build StrongMods.sln -c Debug                                  # build everything; writes only bin\/obj\
-dotnet build StrongMods.sln -c Debug -t:Deploy                        # build and install into the live game
-dotnet build DynamicFeralSense/DynamicFeralSense.csproj -c Debug -t:Deploy   # one mod
-```
-
-For mods and modlets, `Deploy` **mirrors** staging into `$(ModsDir)\$(ModDeployName)\`: source is authoritative for
-content *and existence*, so a file removed from source is deleted from the deployed folder at the next deploy (announced
-in the build log). Mirroring assumes the repo manages the whole deploy folder — a project deploying into a directory
-with unmanaged content is an **Overlay** instead: its `Deploy` is protective-additive (copy if absent or newer, never
-overwrite newer live edits, never delete) except inside its declared `MirrorOnDeploy` directories/files, where mirror
-semantics apply scoped. `Hades`' live prefab edits and world binaries survive its deploys by construction.
-
-- `<ModLoadTier>AfterDependencies</ModLoadTier>` sets deploy-folder load order by *intent* — tiers `First`,
-  `AfterDependencies`, `Last`, `LocalConfig` map to the literal prefixes in `build/Deploy.targets`, whose header comment
-  records the verified sort facts (the game's comparison is culture-aware, not ordinal). Raw
-  `<ModLoadPrefix>` remains the escape hatch; setting both is a build error.
-- `<ModsDir>$(SdtdServerDir)\Mods</ModsDir>` targets the dedicated server instead.
-- `<IsDeployable>false</IsDeployable>` marks a project that never deploys (both templates; `Tests`).
-- `-p:ModsDir=...` redirects the deploy *destination* — for testing the deploy step itself against scratch. Plain builds
-  no longer need it for safety, and since the two-root split `-p:SdtdDir` cannot move the deploy destination: a deploy
-  during a vendor-mode build goes to the normal install, never into the tree.
-- Deploy verifies the **destination install's version** (#37): its `Assembly-CSharp.dll` must hash-match one of the
-  mod's declared `SdtdTestVersions` trees, else the deploy is refused with the declared list in the message. The unit
-  follows the destination (a server-targeted deploy checks server trees). Redirected destinations with no game assembly
-  above them skip the check. Escape hatch: `-p:SdtdSkipInstallVersionCheck=true`.
-- `Clean` touches only the `bin\` staging, never a live install. Removing a deployed mod entirely is a manual act.
-- Release deploys too: `-c Release -t:Deploy`.
-
-Per-machine overrides (a different install path, a permanent redirect) go in a gitignored `Local.props` in the repo
-root — copy `Local.props.sample`. Precedence: `-p:` → `Local.props` → `SDTD_HOME` → the default.
+**Building never touches a live install.** It stages the shippable folder under `bin\$(Configuration)\`. Installation
+uses the explicit `Deploy` target and can overwrite or delete files within its managed scope. Run it only when the user
+asks to install or deploy. Redirect deployment to `.scratch\` when testing the deployment process. `Clean` touches only
+staging output; removing an installed mod is a separate manual operation.
 
 ### Verifying
 
@@ -139,9 +109,7 @@ Three levels beyond running the game:
    header comment has the usage and the pitfalls. **Always query `OutDir`/`TargetDir`, not just `OutputPath`.**
 2. **A real build** — inherently safe: builds stage to `bin\` and cannot disturb a live install. Every build also lints
    `ModInfo.xml` and `Config\**\*.xml` for XML well-formedness (`build/XmlLint.targets`), so a malformed patch file
-   fails the build instead of failing at game load. To verify the *deploy step* itself, run `-t:Deploy` with
-   `-p:ModsDir=.scratch\...` (and `-p:SdtdSavesDir=...` for the StrongholdSaves overlay). A relative value resolves
-   against the directory the command was run from, the same as `-p:SdtdDir`.
+   fails the build instead of failing at game load.
 3. **The test suite** — `Tests` (modern .NET, not a mod; the single home for every runner-based test in the repo):
    `dotnet test StrongMods.sln -c Debug`
    resolves every mod's Harmony patch targets — `[HarmonyPatch]` attributes and `[PatchTargetManifest]`-published
