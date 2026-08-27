@@ -222,6 +222,19 @@ public sealed class StrongZoneTests {
   }
 
   [Fact]
+  public void A_buff_name_survives_parse_and_write() {
+    object original = FromXml("<zone name=\"buff-zone\" cornerXZ=\"0,0\" oppositeCornerXZ=\"1,1\" " +
+                              "buff=\"buff_in_stronghold\"><tags>buff</tags></zone>");
+
+    Assert.Equal("buff_in_stronghold", ModLogicHost.Call(original, "get_BuffName"));
+    XElement written = (XElement)ModLogicHost.Call(original, "ToXml");
+    Assert.Equal("buff_in_stronghold", written.Attribute("buff")!.Value);
+
+    object round = ModLogicHost.CallStatic(zoneType, "FromXml", written);
+    Assert.Equal("buff_in_stronghold", ModLogicHost.Call(round, "get_BuffName"));
+  }
+
+  [Fact]
   public void Name_corners_and_tags_survive_a_write_then_read() {
     object original = Zone("town", -10, -20, 30, 40, "buff", "no_claims");
 

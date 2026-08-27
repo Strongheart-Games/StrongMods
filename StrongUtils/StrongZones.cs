@@ -553,7 +553,8 @@ namespace StrongUtils {
           .ToList();
       }
 
-      return new StrongZone(name, corner, oppositeCorner, tags);
+      var buffName = zoneElement.Attribute("buff")?.Value;
+      return new StrongZone(name, corner, oppositeCorner, tags, buffName);
     }
 
     public XElement ToXml() {
@@ -568,6 +569,10 @@ namespace StrongUtils {
       if (Tags is { Count: > 0 }) {
         var tagsElement = new XElement("tags", string.Join(",", Tags));
         zoneElement.Add(tagsElement);
+      }
+
+      if (!string.IsNullOrEmpty(BuffName)) {
+        zoneElement.Add(new XAttribute("buff", BuffName));
       }
 
       return zoneElement;
