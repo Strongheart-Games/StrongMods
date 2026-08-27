@@ -1,4 +1,4 @@
 {
-  "game": { "label": "V3.1.0-b14", "buildid": "24436778", "package_version": "3.1.0.14", "branch": "public" },
-  "dedicated-server": { "label": "V3.1.0-b14", "buildid": "24436799", "package_version": "3.1.0.14", "branch": "public" }
+  "game": { "label": "V3.2.0-b9", "buildid": "24911213", "package_version": "3.2.0.9", "branch": "public" },
+  "dedicated-server": { "label": "V3.2.0-b9", "buildid": "24911252", "package_version": "3.2.0.9", "branch": "public" }
 }
