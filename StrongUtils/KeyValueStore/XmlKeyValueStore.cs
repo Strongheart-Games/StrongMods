@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
@@ -50,11 +51,11 @@ namespace StrongUtils.KeyValueStore {
     }
 
     public void Set(string key, float value) {
-      SetInternal(key, value.ToString("R"), VarType.Float);
+      SetInternal(key, value.ToString("R", CultureInfo.InvariantCulture), VarType.Float);
     }
 
     public void Set(string key, double value) {
-      SetInternal(key, value.ToString("R"), VarType.Double);
+      SetInternal(key, value.ToString("R", CultureInfo.InvariantCulture), VarType.Double);
     }
 
     public void Set(string key, bool value) {
@@ -72,7 +73,7 @@ namespace StrongUtils.KeyValueStore {
         }
 
         try {
-          return (T)Convert.ChangeType(entry.Raw, typeof(T));
+          return (T)Convert.ChangeType(entry.Raw, typeof(T), CultureInfo.InvariantCulture);
         } catch {
           return defaultValue;
         }
@@ -162,11 +163,13 @@ namespace StrongUtils.KeyValueStore {
     }
 
     public bool TestAndSet(string key, float expectedValue, float newValue) {
-      return TasInternal(key, expectedValue.ToString("R"), newValue.ToString("R"), VarType.Float);
+      return TasInternal(key, expectedValue.ToString("R", CultureInfo.InvariantCulture),
+        newValue.ToString("R", CultureInfo.InvariantCulture), VarType.Float);
     }
 
     public bool TestAndSet(string key, double expectedValue, double newValue) {
-      return TasInternal(key, expectedValue.ToString("R"), newValue.ToString("R"), VarType.Double);
+      return TasInternal(key, expectedValue.ToString("R", CultureInfo.InvariantCulture),
+        newValue.ToString("R", CultureInfo.InvariantCulture), VarType.Double);
     }
 
     public bool TestAndSet(string key, bool expectedValue, bool newValue) {

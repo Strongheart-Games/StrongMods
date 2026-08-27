@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -186,6 +187,31 @@ public sealed class XmlKeyValueStoreTests : IDisposable {
     Assert.Equal("alpha", ModLogicHost.CallGeneric(reopened, "Get", new[] { typeof(string) }, "name", null));
     Assert.Equal(3, ModLogicHost.CallGeneric(reopened, "Get", new[] { typeof(int) }, "count", 0));
     Assert.Equal(Enum.Parse(varType, "Int"), ModLogicHost.Call(reopened, "GetVarType", "count"));
+  }
+
+  [Fact]
+  public void Floating_point_values_use_invariant_text_under_a_comma_decimal_culture() {
+    CultureInfo savedCulture = CultureInfo.CurrentCulture;
+    CultureInfo savedUiCulture = CultureInfo.CurrentUICulture;
+    try {
+      CultureInfo commaDecimalCulture = CultureInfo.GetCultureInfo("de-DE");
+      CultureInfo.CurrentCulture = commaDecimalCulture;
+      CultureInfo.CurrentUICulture = commaDecimalCulture;
+
+      ModLogicHost.Call(store, "Set", "float-ratio", 1.5f);
+      ModLogicHost.Call(store, "Set", "double-ratio", 2.25d);
+
+      Assert.Equal("1.5", ModLogicHost.Call(store, "GetRaw", "float-ratio"));
+      Assert.Equal("2.25", ModLogicHost.Call(store, "GetRaw", "double-ratio"));
+      object reopened = Open();
+      Assert.Equal(1.5f,
+        ModLogicHost.CallGeneric(reopened, "Get", new[] { typeof(float) }, "float-ratio", 0f));
+      Assert.Equal(2.25d,
+        ModLogicHost.CallGeneric(reopened, "Get", new[] { typeof(double) }, "double-ratio", 0d));
+    } finally {
+      CultureInfo.CurrentCulture = savedCulture;
+      CultureInfo.CurrentUICulture = savedUiCulture;
+    }
   }
 
   [Fact]
