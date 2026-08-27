@@ -278,10 +278,6 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
   touches conforms as part of that change, and new names conform always.
 - `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
   (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
-- **Docs have homes** — one self-contained HTML review document carries planning, decisions, verification, and handoff
-  for each new or actively revised effort: `.ai/reviews/YYYY-MM-DD-<effort>-review.html` (per project, or repo-root for
-  repo-wide work). Start from `docs/agents/review-document-template.html`. Historical effort docs stay where they are;
-  durable decisions are ADRs in `docs/adr/`. `docs/agents/domain.md` has the layout and how to choose.
 - **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options weighed,
   the verification. The issue carries the work and its status. **Never add a status or follow-on table to a doc:** it
   becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number. The older plans
