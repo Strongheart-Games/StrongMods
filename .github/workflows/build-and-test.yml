@@ -23,7 +23,7 @@
 #
 # The .NET SDK is pinned to 10.x: the C# file-based tools (build/tools/*.cs) require it.
 #
-# The paths-ignore lists below skip runs for changes that provably cannot reach a compiler or a test. `.ai/`
+# The paths-ignore list on `push` skips runs for changes that provably cannot reach a compiler or a test. `.ai/`
 # carries the plan docs and is excluded three times over already — from the SDK's .cs glob
 # (build/Mod.targets, DefaultItemExcludes), from staged mod content (build/Modlet.targets,
 # build/Overlay.targets) and from the conformance source scan (Tests/ModInventory.cs, SourceFiles) — which
@@ -36,9 +36,17 @@
 # CLAUDE.md, which is why the markdown entry is the documented `**.md` form. For the same reason `.ai/` is
 # listed twice: `.ai/**` is root-anchored, `**/.ai/**` covers the per-project copies.
 #
-# The two lists must stay identical (YAML anchors are not supported by the workflow parser, so they are
-# repeated). Do NOT add Config/**, ModInfo.xml, *.csproj, build/** or .github/** — all are real inputs.
+# Do NOT add Config/**, ModInfo.xml, *.csproj, build/** or .github/** to that list — all are real inputs.
 # workflow_dispatch takes no path filter, so a manual run is always available for an ignored-only change.
+#
+# `pull_request` carries NO path filter, and the two triggers are deliberately NOT symmetric. `main` is
+# protected by a ruleset requiring the two `build & test (<unit>)` checks, and GitHub leaves a required check
+# whose workflow was skipped by path filtering PENDING forever rather than treating it as passed — so a
+# markdown-only PR would be permanently unmergeable. A full run is ~70 s; that is cheaper than the ways
+# around it. Do not "restore symmetry" by copying the push list down here, and do not add a companion
+# workflow on the inverted `paths` list: GitHub path filters fire when ANY changed file matches, so a PR
+# touching one .md and one .cs would match both lists and two workflows would report the same required check
+# name. Filtering a required leg has to happen inside a job that still reports, never in the trigger.
 
 name: Build & Test
 
@@ -53,13 +61,6 @@ on:
       - '.claude/**'
       - 'LICENSE'
   pull_request:
-    paths-ignore:
-      - '.ai/**'
-      - '**/.ai/**'
-      - '**.md'
-      - '.idea/**'
-      - '.claude/**'
-      - 'LICENSE'
   workflow_dispatch:
 
 permissions:
