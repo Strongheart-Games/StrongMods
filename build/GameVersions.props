@@ -22,10 +22,10 @@
   <PropertyGroup>
     <SdtdUnit Condition="'$(SdtdUnit)' == ''">game</SdtdUnit>
     <!-- The default shape: develop against the latest head, test against every supported head. -->
-    <SdtdDevVersion Condition="'$(SdtdDevVersion)' == ''">V3.1.0-b14</SdtdDevVersion>
-    <SdtdTestVersions Condition="'$(SdtdTestVersions)' == ''">V3.1.0-b14;V3.0.1-b4</SdtdTestVersions>
+    <SdtdDevVersion Condition="'$(SdtdDevVersion)' == ''">V3.2.0-b9</SdtdDevVersion>
+    <SdtdTestVersions Condition="'$(SdtdTestVersions)' == ''">V3.2.0-b9;V3.1.0-b14;V3.0.1-b4</SdtdTestVersions>
 
-    <SdtdGameVersionMap>V3.1.0-b14=3.1.0.14;V3.0.1-b4=3.0.1.4</SdtdGameVersionMap>
+    <SdtdGameVersionMap>V3.2.0-b9=3.2.0.9;V3.1.0-b14=3.1.0.14;V3.0.1-b4=3.0.1.4</SdtdGameVersionMap>
 
     <!-- What the game tree is about to resolve with. If the final SdtdDevVersion differs, the declaration was
          set BELOW the entry-point props import — the silent OutDir-latch shape; _ValidateGameTreeDeclaration
