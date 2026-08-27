@@ -213,10 +213,9 @@ GitHub issue notifications.
 **Noise model (owner concern, 2026-07-31): notify on *releases*, not every build.** SteamDB shows far more
 builds than players ever receive — every depot push mints a buildid, but a build only reaches players when it is
 promoted to a **branch head** (`public`, `latest_experimental`, version-pinned branches like `3.0.1`).
-`app_info` exposes only branch heads, so polling it inherently filters the push firehose; what remains to design
-is *which branches* count as "released" (`public` certainly — it's what the publish routine vendors; whether
-`latest_experimental` or newly-appearing version branches warrant an informational mention is decided from data)
-and the promotion edge cases: buildid moving *backward* (rollback), re-promotion of the same buildid, the game
+`app_info` exposes only branch heads, so polling it inherently filters the push firehose. `public` and
+`latest_experimental` count as installable releases; version-named branches remain informational. The promotion edge
+cases include a buildid moving *backward* (rollback), re-promotion of the same buildid, the game
 and dedicated server promoting at different times (notify per unit, update the same issue as the second unit
 lands), and branches appearing/disappearing. These are empirical questions, so:
 
@@ -239,7 +238,8 @@ lands), and branches appearing/disappearing. These are empirical questions, so:
 - **Branch structure:** one description-less `public` branch per unit; version-pinned `v<x.y.z>` branches
   ("Version 3.1.0 Stable"); historical `alpha*` branches; a `privatebranches: 1` flag (password-protected
   branches exist but are invisible — correctly out of scope). `latest_experimental` **does not exist while no
-  experimental is running** — the notifier must treat its absence as normal, presence as informational.
+  experimental is running**. Its absence is normal. By owner decision on 2026-08-22, a newer head is a package and
+  notification trigger.
 - **The live state was itself the hotfix edge case:** both units' `public` *and* `v3.1.0` branches had been
   re-pointed to new builds (game 24392370 → 24436778, server 24392395 → 24436799) with the branch description
   unchanged — a same-version hotfix; the in-game b# is the only place the new label component exists. The local
@@ -248,14 +248,15 @@ lands), and branches appearing/disappearing. These are empirical questions, so:
 - **Data quirks encoded as fixtures:** double-space in one branch description; oldest branches lack
   `timeupdated`; steamcmd interleaves unquoted chatter lines with the VDF; steamcmd can serve a stale/partial
   cache on a first query (one retry is the cure); Windows consoles are cp1252 (tool output is plain ASCII).
-- **`steam_check.py` shipped** with the pure `should_notify` core, a minimal VDF parser, `--selftest` (11
+- **`steam_check.py` shipped** with the pure `should_notify` core, a minimal VDF parser, `--selftest` (later expanded
+  to 15 checks when experimental packages became supported:
   offline checks: hotfix re-point, up-to-date, rollback — which correctly hints the version rolled back *to* —
-  new-version branch, missing watched branch → error, missing published state → error, experimental
-  informational-only, parser quirks), `--raw` (decide from a saved capture), and `--live` (anonymous steamcmd).
+  new-version branch, missing watched branch → error, missing published state → error, experimental release,
+  experimental retirement, parser quirks), `--raw` (decide from a saved capture), and `--live` (anonymous steamcmd).
   Exit contract: 0 up-to-date, 1 notify, 2 error — a broken query can never impersonate "up to date".
-  Subsequently ported 1:1 to `steam_check.cs` under the #36 language decision — text and `--json` outputs
-  byte-identical to the Python original, same exit contract, same 11 checks, plus a hardened top-level catch so
-  malformed data also exits 2 — and the `.py` was retired.
+  Subsequently ported 1:1 to `steam_check.cs` under the #36 language decision — text and `--json` outputs were
+  byte-identical to the Python original, with the same exit contract and a hardened top-level catch so malformed data
+  also exits 2. The `.py` was retired; the C# checks now carry the later experimental-release cases.
 - **SteamDB browsing was dropped:** loading steamdb.info crashes the Claude Desktop in-app browser (reported
   upstream), and branch heads turned out to carry everything the decision needs — promotion history was
   context, not input. No design change required; §6b's model survived contact with real data intact.
@@ -519,9 +520,10 @@ The original open questions, resolved — plus the automation scope they added:
 4. **Automation mandate:** the human's part must be as automated as possible — hence `release.cs` as the single
    guarded command (§6), SteamCMD both for the new-version guardrail and optional install updates, and the
    scheduled Steam-buildid check workflow for notification (§6b).
-5. **Notify on releases only, not every Steam build:** the notifier watches branch heads, its decision logic is
+5. **Notify on releases only, not every Steam build:** the notifier watches the installable `public` and
+   `latest_experimental` branch heads, its decision logic is
    designed empirically first (exploration is now phase 1) and shared with `release.cs` via `steam_check.cs`,
-   and it soaks in shadow mode before it is allowed to file an issue (§6b).
+   and its notifications activated after the 2026-08-01..22 shadow soak (§6b).
 6. **Scripting language is C#, not Python** (#36, `.ai/scripting-language-research.md`): new tools are born as
    C# file-based apps (`dotnet run tool.cs`); `steam_check` was the pilot port (equivalence proven against the
    Python original's outputs); `vendor.cs` ports inside #22 because `release.cs` depends on it; the remaining

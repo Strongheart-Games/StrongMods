@@ -87,28 +87,29 @@ internal static class Release {
 
     var decisions = JsonDocument.Parse(checkOut).RootElement.EnumerateArray().ToList();
     if (checkExit == 0) {
-      Console.WriteLine("Nothing to publish: every unit's public branch matches the published state.");
+      Console.WriteLine("Nothing to publish: every unit's newest installable branch matches the published state.");
       return 0;
     }
 
-    var stale = new List<(string Unit, long SteamBuildid, string OldLabel, string? Hint)>();
+    var stale = new List<(string Unit, long SteamBuildid, string SteamBranch, string OldLabel, string? Hint)>();
     foreach (JsonElement d in decisions) {
       var unit = d.GetProperty("unit").GetString()!;
       if (d.GetProperty("kind").GetString() == "rollback") {
-        throw new ReleaseError($"{unit}: Steam's public branch moved BACKWARD (rollback) - refusing to proceed;"
-                               + " investigate manually before publishing anything");
+        throw new ReleaseError($"{unit}: Steam's {d.GetProperty("steam_branch").GetString()} branch moved BACKWARD"
+                               + " (rollback) - refusing to proceed; investigate manually before publishing anything");
       }
 
       if (d.GetProperty("notify").GetBoolean()) {
-        stale.Add((unit, d.GetProperty("steam_buildid").GetInt64(),
+        stale.Add((unit, d.GetProperty("steam_buildid").GetInt64(), d.GetProperty("steam_branch").GetString()!,
           d.GetProperty("published_label").GetString()!, d.GetProperty("version_hint").GetString()));
       }
     }
 
-    Console.WriteLine($"To publish: {string.Join(", ", stale.Select(s => $"{s.Unit} (build {s.SteamBuildid})"))}");
+    Console.WriteLine($"To publish: {string.Join(", ", stale.Select(s =>
+      $"{s.Unit} ({s.SteamBranch}, build {s.SteamBuildid})"))}");
 
     // 2. Local installs must BE the build we are about to vendor.
-    foreach ((var unit, var steamBuildid, _, _) in stale) {
+    foreach ((var unit, var steamBuildid, var steamBranch, _, _) in stale) {
       var install = FindInstall(unit);
       var installBuildid = AppmanifestBuildid(unit, install);
       if (installBuildid == steamBuildid) {
@@ -121,7 +122,7 @@ internal static class Release {
                                + " (game also needs --steam-user; close the Steam client first).");
       }
 
-      UpdateViaSteamCmd(unit, install, steamUser);
+      UpdateViaSteamCmd(unit, install, steamBranch, steamUser);
       installBuildid = AppmanifestBuildid(unit, install);
       if (installBuildid != steamBuildid) {
         throw new ReleaseError($"{unit}: still build {installBuildid?.ToString() ?? "unknown"} after steamcmd"
@@ -135,7 +136,7 @@ internal static class Release {
                       + " The b# is on the game's main-menu screen / in the client log.");
     Console.Write($"New label (current: {string.Join(", ", stale.Select(s => $"{s.Unit}={s.OldLabel}"))}): ");
     var label = Console.ReadLine()?.Trim() ?? "";
-    foreach ((var unit, _, var oldLabel, _) in stale) {
+    foreach ((var unit, _, _, var oldLabel, _) in stale) {
       var problem = ValidateLabel(label, oldLabel);
       if (problem is not null) {
         throw new ReleaseError($"{unit}: {problem}");
@@ -143,7 +144,7 @@ internal static class Release {
     }
 
     // 4. Vendor + pack (each tool re-validates everything it owns).
-    foreach ((var unit, _, _, _) in stale) {
+    foreach ((var unit, _, _, _, _) in stale) {
       RunInherit("dotnet", new[] { "run", ToolPath("vendor.cs"), "--", "--unit", unit, "--label", label, "--force" });
       RunInherit("dotnet", new[] { "run", ToolPath("pack.cs"), "--", "--unit", unit, "--label", label });
     }
@@ -164,9 +165,10 @@ internal static class Release {
     // the committed style). Declarations are deliberately NOT touched — see the header.
     var state = JsonDocument.Parse(File.ReadAllText(versionsPath)).RootElement.EnumerateObject()
       .ToDictionary(p => p.Name, p => p.Value.EnumerateObject().ToDictionary(f => f.Name, f => f.Value.GetString()!));
-    foreach ((var unit, var steamBuildid, _, _) in stale) {
+    foreach ((var unit, var steamBuildid, var steamBranch, _, _) in stale) {
       state[unit] = new Dictionary<string, string> {
-        ["label"] = label, ["buildid"] = steamBuildid.ToString(), ["package_version"] = version
+        ["label"] = label, ["buildid"] = steamBuildid.ToString(), ["package_version"] = version,
+        ["branch"] = steamBranch
       };
     }
 
@@ -235,19 +237,28 @@ internal static class Release {
     return 0;
   }
 
-  private static void UpdateViaSteamCmd(string unit, string install, string? steamUser) {
-    var login = unit == "game"
-      ? new[] { "+login", steamUser ?? throw new ReleaseError("--steamcmd for the game needs --steam-user"
-                                                              + " (SteamCMD's cached login; see §6 caveats)") }
-      : new[] { "+login", "anonymous" };
+  private static void UpdateViaSteamCmd(string unit, string install, string steamBranch, string? steamUser) {
     if (unit == "game") {
       Console.WriteLine("note: updating the client-managed install - close the Steam client first (§6 caveats).");
     }
 
+    RunInherit("steamcmd", SteamCmdUpdateArguments(unit, install, steamBranch, steamUser));
+  }
+
+  private static string[] SteamCmdUpdateArguments(string unit, string install, string steamBranch, string? steamUser) {
+    var login = unit == "game"
+      ? new[] { "+login", steamUser ?? throw new ReleaseError("--steamcmd for the game needs --steam-user"
+                                                              + " (SteamCMD's cached login; see §6 caveats)") }
+      : new[] { "+login", "anonymous" };
     var argv = new List<string> { "+force_install_dir", install };
     argv.AddRange(login);
-    argv.AddRange(new[] { "+app_update", Units[unit].AppId, "+quit" });
-    RunInherit("steamcmd", argv.ToArray());
+    argv.AddRange(new[] { "+app_update", Units[unit].AppId });
+    if (steamBranch != "public") {
+      argv.AddRange(new[] { "-beta", steamBranch });
+    }
+
+    argv.Add("+quit");
+    return argv.ToArray();
   }
 
   private static string FindInstall(string unit) {
@@ -327,6 +338,13 @@ internal static class Release {
     Ok(ValidateLabel("V3.1.0-b14", "V3.1.0-b14") is not null, "unchanged label refused when buildid moved");
     Ok(ValidateLabel("V3.1.0-b13", "V3.1.0-b14") is not null, "backward label refused");
     Ok(ValidateLabel("3.1.0-b15", "V3.1.0-b14") is not null, "bad grammar refused");
+
+    string[] publicUpdate = SteamCmdUpdateArguments("dedicated-server", @"C:\server", "public", null);
+    Ok(!publicUpdate.Contains("-beta"), "public SteamCMD update uses the default branch");
+    string[] experimentalUpdate = SteamCmdUpdateArguments(
+      "game", @"C:\game", "latest_experimental", "steam-user");
+    Ok(experimentalUpdate.Contains("-beta") && experimentalUpdate.Contains("latest_experimental"),
+      "experimental SteamCMD update selects latest_experimental");
 
     // BumpPin and its checks are gone (#23 phase 4): the csproj derives its PackageDownload list from the
     // registry, and adopting a published version is a declaration edit, not a release side effect.

@@ -2,10 +2,8 @@
 # .ai/ci-feed-and-workflow.md §6b. Decision logic lives in build/tools/steam_check.cs (shared with release.cs);
 # this workflow only runs it and reports.
 #
-# SHADOW MODE: NOTIFY below starts 'false' — decisions go to the job summary only. After the soak proves the
-# check fires only for genuine releases (ideally through one real release), flip NOTIFY to 'true' and the
-# tracking-issue steps activate: open/update one issue when Steam is ahead, auto-close it when the published
-# state catches up.
+# Notifications are active after the 2026-08-01..22 shadow soak. A new `public` or `latest_experimental`
+# branch head opens or updates one tracking issue; publishing that head auto-closes the issue.
 #
 # No secrets, no licensed content: buildids and branch names are public Steam metadata, queried anonymously.
 # A broken query fails the job red (steam_check exit 2) — it must never look like "up to date".
@@ -36,7 +34,7 @@ permissions:
   issues: write
 
 env:
-  NOTIFY: 'false'
+  NOTIFY: 'true'
 
 jobs:
   check:
@@ -85,7 +83,7 @@ jobs:
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           case "$code" in
             0) verdict="up to date" ;;
-            1) verdict="WOULD NOTIFY (shadow mode)" && [ "$NOTIFY" = "true" ] && verdict="NOTIFYING" ;;
+            1) verdict="NOTIFYING" ;;
             *) verdict="QUERY ERROR" ;;
           esac
           {
@@ -94,7 +92,7 @@ jobs:
             cat /tmp/decisions.json
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          # A broken query fails red; "would notify" stays green in shadow mode (the summary is the record).
+          # A broken query fails red; a release verdict stays green because the issue is the notification.
           if [ "$code" != 0 ] && [ "$code" != 1 ]; then exit 1; fi
 
       - name: Open or update the tracking issue
@@ -103,7 +101,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           title="New 7DtD build on Steam"
-          body="@str0ngh34rt Steam's public branch moved past the published packages.
+          body="@str0ngh34rt An installable Steam branch moved past the published packages.
 
           \`\`\`json
           $(cat /tmp/decisions.json)

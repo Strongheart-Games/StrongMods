@@ -12,10 +12,9 @@
 //     dotnet run build/tools/steam_check.cs -- --raw <captured app_info output> --published ... [--json]
 //
 // Noise model: Steam mints a buildid for every depot push (SteamDB shows that firehose), but players only
-// receive a build once it is promoted to a *branch head*. We watch one branch per unit — `public`, the branch
-// the publish routine vendors — so unpromoted builds are invisible by construction. Version-named branches
-// (v3.1.0, ...) and latest_experimental are read as *context* (version hints, informational notes), never as
-// notification triggers.
+// receive a build once it is promoted to a *branch head*. We watch the installable `public` and
+// `latest_experimental` branches, choosing the newest head. Unpromoted builds and version-named branches
+// (v3.1.0, ...) never trigger notifications; version-named branches only provide version hints.
 //
 // Exit codes for --live/--raw: 0 = up to date, 1 = notification warranted, 2 = error (a broken query must fail
 // the workflow red, never report "up to date").
@@ -65,7 +64,8 @@ try {
 }
 
 internal static class SteamCheck {
-  public const string WatchedBranch = "public";
+  public const string PublicBranch = "public";
+  public const string ExperimentalBranch = "latest_experimental";
 
   private const string VdfSample = """
                                    AppID : 251570, change number : 37658283/37658283, last change : Fri Jul 31 08:51:12 2026
@@ -151,17 +151,16 @@ internal static class SteamCheck {
   /// Error means the caller must fail loudly — an unreadable state must never look like "up to date".
   public static Decision ShouldNotify(string unit, Dictionary<string, string>? published, Branches branches) {
     var d = new Decision { Unit = unit };
-    if (branches.TryGetValue("latest_experimental", out Dictionary<string, string>? exp)) {
+    if (branches.TryGetValue(ExperimentalBranch, out Dictionary<string, string>? exp)) {
       d.Experimental = new Experimental
         { Buildid = long.Parse(exp["buildid"]), Description = exp.GetValueOrDefault("description") };
     }
 
-    if (!branches.TryGetValue(WatchedBranch, out Dictionary<string, string>? watched)) {
-      d.Error = $"{unit}: watched branch '{WatchedBranch}' missing from app_info";
+    if (!branches.TryGetValue(PublicBranch, out Dictionary<string, string>? publicHead)) {
+      d.Error = $"{unit}: required branch '{PublicBranch}' missing from app_info";
       return d;
     }
 
-    d.SteamBuildid = long.Parse(watched["buildid"]);
     if (published is null || !published.ContainsKey("buildid")) {
       d.Error = $"{unit}: no published state (missing unit entry or 'buildid' in game-versions.json)";
       return d;
@@ -169,12 +168,37 @@ internal static class SteamCheck {
 
     d.PublishedBuildid = long.Parse(published["buildid"]);
     d.PublishedLabel = published.GetValueOrDefault("label");
+    d.PublishedBranch = published.GetValueOrDefault("branch", PublicBranch);
+
+    var heads = new List<(string Branch, Dictionary<string, string> Fields)> { (PublicBranch, publicHead) };
+    if (exp is not null) {
+      heads.Add((ExperimentalBranch, exp));
+    }
+
+    (string Branch, Dictionary<string, string> Fields) newest = heads
+      .OrderByDescending(h => long.Parse(h.Fields["buildid"]))
+      .ThenBy(h => h.Branch == PublicBranch ? 0 : 1)
+      .First();
+    d.SteamBranch = newest.Branch;
+    d.SteamBuildid = long.Parse(newest.Fields["buildid"]);
     if (d.SteamBuildid == d.PublishedBuildid) {
       return d;
     }
 
-    d.Notify = true;
-    d.Kind = d.SteamBuildid > d.PublishedBuildid ? "release" : "rollback";
+    if (d.SteamBuildid > d.PublishedBuildid) {
+      d.Notify = true;
+      d.Kind = "release";
+    } else if (branches.TryGetValue(d.PublishedBranch, out Dictionary<string, string>? publishedHead)) {
+      d.SteamBranch = d.PublishedBranch;
+      d.SteamBuildid = long.Parse(publishedHead["buildid"]);
+      d.Notify = d.SteamBuildid < d.PublishedBuildid;
+      d.Kind = d.Notify ? "rollback" : null;
+    } else {
+      // `latest_experimental` normally disappears when an experimental cycle ends. A package published from
+      // that branch remains valid; its absent branch must not make the older public head look like a rollback.
+      return d;
+    }
+
     // Version hint: a version-named branch pointing at the same build tells us the player-facing version —
     // including the hotfix case where an existing v-branch is re-pointed (observed live 2026-07-31: v3.1.0
     // re-pointed to a new buildid, description unchanged). The label still needs the human (b# is in-game only).
@@ -277,14 +301,14 @@ internal static class SteamCheck {
           line = $"{d.Unit}: ERROR - {d.Error}";
         } else if (d.Notify) {
           var hint = d.VersionHint is not null ? $" (version {d.VersionHint})" : "";
-          line = $"{d.Unit}: {d.Kind!.ToUpperInvariant()}{hint} - {WatchedBranch} branch at build " +
+          line = $"{d.Unit}: {d.Kind!.ToUpperInvariant()}{hint} - {d.SteamBranch} branch at build " +
                  $"{d.SteamBuildid}, published {d.PublishedLabel} is build {d.PublishedBuildid}";
         } else {
           line = $"{d.Unit}: up to date ({d.PublishedLabel}, build {d.PublishedBuildid})";
         }
 
         if (d.Experimental is not null) {
-          line += $"  [info: latest_experimental exists, build {d.Experimental.Buildid}]";
+          line += $"  [info: {ExperimentalBranch} exists, build {d.Experimental.Buildid}]";
         }
 
         Console.WriteLine(line);
@@ -344,6 +368,7 @@ internal static class SteamCheck {
 
     Decision d = ShouldNotify("game", publishedB13, RealGameBranches());
     Ok(d.Notify && d.Kind == "release", "hotfix release detected (the real 2026-07-31 state)");
+    Ok(d.SteamBranch == PublicBranch, "stable release identifies the public branch");
     Ok(d.VersionHint == "3.1.0", "hotfix re-point hints the same player version");
 
     d = ShouldNotify("game", new Dictionary<string, string> { ["label"] = "V3.1.0-b??", ["buildid"] = "24436778" },
@@ -373,7 +398,23 @@ internal static class SteamCheck {
       { ["buildid"] = "25100000", ["description"] = "V3.2 Experimental" };
     d = ShouldNotify("game", new Dictionary<string, string> { ["label"] = "V3.1.0-b??", ["buildid"] = "24436778" },
       exp);
-    Ok(!d.Notify && d.Experimental!.Buildid == 25100000, "experimental is informational only, never a trigger");
+    Ok(d.Notify && d.SteamBranch == ExperimentalBranch && d.Experimental!.Buildid == 25100000,
+      "new experimental release triggers and identifies its branch");
+
+    var publishedExp = new Dictionary<string, string> {
+      ["label"] = "V3.2.0-b1", ["buildid"] = "25100000", ["branch"] = ExperimentalBranch
+    };
+    d = ShouldNotify("game", publishedExp, exp);
+    Ok(!d.Notify && d.SteamBranch == ExperimentalBranch, "published experimental release is quiet");
+
+    d = ShouldNotify("game", publishedExp, RealGameBranches());
+    Ok(!d.Notify && d.Error is null, "retired experimental branch does not look like a public rollback");
+
+    Branches stableAfterExperimental = RealGameBranches();
+    stableAfterExperimental["public"] = new Dictionary<string, string> { ["buildid"] = "25200000" };
+    d = ShouldNotify("game", publishedExp, stableAfterExperimental);
+    Ok(d.Notify && d.SteamBranch == PublicBranch && d.SteamBuildid == 25200000,
+      "newer stable release triggers after an experimental package");
 
     Console.WriteLine($"selftest: {checks} checks passed");
     return 0;
@@ -408,7 +449,9 @@ internal class Decision {
   public string? Kind { get; set; }
   public string? Error { get; set; }
   public long? SteamBuildid { get; set; }
+  public string? SteamBranch { get; set; }
   public long? PublishedBuildid { get; set; }
+  public string? PublishedBranch { get; set; }
   public string? PublishedLabel { get; set; }
   public string? VersionHint { get; set; }
   public string? BranchDescription { get; set; }
