@@ -8,6 +8,7 @@
 //
 //     dotnet run build/tools/vendor.cs -- --unit game --label V2.5-b8
 //     dotnet run build/tools/vendor.cs -- --unit dedicated-server --label V2.5-b8 [--force]
+//     dotnet run build/tools/vendor.cs -- --selftest
 //
 // Copies every DLL in the unit's Managed directory, plus the entire Mods/0_TFP_Harmony and Data/Config folders,
 // into a tree that mirrors the source install exactly (the dedicated server keeps its 7DaysToDieServer_Data
@@ -40,6 +41,7 @@ using System.Text.RegularExpressions;
 
 string? unit = null, label = null, installDirArg = null, outputRoot = null;
 var force = false;
+var selftest = false;
 for (var i = 0; i < args.Length; i++) {
   switch (args[i]) {
     case "--unit" when i + 1 < args.Length: unit = args[++i]; break;
@@ -47,12 +49,17 @@ for (var i = 0; i < args.Length; i++) {
     case "--install-dir" when i + 1 < args.Length: installDirArg = args[++i]; break;
     case "--output-root" when i + 1 < args.Length: outputRoot = args[++i]; break;
     case "--force": force = true; break;
+    case "--selftest": selftest = true; break;
     default:
       Console.Error.WriteLine(
         "usage: vendor.cs --unit (game|dedicated-server) --label V<maj>.<min>[.<patch>]-b<build>"
-        + " [--install-dir <dir>] [--output-root <dir>] [--force]");
+        + " [--install-dir <dir>] [--output-root <dir>] [--force] | --selftest");
       return 2;
   }
+}
+
+if (selftest) {
+  return Vendor.Selftest();
 }
 
 if (unit is null || label is null) {
@@ -228,11 +235,83 @@ internal static class Vendor {
 
     var text = File.ReadAllText(acf);
     string? Field(string name) {
-      Match fm = Regex.Match(text, $"\"{name}\"\\s+\"([^\"]*)\"");
+      Match fm = Regex.Match(text, $"\"{name}\"\\s+\"([^\"]*)\"",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
       return fm.Success ? fm.Groups[1].Value : null;
     }
 
-    return (acf, Field("buildid"), Field("betakey"));
+    return (acf, Field("buildid"), Field("BetaKey"));
+  }
+
+  public static int Selftest() {
+    var root = Path.Combine(RepoRoot(), ".scratch", "vendor-selftest-" + Guid.NewGuid().ToString("N"));
+    var install = Path.Combine(root, "steamapps", "common", "7 Days To Die");
+    var output = Path.Combine(root, "output");
+    try {
+      WriteFixtureFile(install, "7DaysToDie_Data/Managed/Assembly-CSharp.dll", "assembly");
+      WriteFixtureFile(install, "Mods/0_TFP_Harmony/0Harmony.dll", "harmony");
+      WriteFixtureFile(install, "Data/Config/items.xml", "<items />");
+      File.WriteAllText(Path.Combine(root, "steamapps", "appmanifest_251570.acf"), """
+        "AppState"
+        {
+          "buildid" "22422060"
+          "BetaKey" "v2.6"
+        }
+        """);
+
+      Run("game", "V2.6-b14", install, output, false);
+      using JsonDocument manifest = JsonDocument.Parse(
+        File.ReadAllText(Path.Combine(output, "game", "V2.6-b14", "manifest.json")));
+      JsonElement steam = manifest.RootElement.GetProperty("steam");
+      if (steam.GetProperty("betakey").GetString() != "v2.6") {
+        Console.Error.WriteLine("selftest FAILED: mixed-case Steam BetaKey was not captured");
+        return 1;
+      }
+
+      File.WriteAllText(Path.Combine(root, "steamapps", "appmanifest_251570.acf"), """
+        "AppState"
+        {
+          "buildid" "22422060"
+          "betakey" "v2.6"
+        }
+        """);
+      Run("game", "V2.6-b14", install, output, true);
+      using JsonDocument lowercaseManifest = JsonDocument.Parse(
+        File.ReadAllText(Path.Combine(output, "game", "V2.6-b14", "manifest.json")));
+      if (lowercaseManifest.RootElement.GetProperty("steam").GetProperty("betakey").GetString() != "v2.6") {
+        Console.Error.WriteLine("selftest FAILED: lowercase Steam betakey was not captured");
+        return 1;
+      }
+
+      File.WriteAllText(Path.Combine(root, "steamapps", "appmanifest_251570.acf"), """
+        "AppState"
+        {
+          "buildid" "22422060"
+        }
+        """);
+      Run("game", "V2.6-b14", install, output, true);
+      using JsonDocument defaultBranchManifest = JsonDocument.Parse(
+        File.ReadAllText(Path.Combine(output, "game", "V2.6-b14", "manifest.json")));
+      JsonElement defaultBranchSteam = defaultBranchManifest.RootElement.GetProperty("steam");
+      if (defaultBranchSteam.GetProperty("buildid").GetString() != "22422060"
+          || defaultBranchSteam.GetProperty("betakey").ValueKind != JsonValueKind.Null) {
+        Console.Error.WriteLine("selftest FAILED: default-branch provenance was not buildid plus null betakey");
+        return 1;
+      }
+
+      Console.WriteLine("selftest passed: Steam field casing and default-branch provenance");
+      return 0;
+    } finally {
+      if (Directory.Exists(root)) {
+        Directory.Delete(root, true);
+      }
+    }
+  }
+
+  private static void WriteFixtureFile(string install, string relativePath, string contents) {
+    var path = Path.Combine(install, relativePath.Replace('/', Path.DirectorySeparatorChar));
+    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+    File.WriteAllText(path, contents);
   }
 }
 

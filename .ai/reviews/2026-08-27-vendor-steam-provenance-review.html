@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vendor Steam provenance review</title>
+  <style>
+    :root {
+      --ground: #eff1f4; --surface: #fff; --surface-2: #e6e9ed; --ink: #12171c; --ink-2: #38424d;
+      --ink-3: #626d79; --hair: #cfd5dc; --hair-strong: #a9b3bd; --accent: #9a5b00;
+      --accent-tint: #f7ebd8; --sans: ui-sans-serif, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+      --mono: ui-monospace, "Cascadia Mono", Consolas, monospace; --measure: 86ch; --pad: clamp(20px, 4vw, 56px);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.6; }
+    .page { max-width: 1040px; margin: 0 auto; padding: var(--pad) var(--pad) 96px; }
+    .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--hair-strong); padding: 24px 0 28px; }
+    .kicker, .eyebrow, .chip, th { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+    .kicker { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--accent); }
+    h1 { max-width: 22ch; margin: 16px 0; font-size: clamp(34px, 6vw, 56px); line-height: 1.02; letter-spacing: -.035em; }
+    h2 { max-width: var(--measure); margin: -8px 0 0; font-size: clamp(24px, 3.4vw, 33px); line-height: 1.12; }
+    h3 { margin: 0 0 12px; font-size: 19px; }
+    p { max-width: var(--measure); margin: 0; }
+    .standfirst { color: var(--ink-2); font-size: clamp(17px, 2.1vw, 20px); }
+    .statusbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .chip { padding: 5px 10px; border: 1px solid var(--hair-strong); background: var(--surface); color: var(--ink-2); }
+    .chip.review { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    section { display: flex; flex-direction: column; gap: 18px; padding: 40px 0 8px; border-bottom: 1px solid var(--hair); }
+    section:last-of-type { border-bottom: none; }
+    .eyebrow { color: var(--ink-3); }
+    .finding, .candidate { padding: 22px 24px; border: 1px solid var(--accent); background: var(--accent-tint); }
+    .candidate { border-color: var(--hair-strong); background: var(--surface); }
+    table { min-width: 620px; width: 100%; border-collapse: collapse; background: var(--surface); font-size: 15.5px; }
+    th, td { padding: 11px 16px; border-bottom: 1px solid var(--hair); text-align: left; vertical-align: top; }
+    th { background: var(--surface-2); color: var(--ink-3); font-size: 11.5px; font-weight: 500; }
+    .scroller { overflow-x: auto; border: 1px solid var(--hair); }
+    code { padding: 1px 5px; background: var(--surface-2); font-family: var(--mono); font-size: .88em; white-space: nowrap; }
+    ul { max-width: var(--measure); margin: 0; padding-left: 1.1em; }
+    li + li { margin-top: 8px; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ground: #0e1216; --surface: #161b21; --surface-2: #1e252c; --ink: #e6eaee; --ink-2: #c0c8d0;
+        --ink-3: #8a95a1; --hair: #262e37; --hair-strong: #3a4550; --accent: #f0a73c; --accent-tint: #2a2015; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="kicker"><span>Build tooling</span><span>Steam provenance</span><span>27 Aug 2026</span></div>
+      <h1>Preserve the branch key that Steam actually writes</h1>
+      <p class="standfirst">Steam appmanifests use <code>BetaKey</code>, but <code>vendor.cs</code> searched for
+        lowercase <code>betakey</code>. The package build IDs and hashes remained valid; only informational branch
+        provenance was lost.</p>
+      <div class="statusbar">
+        <span class="chip review">Implementation review</span>
+        <a class="chip" href="https://github.com/Strongheart-Games/StrongMods/issues/155">Issue #155</a>
+        <span class="chip">scope: build tooling</span>
+      </div>
+    </header>
+
+    <section>
+      <p class="eyebrow">Decision and boundary</p>
+      <h2>Parse field names without case sensitivity; leave published packages alone</h2>
+      <div class="finding"><strong>Selected behavior:</strong> match appmanifest field names with case-insensitive,
+        culture-invariant rules. Preserve the field value, keep missing fields as JSON <code>null</code>, and retain
+        the exact build ID as the authoritative Steam coordinate.</div>
+      <p>The existing <code>2.6.0.14</code> packages are not rewritten. Their build IDs, runtime labels, and manifested
+        file hashes were verified before this change. Republishing would add risk without repairing authoritative
+        package content.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Public test seam</p>
+      <h2>The file app proves its own manifest behavior</h2>
+      <p>The approved seam is <code>dotnet run build/tools/vendor.cs -- --selftest</code>. The command builds a minimal
+        Steam-layout fixture under <code>.scratch</code>, runs the normal vendoring path, and reads the resulting
+        public <code>manifest.json</code>.</p>
+      <div class="scroller"><table>
+        <thead><tr><th>Fixture</th><th>Expected manifest</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>BetaKey = v2.6</code></td><td><code>betakey = v2.6</code></td><td>Observed Steam casing</td></tr>
+          <tr><td><code>betakey = v2.6</code></td><td><code>betakey = v2.6</code></td><td>Case-insensitive contract</td></tr>
+          <tr><td>No branch field</td><td><code>buildid = 22422060</code>; <code>betakey = null</code></td><td>Default branch control</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <p class="eyebrow">Red and green evidence</p>
+      <h2>The regression test failed on the old behavior and passed after each narrow fix</h2>
+      <ul>
+        <li>Red: mixed-case <code>BetaKey</code> produced <code>betakey=(default branch)</code> and exit 1.</li>
+        <li>Green: requesting the observed mixed-case name captured <code>v2.6</code>.</li>
+        <li>Second red: lowercase <code>betakey</code> failed under the exact-name fix.</li>
+        <li>Final green: case-insensitive lookup passed both casings and the missing-field control.</li>
+      </ul>
+    </section>
+
+    <section>
+      <p class="eyebrow">Handoff evidence</p>
+      <h2>Exact submission candidate</h2>
+      <!-- submission-candidate:verified:start -->
+<section>
+  <h2>Submission candidate (verified)</h2>
+  <p>This generated section is the authoritative submission set. It was overlaid onto a scratch worktree at
+    <code>54be6a8f9533bcd36d4a3b4e3444dbc317c05d4f</code> and passed every command below there.</p>
+  <p><strong>Validation:</strong></p>
+  <ul>
+        <li><code>dotnet run build/tools/vendor.cs -- --selftest</code> (exit 0)</li>
+        <li><code>git diff --check</code> (exit 0)</li>
+  </ul>
+  <ul>
+      <li><code>build/tools/vendor.cs</code></li>
+      <li><code>.ai/reviews/2026-08-27-vendor-steam-provenance-review.html</code></li>
+  </ul>
+</section><!-- submission-candidate:verified:end -->
+    </section>
+  </main>
+</body>
+</html>
