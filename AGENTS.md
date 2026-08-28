@@ -112,8 +112,8 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
   self-identifying name is impractical, every out-of-file reference carries qualification instead (`SmokeTests.Ctx`, a
   path). Existing violations are grandfathered — #64 enumerates them for one-by-one fixes — but a name a change already
   touches conforms as part of that change, and new names conform always.
-- `ModInfo.xml` is UTF-8 with a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`, `Author`
-  (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
+- `ModInfo.xml` is UTF-8 without a byte order mark and declares `Name`, `Version`, `DisplayName`, `Description`,
+  `Author` (`str0ngh34rt`). Bump `Version` when shipping behavior changes.
 - **The backlog lives in GitHub Issues, not in documents.** A plan doc explains *why* — the design, the options weighed,
   the verification. The issue carries the work and its status. **Never add a status or follow-on table to a doc:** it
   becomes a second tracker, and two trackers always drift. Raise work as an issue and cite it by number. The older plans
