@@ -33,7 +33,7 @@ settings.local.json
 
 # Agent/developer scratch: verification builds, baseline worktrees, throwaway experiments. Untracked but
 # deliberately inside the repo so lingering stale files are visible. Safe to delete wholesale at any time.
-.scratch/
+.tmp/
 
 # Build results
 [Dd]ebug/
