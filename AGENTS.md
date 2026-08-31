@@ -121,8 +121,9 @@ subclass (`Commands/GracefulShutdownCommand.cs` shows the standard shape — `ge
   deliberately carries no status.
 - While most projects have little or no docs yet, we strive to put a README.md in the root of each project and
   supporting detailed docs in its `Docs/` directory
+- Scratch work goes in the git-ignored `.tmp/` directory.
 
 ## Agent Workflow & Workstyle Constraints
 
-* **Small, Atomic Changes** -- You must strictly adhere to principles for creating small, reviewable, and single-focused
+- **Small, Atomic Changes** -- You must strictly adhere to principles for creating small, reviewable, and single-focused
   changes. Every code generation cycle must produce self-contained edits.
