@@ -7,6 +7,6 @@
   <Author value="Refuge Gaming" />
   <Website value="" />
   <Dependencies>
-    <Game version="[3,4)" />
+    <Game version="[3.4,3.5)" />
   </Dependencies>
 </ModInfo>

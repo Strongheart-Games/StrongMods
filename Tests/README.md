@@ -80,17 +80,13 @@ itself runs.
 dotnet test StrongMods.sln -c Debug
 ```
 
-builds every mod and runs the suite against the default unit (the live game install). The unit under test is whatever
-`$(SdtdDir)` resolves to — same knob, precedence, and layout detection as the build — so other units and versions are
-one property away (paths are baked in at build time, so switching triggers a rebuild of this project):
+This builds every mod and tests the game package for the declared version. To test the dedicated-server package, run
 
 ```bash
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/dedicated-server/V3.1.0-b14
-dotnet test Tests/Tests.csproj -c Debug -p:SdtdDir=vendor/game/V3.0.1-b4
+dotnet test StrongMods.sln -c Debug -p:SdtdUnit=dedicated-server
 ```
 
-A relative path is resolved against the directory you run from (`build/GamePaths.props`), so run these from the
-repo root.
+The build records the game tree paths in the test assembly, so switching units triggers a rebuild.
 
 CI runs the suite against both units on every push.
 

@@ -1,4 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\build\Mod.props" />
-  <Import Project="..\build\Mod.targets" />
-</Project>

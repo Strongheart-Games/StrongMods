@@ -16,7 +16,7 @@ namespace StrongMods {
     private const string ModInfoFilename = "ModInfo.xml";
 
     public static void Validate(Mod validatorMod) {
-      var gameVersion = $"{Constants.cVersionInformation.Major}.{Constants.cVersionInformation.Minor}";
+      var gameVersion = Constants.cVersionInformation.ShortString.TrimStart('V');
       List<ModSnapshot> snapshots = new(ModManager.loadedMods.Count);
       Dictionary<ModSnapshot, Mod> modsBySnapshot = new();
 

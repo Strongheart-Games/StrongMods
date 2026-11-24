@@ -53,6 +53,22 @@ namespace UnityEngine {
     }
   }
 
+  // Constants initializes colors when the dependency validator reads the game version.
+  public struct Color {
+    public Color(float r, float g, float b) { }
+    public Color(float r, float g, float b, float a) { }
+    public static Color white => default;
+    public static Color red => default;
+    public static Color green => default;
+    public static Color blue => default;
+    public static Color yellow => default;
+  }
+
+  public struct Color32 {
+    public Color32(byte r, byte g, byte b, byte a) { }
+    public static implicit operator Color(Color32 color) => default;
+  }
+
   public class Application {
     public delegate void LogCallback(string condition, string stackTrace, LogType type);
 

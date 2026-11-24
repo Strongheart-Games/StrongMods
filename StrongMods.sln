@@ -30,8 +30,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicFeralSense", "Dynami
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongFill", "StrongFill\StrongFill.csproj", "{6D06C787-4D97-4071-8D58-918863767E40}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongHorns", "StrongHorns\StrongHorns.csproj", "{6539557B-0DA2-4767-9ADB-31210C1364BD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrongMining", "StrongMining\StrongMining.csproj", "{343152C4-6197-4461-9B01-E223627C59E5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongBoxes", "StrongBoxes\StrongBoxes.csproj", "{6252E52E-1BBA-413F-B389-88546EE20AF1}"
@@ -136,10 +134,6 @@ Global
 		{21319922-DC60-422A-B2CB-64D96496F224}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{48564A8B-2DD0-4121-BFB8-EBBEF5E9B0E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6539557B-0DA2-4767-9ADB-31210C1364BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{343152C4-6197-4461-9B01-E223627C59E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{343152C4-6197-4461-9B01-E223627C59E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{343152C4-6197-4461-9B01-E223627C59E5}.Release|Any CPU.ActiveCfg = Release|Any CPU

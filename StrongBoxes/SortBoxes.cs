@@ -15,7 +15,7 @@ namespace StrongBoxes {
     }
 
     private static void OnClose(TileEntity sortBox) {
-      ITileEntityLootable lootable = sortBox.GetSelfOrFeature<ITileEntityLootable>();
+      TEFeatureStorage lootable = sortBox.GetSelfOrFeature<TEFeatureStorage>();
       if (lootable is null || lootable.IsEmpty()) {
         return;
       }
@@ -34,11 +34,11 @@ namespace StrongBoxes {
     }
 
     private static void Transfer(TileEntity source, SortTarget target) {
-      ITileEntityLootable lootableSource = source.GetSelfOrFeature<ITileEntityLootable>();
+      TEFeatureStorage lootableSource = source.GetSelfOrFeature<TEFeatureStorage>();
       if (lootableSource is null || lootableSource.IsEmpty()) {
         return;
       }
-      ITileEntityLootable lootableTarget = target.Target.GetSelfOrFeature<ITileEntityLootable>();
+      TEFeatureStorage lootableTarget = target.Target.GetSelfOrFeature<TEFeatureStorage>();
       if (lootableTarget is null || lootableTarget.IsEmpty()) {
         return;
       }

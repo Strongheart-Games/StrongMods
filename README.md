@@ -2,6 +2,9 @@
 
 ## Building
 
+The mods in this repository support 7 Days to Die 3.4. Builds and tests use `V3.4.0-b10` for both the game and
+the dedicated server.
+
 See the [build guide](BUILDING.md#quick-start) for fresh-machine requirements, setup, build commands, and build-system
 details.
 
@@ -29,7 +32,6 @@ details.
 | **StrongBoxes**                 | Change storage box behavior based on the box's sign label.                                                                         |
 | **StrongFill**                  | Fill gaps between your builds and the surrounding terrain. Just craft and place on the adjacent terrain block.                     |
 | **Stronghold Tweaks**           | Stronghold-specific game tweaks.                                                                                                   |
-| **StrongHorns**                 | Horns open trader doors.                                                                                                           |
 | **StrongLocks**                 | All lockables default to locked when placed, including doors, vehicles, and crates.                                                |
 | **StrongMining**                | Terrain and ore blocks that regenerate themselves when broken.                                                                     |
 | **StrongMods**                  | The foundational runtime mod: a breadth-first XML patcher and the `<foreach>` XML-patch templating engine. Other mods build on it. |

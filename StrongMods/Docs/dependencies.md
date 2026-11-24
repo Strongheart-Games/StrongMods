@@ -50,8 +50,8 @@ Add one `<Dependencies>` element alongside `<Name>`, `<Version>`, and the rest:
 <Game version="3.*" />
 ```
 
-At most one, `version` required. The constraint is checked against the game's version with the leading `V` and the
-build suffix (`b14`) stripped — so on "V 2.4 (b14)" your constraint is tested against `2.4`.
+At most one, `version` required. StrongMods checks the displayed game version without the leading `V` or build suffix.
+For example, it checks `V3.4.0-b10` as `3.4.0`. Use `[3.4,3.5)` to accept the 3.4 series.
 
 ### `<Mod>` — another mod you need
 

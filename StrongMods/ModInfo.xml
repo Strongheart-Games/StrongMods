@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModInfo>
   <Name value="StrongMods" />
-  <Version value="1.1.1" />
+  <Version value="1.1.2" />
   <DisplayName value="StrongMods" />
   <Description value="Modding tools from Strongheart." />
   <Author value="str0ngh34rt" />
   <Website value="https://github.com/Strongheart-Games/StrongMods/tree/main/StrongMods" />
   <Dependencies>
-    <Game version="[3,4)" />
+    <Game version="[3.4,3.5)" />
   </Dependencies>
 </ModInfo>
